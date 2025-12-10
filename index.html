@@ -230,7 +230,7 @@
     </style>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
     
-    <script src="https://cdn.sheetjs.com/xlsx-0.20.1/package/dist/xlsx.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 
     <script src="https://www.gstatic.com/firebasejs/8.6.8/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.6.8/firebase-database.js"></script>
@@ -574,10 +574,13 @@
             if(v===undefined||v===null||v==='') return 0; 
             if(typeof v!=='string') v=String(v); 
             v=v.replace(/[^0-9,.]/g,''); 
-            let c=v.replace(',','.'); 
-            const parts=c.split('.'); 
-            if(parts.length>2) c=parts.slice(0,-1).join('')+'.'+parts.slice(-1); 
-            const n=parseFloat(c); 
+            v = v.replace(/,/g,'.'); // Troca vírgula por ponto universalmente
+            // Remove pontos extras, deixando apenas o último (ou nenhum)
+            const parts = v.split('.');
+            if(parts.length > 2) {
+                v = parts.slice(0, -1).join('') + '.' + parts.slice(-1);
+            }
+            const n=parseFloat(v); 
             return isNaN(n)?0:n; 
         }
 
@@ -928,14 +931,12 @@
             const processFile = (file) => {
                 log(`Processando arquivo ${file.name}...`);
 
-                // ATENÇÃO: PAPAPARSE (CSV) FOI REMOVIDO PARA EVITAR CONFLITOS CSP.
-                // APENAS LÓGICA DE XLSX/XLS ABAIXO.
-
                 if (file.name.toLowerCase().endsWith('.xlsx') || file.name.toLowerCase().endsWith('.xls')) {
                     const reader = new FileReader();
                     reader.onload = (e) => {
                         try {
                             const data = new Uint8Array(e.target.result);
+                            // Usamos type: 'array' e cellDates: true, dateNF: 'yyyy-mm-dd'
                             const workbook = XLSX.read(data, { type: 'array', cellDates: true, dateNF: 'yyyy-mm-dd' });
                             const sheetName = workbook.SheetNames[0];
                             const worksheet = workbook.Sheets[sheetName];
@@ -973,6 +974,8 @@
                     reader.readAsArrayBuffer(file);
                 }
                 else {
+                    // Se você precisar de suporte a CSV, teremos que incluir o PapaParse novamente,
+                    // mas por enquanto, focamos em resolver o problema do XLSX.
                     log(`⚠️ Formato não suportado para ${file.name}. Por favor, use XLSX/XLS.`);
                     filesProcessed++;
                     checkCompletion();
