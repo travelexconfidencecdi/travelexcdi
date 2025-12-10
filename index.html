@@ -915,10 +915,11 @@
             }
             
             // GARANTINDO QUE ESTAMOS LENDO O INPUT DE ARQUIVO CORRETO
+            // O ID correto é 'excelFile', conforme definido no HTML corrigido
             const files = document.getElementById('excelFile').files; 
             
             if (files.length === 0) {
-                log('Selecione pelo menos um arquivo Excel ou CSV.');
+                log('Selecione pelo menos um arquivo Excel ou CSV usando o botão "Procurar".');
                 return;
             }
 
