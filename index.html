@@ -230,7 +230,7 @@
     </style>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
     
-    <script src="https://cdn.sheetjs.com/xlsx-0.20.1/package/dist/xlsx.full.min.js"></script>
+    <script src="https://cdn.sheetjs.com/xlsx-0.20.1/package/dist/xlsx.mini.min.js"></script>
 
     <script src="https://www.gstatic.com/firebasejs/8.6.8/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.6.8/firebase-database.js"></script>
@@ -937,6 +937,7 @@
                         try {
                             const data = new Uint8Array(e.target.result);
                             // Usamos type: 'array' e cellDates: true, dateNF: 'yyyy-mm-dd'
+                            // XLSX.read é o ponto crítico que estava sendo bloqueado pelo eval().
                             const workbook = XLSX.read(data, { type: 'array', cellDates: true, dateNF: 'yyyy-mm-dd' });
                             const sheetName = workbook.SheetNames[0];
                             const worksheet = workbook.Sheets[sheetName];
