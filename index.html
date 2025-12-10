@@ -1,4 +1,4 @@
-!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="pt-BR">
 <head>
     <meta charset="utf-8" />
@@ -34,13 +34,41 @@
             -webkit-font-smoothing:antialiased;
             font-size:14px;
         }
-        /* Logo centralizado e menor */
-        #logo-wrapper{ text-align:center; margin-bottom:8px; }
-        #siteLogo{ display:none; max-width:240px; width:100%; height:auto; border-radius:6px; box-shadow:var(--shadow); margin:0 auto 6px; }
+        
+        /* Ajuste do Logo e Título para ficarem à esquerda e alinhados */
+        #siteLogo{ 
+            display:block; /* Muda para block */
+            max-width:140px; 
+            width:100%; 
+            height:auto; 
+            border-radius:6px; 
+            box-shadow:var(--shadow); 
+            margin:0 0 6px 0; /* Remove margem automática, alinha à esquerda */
+        }
+        #logo-wrapper{ /* Este se torna desnecessário, mas o mantive no HTML abaixo para o logo */
+            margin-bottom:8px;
+        }
+        
         /* Header */
-        #header-container{ display:flex; align-items:center; gap:10px; margin-bottom:8px; }
-        #logo-placeholder{ font-size:1.4rem; color:var(--primary); } /* Usa o novo Azul Marinho */
+        #header-container{ 
+            display:flex; 
+            align-items:center; 
+            gap:10px; 
+            margin-bottom:8px; 
+            /* Para manter o contêiner à esquerda se o logo estiver no topo */
+            width: fit-content; 
+        }
+        
+        #logo-placeholder{ font-size:1.4rem; color:var(--primary); } 
         h1{ margin:0; color:var(--text-dark); font-size:1.25rem; font-weight:700; }
+        
+        /* Contêiner para logo e título juntos */
+        #left-header-content {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
         /* Top actions compacto */
         #top-actions{
             display:flex; align-items:center; gap:10px; padding:10px;
@@ -197,7 +225,10 @@
 
         /* Responsive */
         @media (max-width:980px){
+            /* Centraliza em telas pequenas */
             #siteLogo{ max-width:120px; display:block; margin:0 auto 8px; }
+            #header-container{ margin-bottom:0; width: 100%; justify-content: center; }
+            #left-header-content { justify-content: center; }
             .input-row{ flex-direction:column; align-items:stretch; }
         }
         /* Print */
@@ -211,12 +242,15 @@
     <script src="https://cdn.sheetjs.com/xlsx-latest/package/dist/xlsx.full.min.js"></script>
 </head>
 <body onload="loadState()">
+    
     <div id="logo-wrapper">
         <img id="siteLogo" alt="Logo do site">
     </div>
     <div id="header-container">
-        <div id="logo-placeholder">📈</div>
-        <h1>Controle de Ganhos CDI</h1>
+        <div id="left-header-content">
+            <div id="logo-placeholder">📈</div>
+            <h1>Controle de Ganhos CDI</h1>
+        </div>
     </div>
     <div id="top-actions" class="card" role="region" aria-label="Ações principais">
         <div id="header-left">
@@ -397,31 +431,31 @@
         }
         
         if (logoInput) {
-            // Se você usou "Carregar Logo" como um botão separado, a lógica precisa ser ajustada.
-            // O código abaixo assume que o 'Carregar Logo' (agora addLogoBtn) aciona a ação após o arquivo ser selecionado pelo 'Procurar'
             
             // Lógica para salvar a imagem quando o arquivo é selecionado
             logoInput.addEventListener('change', async (e) => {
                 const file = e.target.files && e.target.files[0];
                 if(!file) return;
                 
-                // Remove a necessidade do botão 'Carregar Logo' e salva a imagem após a seleção do arquivo
-                const compressed = await compressImageFile(file, 0.7, 600);
-                siteLogo.src = compressed;
-                siteLogo.style.display = 'block';
-                localStorage.setItem('cdiLogo', compressed); 
-                log('✅ Logo salvo localmente.');
+                try {
+                    const compressed = await compressImageFile(file, 0.7, 600);
+                    siteLogo.src = compressed;
+                    siteLogo.style.display = 'block';
+                    localStorage.setItem('cdiLogo', compressed); 
+                    log('✅ Logo salvo localmente.');
+                } catch (err) {
+                    console.error(err);
+                    log('❌ Erro ao processar o logo.');
+                }
+
                 resetThemeToFixed();
             });
 
-             // Você pode manter o addLogoBtn (que agora é vermelho) para fins de layout, mas a lógica de upload está no change do input file.
-             // Se você quer que o addLogoBtn *faça* o upload, você precisa acionar o change listener:
+             // O botão 'Carregar Logo' apenas aciona o clique no input file
              const addLogoBtn = document.getElementById('addLogoBtn');
              if (addLogoBtn) {
                  addLogoBtn.addEventListener('click', () => {
-                     // Esta parte é um placeholder, pois a lógica de upload é mais complexa.
-                     // Geralmente, o botão 'Procurar' abre o seletor, e o 'change' faz o upload.
-                     log('⚠️ Botão Carregar Logo clicado. O upload real ocorre após selecionar o arquivo no botão "Procurar".');
+                     logoInput.click();
                  });
              }
         }
