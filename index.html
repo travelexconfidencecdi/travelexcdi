@@ -231,7 +231,8 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
     
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
-    <script src="https://cdn.sheetjs.com/xlsx-latest/package/dist/xlsx.full.min.js"></script>
+    
+    <script src="https://cdn.sheetjs.com/xlsx-latest/package/dist/xlsx.min.js"></script>
 
     <script src="https://www.gstatic.com/firebasejs/8.6.8/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.6.8/firebase-database.js"></script>
@@ -915,7 +916,6 @@
             }
             
             // GARANTINDO QUE ESTAMOS LENDO O INPUT DE ARQUIVO CORRETO
-            // O ID correto é 'excelFile', conforme definido no HTML corrigido
             const files = document.getElementById('excelFile').files; 
             
             if (files.length === 0) {
