@@ -230,7 +230,7 @@
     </style>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
     
-    <script src="https://cdn.sheetjs.com/xlsx-0.20.1/package/dist/xlsx.mini.min.js"></script>
+    <script src="xlsx.mini.min.js"></script>
 
     <script src="https://www.gstatic.com/firebasejs/8.6.8/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.6.8/firebase-database.js"></script>
@@ -379,7 +379,7 @@
         
         // Suas chaves de configuração do Firebase (MANTIDAS AQUI)
         const firebaseConfig = {
-            apiKey: "AIzaSyD_vxw2VcSPO_tMXgrl7quZ85ODvpqQuR8",
+            apiKey: "AIzaSyD_vxw2VcSPO_tMXgrc7quZ85ODvpqQuR8",
             authDomain: "controle-cdi.firebaseapp.com",
             databaseURL: "https://controle-cdi-default-rtdb.firebaseio.com",
             projectId: "controle-cdi",
@@ -916,7 +916,6 @@
                 return;
             }
             
-            // GARANTINDO QUE ESTAMOS LENDO O INPUT DE ARQUIVO CORRETO
             const files = document.getElementById('excelFile').files; 
             
             if (files.length === 0) {
@@ -936,16 +935,17 @@
                     reader.onload = (e) => {
                         try {
                             const data = new Uint8Array(e.target.result);
-                            // Usamos type: 'array' e cellDates: true, dateNF: 'yyyy-mm-dd'
-                            // XLSX.read é o ponto crítico que estava sendo bloqueado pelo eval().
-                            const workbook = XLSX.read(data, { type: 'array', cellDates: true, dateNF: 'yyyy-mm-dd' });
+                            
+                            // *** MUDANÇA CRÍTICA AQUI: USANDO SOMENTE { type: 'array' } ***
+                            // Simplifica o parsing do Excel
+                            const workbook = XLSX.read(data, { type: 'array' });
+                            
                             const sheetName = workbook.SheetNames[0];
                             const worksheet = workbook.Sheets[sheetName];
                             
-                            // CONVERSÃO PARA JSON
-                            // Usamos { header: 1 } para obter um array de arrays e lidarmos com os cabeçalhos manualmente, 
-                            // o que é mais robusto para a normalização.
-                            const json = XLSX.utils.sheet_to_json(worksheet, { header: 1, raw: false });
+                            // *** MUDANÇA CRÍTICA AQUI: USANDO { raw: true } ***
+                            // Força a leitura de dados brutos (mais seguro contra CSP)
+                            const json = XLSX.utils.sheet_to_json(worksheet, { header: 1, raw: true });
                             
                             if (json.length > 1) {
                                 const headers = json[0];
@@ -975,8 +975,6 @@
                     reader.readAsArrayBuffer(file);
                 }
                 else {
-                    // Se você precisar de suporte a CSV, teremos que incluir o PapaParse novamente,
-                    // mas por enquanto, focamos em resolver o problema do XLSX.
                     log(`⚠️ Formato não suportado para ${file.name}. Por favor, use XLSX/XLS.`);
                     filesProcessed++;
                     checkCompletion();
@@ -986,7 +984,7 @@
             const checkCompletion = () => {
                 if (filesProcessed === totalFiles) {
                     if (loadedOps.length > 0) {
-                        const confirmReplace = confirm(`${loadedOps.length} novas operações lidas. Deseja substituir os ${operacoes.length} lançamentos existentes ou adicionar? (Clique 'OK' para ADICIONAR ou 'Cancelar' para SUBSTITUIR)`);
+                        const confirmReplace = confirm(`${loadedOps.length} novas operações lidas. Deseja adicionar as operações aos ${operacoes.length} lançamentos existentes ou substituir? (Clique 'OK' para ADICIONAR ou 'Cancelar' para SUBSTITUIR)`);
                         
                         if (confirmReplace) {
                             operacoes.push(...loadedOps);
