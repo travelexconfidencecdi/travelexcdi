@@ -1,4 +1,4 @@
-!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="pt-BR">
 <head>
     <meta charset="utf-8" />
@@ -33,7 +33,6 @@
             -webkit-font-smoothing:antialiased;
             font-size:14px;
         }
-
         /* Ajuste do Logo e Título para ficarem à esquerda e alinhados */
         #siteLogo{
             display:block; /* Muda para block */
@@ -47,7 +46,6 @@
         #logo-wrapper{ /* Este se torna desnecessário, mas o mantive no HTML abaixo para o logo */
             margin-bottom:8px;
         }
-
         /* Header */
         #header-container{
             display:flex;
@@ -57,17 +55,14 @@
             /* Para manter o contêiner à esquerda se o logo estiver no topo */
             width: fit-content;
         }
-
         #logo-placeholder{ font-size:1.4rem; color:var(--primary); }
         h1{ margin:0; color:var(--text-dark); font-size:1.25rem; font-weight:700; }
-
         /* Contêiner para logo e título juntos */
         #left-header-content {
             display: flex;
             align-items: center;
             gap: 10px;
         }
-
         /* Top actions compacto */
         #top-actions{
             display:flex; align-items:center; gap:10px; padding:10px;
@@ -100,7 +95,6 @@
             color: white; /* Texto Branco */
             border: 1px solid white; /* Borda Branca Sólida */
         }
-
         .btn.small {
             padding: 6px 10px;
             font-size: 13px;
@@ -117,7 +111,6 @@
             border-color: white; /* Mantém a borda branca */
             box-shadow: 0 8px 20px rgba(192, 0, 0, 0.25);
         }
-
         .btn:active {
             transform: none;
             filter: brightness(0.96);
@@ -136,7 +129,6 @@
             border-color: white;
         }
         /* ----------------------------------------------------------- */
-
         /* Layout empilhado: resultados em cima, painel embaixo */
         #main-container{
             display:flex;
@@ -213,7 +205,6 @@
             color: var(--primary); /* Negrito no Azul Marinho do tema */
         }
         /* ------------------------------------------------------------------- */
-
         /* Responsive */
         @media (max-width:980px){
             /* Centraliza em telas pequenas */
@@ -229,12 +220,12 @@
         }
     </style>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
-    
-    <script src="https://cdn.sheetjs.com/xlsx-0.20.1/package/dist/xlsx.mini.min.js"></script>
 
-    <script src="https://www.gstatic.com/firebasejs/8.6.8/firebase-app.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/8.6.8/firebase-database.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/8.6.8/firebase-auth.js"></script> 
+    <script src="xlsx.mini.min.js"></script>
+
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-database-compat.js"></script>
 
 </head>
 <body onload="loadState()">
@@ -247,39 +238,29 @@
             <h1>Controle de Ganhos CDI</h1>
         </div>
     </div>
-    
-    <div id="auth-status" class="card" style="padding: 10px; margin-bottom: 14px; display: flex; align-items: center; justify-content: space-between;">
+        <div id="auth-status" class="card" style="padding: 10px; margin-bottom: 14px; display: flex; align-items: center; justify-content: space-between;">
         <span id="login-message" style="font-weight: 600;">Status: Desconectado</span>
         <button id="loginBtn" class="btn small">Login (Anônimo)</button>
     </div>
-    
-    <div id="top-actions" class="card" role="region" aria-label="Ações principais">
+        <div id="top-actions" class="card" role="region" aria-label="Ações principais">
         <div id="header-left">
             <div style="font-weight:700;">Resumo Diário</div>
             <div style="font-size:12px;color:var(--muted);">Filtros, importação e ações rápidas</div>
         </div>
-        
-        <div id="header-right">
+                <div id="header-right">
             <button id="printBtn" class="btn small" title="Imprimir">Imprimir</button>
-
             <button id="exportBtn" class="btn small secondary" title="Exportar">Exportar</button>
-            
-            <label class="file-label" for="excelFile" title="Selecionar arquivos">
+                        <label class="file-label" for="excelFile" title="Selecionar arquivos">
                 <input type="file" id="excelFile" accept=".xlsx,.xls,.csv,.txt" multiple>
                 <span class="btn small">Procurar</span>
             </label>
-
             <button id="loadExcelBtn" class="btn small secondary" title="Importar arquivos">Importar</button>
-
             <label class="logo-label" for="logoFile" title="Carregar logo">
                 <input type="file" id="logoFile" accept="image/*">
                 <span class="btn small">Procurar</span>
             </label>
-
             <button id="addLogoBtn" class="btn small secondary" title="Carregar Logo">Carregar Logo</button>
-
             <button id="removeLogoBtn" class="btn small" title="Remover">Remover</button>
-
             <button id="deleteAllBtn" class="btn small secondary danger" title="Excluir tudo">🗑️</button>
         </div>
     </div>
@@ -370,13 +351,11 @@
             <pre id="log" style="height:84px;overflow:auto;margin-top:12px;color:var(--muted);">Aguardando...</pre>
         </div>
     </div>
-    
-    <script>
-        
+        <script>
         // ====================================================================
         // FIREBASE REALTIME DATABASE E AUTENTICAÇÃO
         // ====================================================================
-        
+
         // Suas chaves de configuração do Firebase (MANTIDAS AQUI)
         const firebaseConfig = {
             apiKey: "AIzaSyD_vxw2VcSPO_tMXgrl7quZ85ODvpqQuR8",
@@ -388,8 +367,8 @@
             appId: "1:215359645646:web:cd61ae2f72e100d522ad9f",
             measurementId: "G-TV1M1QWQRC"
         };
-        
-        let database = null; 
+
+        let database = null;
         let currentUserUid = null; // Armazena o ID único do usuário autenticado
         const DB_ROOT_PATH = 'usuarios/'; // Caminho seguro no Realtime Database
 
@@ -402,7 +381,7 @@
         }
 
         // --- Lógica de Autenticação ---
-        
+
         const loginBtn = document.getElementById('loginBtn');
         const loginMessage = document.getElementById('login-message');
 
@@ -459,12 +438,12 @@
         if (loginBtn) {
             loginBtn.addEventListener('click', handleLogin);
         }
-        
+
         // ====================================================================
-        
+
         /* ---------- Funções utilitárias e lógica ---------- */
         function log(message) { document.getElementById('log').textContent = message; }
-        
+
         function resetThemeToFixed() {
             document.documentElement.style.setProperty('--primary', '#0A0A33');
             document.documentElement.style.setProperty('--primary-light', '#1A1A55');
@@ -484,7 +463,7 @@
             });
 
             document.querySelectorAll('.btn.danger').forEach(b=>{
-                b.style.background = getComputedStyle(document.documentElement).getPropertyValue('--secondary').trim(); 
+                b.style.background = getComputedStyle(document.documentElement).getPropertyValue('--secondary').trim();
                 b.style.color = '#ffffff';
                 b.style.border = '1px solid white';
             });
@@ -516,7 +495,7 @@
                 reader.readAsDataURL(file);
             });
         }
-        
+
         if (logoInput) {
             logoInput.addEventListener('change', async (e) => {
                 const file = e.target.files && e.target.files[0];
@@ -554,35 +533,35 @@
             });
         }
 
-        function cleanCurrency(v){ 
-            if(typeof v!=='string') v=String(v); 
-            let cleanString = v.replace(/[R$\s]/g, '');
+        function cleanCurrency(v){
+             if(typeof v!=='string') v=String(v);
+             let cleanString = v.replace(/[R$\s]/g, '');
             cleanString = cleanString.replace(/\./g, '');
             cleanString = cleanString.replace(/,/g, '.');
-            const n=parseFloat(cleanString); 
-            return isNaN(n)?0:n; 
-        }
-        
-        function parseNumber(v){ 
-            if(v===undefined||v===null||v==='') return 0; 
-            if(typeof v==='string' && (v.includes(',') || v.includes('R$'))) return cleanCurrency(v); 
-            const n=parseFloat(v); 
-            return isNaN(n)?0:n; 
-        }
-        
-        function cleanCdiTaxa(v){ 
-            if(v===undefined||v===null||v==='') return 0; 
-            if(typeof v!=='string') v=String(v); 
-            v=v.replace(/[^0-9,.]/g,''); 
-            v = v.replace(/,/g,'.'); // Troca vírgula por ponto universalmente
+            const n=parseFloat(cleanString);
+             return isNaN(n)?0:n;
+         }
+
+        function parseNumber(v){
+             if(v===undefined||v===null||v==='') return 0;
+             if(typeof v==='string' && (v.includes(',') || v.includes('R$'))) return cleanCurrency(v);
+             const n=parseFloat(v);
+             return isNaN(n)?0:n;
+         }
+
+        function cleanCdiTaxa(v){
+             if(v===undefined||v===null||v==='') return 0;
+             if(typeof v!=='string') v=String(v);
+             v=v.replace(/[^0-9,.]/g,'');
+             v = v.replace(/,/g,'.'); // Troca vírgula por ponto universalmente
             // Remove pontos extras, deixando apenas o último (ou nenhum)
             const parts = v.split('.');
             if(parts.length > 2) {
                 v = parts.slice(0, -1).join('') + '.' + parts.slice(-1);
             }
-            const n=parseFloat(v); 
-            return isNaN(n)?0:n; 
-        }
+            const n=parseFloat(v);
+             return isNaN(n)?0:n;
+         }
 
         function formatBRL(n){ return n.toLocaleString('pt-BR',{style:'currency',currency:'BRL',minimumFractionDigits:2}); }
         function formatPercent(n){ if(n===undefined||n===null||isNaN(n)) return ''; return n.toFixed(4).replace('.',','); }
@@ -612,23 +591,27 @@
              try{ const d=new Date(s); if(!isNaN(d)) return d.toISOString().split('T')[0]; }catch(e){}
              return '';
          }
-        
+
         /* Persistência e estado */
         let operacoes = [], totalCompromissada=0, totalRetorno=0, totalGanho=0;
-        
+        let filtroAtivo = false;
+        let dataFiltroInicio = null;
+        let dataFiltroFim = null;
+
+
         // MODIFICAÇÃO: SAVE STATE AGORA REQUER UID
-        function saveState(){ 
-            if (!database || !currentUserUid) {
+        function saveState(){
+             if (!database || !currentUserUid) {
                 log("❌ É necessário fazer login para salvar os dados.");
                 return;
             }
-            
+
             const stateToSave = {
                 operacoes: operacoes,
                 taxaCdiAnual: document.getElementById('taxaCdiAnual').value,
                 diasAno: document.getElementById('diasAno').value
             };
-            
+
             // SALVA DADOS NO CAMINHO SEGURO: usuarios/UID_DO_USUARIO/operacoes
             database.ref(`${DB_ROOT_PATH}${currentUserUid}/operacoes`).set(stateToSave)
                 .then(() => {
@@ -639,7 +622,7 @@
                     console.error("Firebase Save Error:", error);
                 });
         }
-        
+
         // FUNÇÃO QUE CARREGA OS DADOS APÓS O LOGIN (CHAMADA APENAS POR onAuthStateChanged)
         function loadStateFromFirebase(){
             if (!database || !currentUserUid) {
@@ -661,21 +644,315 @@
                         operacoes = [];
                         log('Nenhum dado salvo encontrado para este usuário.');
                     }
-                    
-                    calculateAndRender(); 
-                })
+
+                    calculateAndRender();
+                 })
                 .catch(error => {
                     operacoes = [];
                     log(`❌ Erro ao carregar dados: ${error.message}.`);
                     console.error("Firebase Load Error:", error);
-                    calculateAndRender(); 
-                });
+                    calculateAndRender();
+                 });
         }
+
+        function calculateAndRender() {
+            // ... (Lógica de cálculo e renderização da tabela, que está ok) ...
+            const taxaGlobal = cleanCdiTaxa(document.getElementById('taxaCdiAnual').value) / 100;
+            const diasAno = parseNumber(document.getElementById('diasAno').value) || 252;
+            const showOps = document.getElementById('showIndividualOps').checked;
+
+            totalCompromissada = 0;
+            totalRetorno = 0;
+            totalGanho = 0;
+
+            const tabelaHtml = document.createElement('table');
+            tabelaHtml.innerHTML = `<thead>
+                <th>Data</th>
+                <th class="col-left">Descrição/Resumo</th>
+                <th>Banco</th>
+                <th>Conta Cedente</th>
+                <th>Conta Cessionário</th>
+                <th>Compromissada</th>
+                <th>Retorno Bruto</th>
+                <th>PU Ida</th>
+                <th>PU Volta</th>
+                <th>Taxa CDI Anual (%)</th>
+                <th>Ganho (R$) Diário</th>
+                <th>Ações</th>
+            </thead><tbody></tbody>`;
+            const tbody = tabelaHtml.querySelector('tbody');
+
+            let operacoesFiltradas = operacoes.filter(op => {
+                if (!filtroAtivo) return true;
+                const dataOp = normalizeDate(op.data);
+                if (dataFiltroInicio && dataOp < dataFiltroInicio) return false;
+                if (dataFiltroFim && dataOp > dataFiltroFim) return false;
+                return true;
+            });
+
+
+            operacoesFiltradas.forEach((op, index) => {
+                const taxa = cleanCdiTaxa(op.cdiTaxa || taxaGlobal * 100) / 100;
+                const compromissada = parseNumber(op.compromissada);
+                const retornoBruto = parseNumber(op.retornoBruto);
+                
+                // Cálculo:
+                const puIda = compromissada / op.quantidade || 0;
+                const puVolta = retornoBruto / op.quantidade || 0;
+
+                // Ganho/Perda diário:
+                let ganhoDiario = retornoBruto - compromissada;
+                // Inversão para RECOMPRA (Se a compromissada for maior que o retorno bruto, é um ganho para quem fez a "recompra")
+                if (op.desc.toUpperCase().includes('RECOMPRA') && ganhoDiario < 0) {
+                    ganhoDiario = Math.abs(ganhoDiario);
+                }
+
+
+                totalCompromissada += compromissada;
+                totalRetorno += retornoBruto;
+                totalGanho += ganhoDiario;
+
+                if (showOps) {
+                    const row = tbody.insertRow();
+                    row.innerHTML = `
+                        <td>${formatDataBR(op.data)}</td>
+                        <td class="col-left">${op.desc}</td>
+                        <td style="text-align:left;">${op.banco}</td>
+                        <td>${op.cedente}</td>
+                        <td>${op.cessionario}</td>
+                        <td>${formatBRL(compromissada)}</td>
+                        <td>${formatBRL(retornoBruto)}</td>
+                        <td>${formatPU(puIda)}</td>
+                        <td>${formatPU(puVolta)}</td>
+                        <td>${formatPercent(taxa * 100)}</td>
+                        <td><span class="${ganhoDiario >= 0 ? 'ganho' : 'perda'}">${formatBRL(ganhoDiario)}</span></td>
+                        <td class="action-cell">
+                            <button class="btn small" onclick="editOperation(${index})">Alterar</button>
+                            <button class="btn small danger" onclick="deleteOperation(${index})">Excluir</button>
+                        </td>
+                    `;
+                }
+            });
+
+            document.getElementById('totalCompromissadaDisplay').querySelector('p').textContent = formatBRL(totalCompromissada);
+            document.getElementById('totalRetornoDisplay').querySelector('p').textContent = formatBRL(totalRetorno);
+            document.getElementById('totalCdiDisplay').querySelector('p').textContent = formatBRL(totalGanho);
+
+            if (showOps) {
+                document.getElementById('resultTable').innerHTML = '';
+                document.getElementById('resultTable').appendChild(tabelaHtml);
+            } else {
+                document.getElementById('resultTable').innerHTML = '<p style="text-align:center;color:var(--muted);">Detalhes ocultos. Desmarque "Mostrar Detalhe por Operação" para ver a tabela.</p>';
+            }
+        }
+        
+        // --- FUNÇÕES DE FILTRO ---
+        function applyFilter() {
+            const start = document.getElementById('filterStartDate').value;
+            const end = document.getElementById('filterEndDate').value;
+            
+            dataFiltroInicio = start;
+            dataFiltroFim = end;
+            filtroAtivo = !!start || !!end;
+            
+            calculateAndRender();
+            log(`Filtro aplicado: De ${start || 'Início'} até ${end || 'Fim'}`);
+        }
+        
+        function resetFilter() {
+            document.getElementById('filterStartDate').value = '';
+            document.getElementById('filterEndDate').value = '';
+            dataFiltroInicio = null;
+            dataFiltroFim = null;
+            filtroAtivo = false;
+            
+            calculateAndRender();
+            log('Filtro limpo.');
+        }
+
+        function attachFilterListeners() {
+            document.getElementById('filterBtn').addEventListener('click', applyFilter);
+            document.getElementById('resetFilterBtn').addEventListener('click', resetFilter);
+            document.getElementById('showIndividualOps').addEventListener('change', calculateAndRender);
+        }
+
+        // --- FUNÇÕES DE EDIÇÃO E DELEÇÃO (MOCK) ---
+        function editOperation(index) {
+            log(`Alterar operação de índice ${index} (Implementação pendente).`);
+            // Lógica para preencher o formulário manual com os dados da operação[index]
+        }
+
+        function deleteOperation(index) {
+            if (confirm(`Tem certeza que deseja excluir a operação de índice ${index}?`)) {
+                operacoes.splice(index, 1);
+                calculateAndRender();
+                saveState();
+                log(`🗑️ Operação de índice ${index} excluída.`);
+            }
+        }
+        
+        
+        // ====================================================================
+        // IMPORTAÇÃO DO EXCEL (CORRIGIDO PARA CSP)
+        // ====================================================================
+
+        const excelFileInput = document.getElementById('excelFile');
+        const loadExcelBtn = document.getElementById('loadExcelBtn');
+
+        function processExcelData(data) {
+            try {
+                // Leitura do Workbook: use {type: 'array'} para compatibilidade binária
+                if (typeof XLSX === 'undefined') {
+                    log('❌ ERRO: Biblioteca SheetJS (xlsx.mini.min.js) não carregada.');
+                    return;
+                }
+                const workbook = XLSX.read(data, { type: 'array' });
+
+                const sheetName = workbook.SheetNames[0];
+                const worksheet = workbook.Sheets[sheetName];
+
+                // CORREÇÃO CRÍTICA DO CSP: usando { header: 1, raw: true }
+                // 'raw: true' força a biblioteca a não usar funções inseguras como 'eval()'
+                const json = XLSX.utils.sheet_to_json(worksheet, { header: 1, raw: true });
+                
+                if (json.length === 0) {
+                    log('❌ Arquivo Excel está vazio ou não pôde ser lido.');
+                    return;
+                }
+
+                // Mapeamento dos cabeçalhos para as propriedades do objeto 'operacoes'
+                // Tenta mapear pelos nomes que você usa:
+                const headers = json[0] || [];
+                const map = {};
+                
+                // Mapeamento de colunas (ajuste esses nomes de cabeçalho conforme seu Excel)
+                // Coloque o nome EXATO do cabeçalho da sua planilha no lado esquerdo:
+                const knownHeaders = {
+                    'DATA': 'data',
+                    'DATA LIQUIDACAO': 'data',
+                    'DESCRICAO': 'desc',
+                    'BANCO': 'banco',
+                    'CONTA CEDENTE': 'cedente',
+                    'CONTA CESSIONARIO': 'cessionario',
+                    'COMPROMISSADA': 'compromissada',
+                    'RETORNO BRUTO': 'retornoBruto',
+                    'QUANTIDADE': 'quantidade', // Necessário para PU
+                    'TX. CDI ANUAL': 'cdiTaxa',
+                    'TX. 252': 'cdiTaxa' // Priorizando o nome que você mencionou antes
+                };
+
+                headers.forEach((h, i) => {
+                    if (h) {
+                        const normalizedH = String(h).trim().toUpperCase();
+                        if (knownHeaders[normalizedH]) {
+                            map[knownHeaders[normalizedH]] = i;
+                        }
+                    }
+                });
+
+                if (Object.keys(map).length < 5) {
+                    log('⚠️ Não foi possível identificar todas as colunas essenciais (Data, Descrição, Compromissada, Retorno Bruto, Quantidade).');
+                }
+                
+                const novosDados = [];
+
+                // Começa a ler da segunda linha (json[1])
+                for (let i = 1; i < json.length; i++) {
+                    const row = json[i];
+                    if (!row || row.length < Object.keys(map).length || !row[map.data] || !row[map.compromissada]) {
+                        continue; // Pula linhas incompletas ou sem data/compromissada
+                    }
+
+                    const novaOp = {
+                        data: normalizeDate(row[map.data]),
+                        desc: String(row[map.desc] || ''),
+                        banco: String(row[map.banco] || ''),
+                        cedente: String(row[map.cedente] || ''),
+                        cessionario: String(row[map.cessionario] || ''),
+                        compromissada: parseNumber(row[map.compromissada]),
+                        retornoBruto: parseNumber(row[map.retornoBruto]),
+                        // Assume 1 se a quantidade não for encontrada ou for 0
+                        quantidade: parseNumber(row[map.quantidade] || 1), 
+                        cdiTaxa: cleanCdiTaxa(row[map.cdiTaxa] || '')
+                    };
+                    
+                    if(novaOp.data && novaOp.compromissada !== 0) {
+                        novosDados.push(novaOp);
+                    }
+                }
+
+                if (novosDados.length > 0) {
+                    operacoes = operacoes.concat(novosDados);
+                    calculateAndRender();
+                    saveState();
+                    log(`🎉 ${novosDados.length} novas operações importadas com sucesso!`);
+                } else {
+                    log('⚠️ Arquivo lido, mas nenhuma operação válida encontrada.');
+                }
+
+            } catch (e) {
+                log(`❌ ERRO FATAL na leitura do Excel: ${e.message}. Verifique se o arquivo tem o formato .xlsx.`);
+                console.error("Excel Processing Error:", e);
+            }
+        }
+
+
+        // Evento 'change' que lê o arquivo
+        excelFileInput.addEventListener('change', (e) => {
+            if (e.target.files.length === 0) {
+                return;
+            }
+            log(`Arquivos selecionados: ${e.target.files.length}. Clique em 'Importar' para processar.`);
+        });
+
+        // Evento de 'click' que dispara o processamento
+        loadExcelBtn.addEventListener('click', () => {
+            const files = excelFileInput.files;
+            if (files.length === 0) {
+                log('Por favor, selecione um arquivo Excel primeiro.');
+                return;
+            }
+
+            // Processa APENAS o primeiro arquivo selecionado
+            const file = files[0];
+            const reader = new FileReader();
+
+            reader.onload = (e) => {
+                processExcelData(e.target.result);
+            };
+
+            reader.onerror = (e) => {
+                log(`❌ Erro de leitura de arquivo: ${e.target.error.name}`);
+            };
+
+            reader.readAsArrayBuffer(file);
+        });
+
+
+        // --- FUNÇÃO PARA DELETAR TUDO ---
+        document.getElementById('deleteAllBtn').addEventListener('click', () => {
+            if (confirm("ATENÇÃO: Você tem certeza que deseja APAGAR TODOS os dados de operações e configurações no Firebase?")) {
+                if (!database || !currentUserUid) {
+                    log("❌ É necessário fazer login para apagar os dados.");
+                    return;
+                }
+                
+                database.ref(`${DB_ROOT_PATH}${currentUserUid}/operacoes`).remove()
+                    .then(() => {
+                        operacoes = [];
+                        calculateAndRender();
+                        log('🗑️ TODOS os dados de operações foram apagados permanentemente do Firebase.');
+                    })
+                    .catch(error => {
+                        log(`❌ Erro ao apagar: ${error.message}.`);
+                    });
+            }
+        });
 
         // A função principal de carregamento é apenas um wrapper para ações iniciais.
         window.loadState = ()=>{
-            resetThemeToFixed(); 
-            
+            resetThemeToFixed();
+
             // Tenta carregar o logo (que é local)
             try {
                 const savedLogo = localStorage.getItem('cdiLogo');
@@ -685,373 +962,11 @@
                     log('💾 Logo carregado do salvamento local.');
                 }
             } catch (err) { console.warn(err); }
-            
-            attachFilterListeners(); 
 
-            // Se o Firebase ainda não disparou o onAuthStateChanged, o estado inicial é carregado vazio.
-            if (!currentUserUid) {
-                operacoes = [];
-                calculateAndRender();
-            }
-        };
-
-        function updateTotalCards(){ document.querySelector('#totalCompromissadaDisplay p').textContent = formatBRL(totalCompromissada); document.querySelector('#totalRetornoDisplay p').textContent = formatBRL(totalRetorno); document.querySelector('#totalCdiDisplay p').textContent = formatBRL(totalGanho); }
-        function calculateAndRender(){
-            totalCompromissada=0; totalRetorno=0; totalGanho=0;
-            const cdiGlobal = cleanCdiTaxa(document.getElementById('taxaCdiAnual').value);
-            const diasAno = parseNumber(document.getElementById('diasAno').value) || 252;
-            const showIndividual = document.getElementById('showIndividualOps').checked;
-
-            const filterStartDateStr = document.getElementById('filterStartDate').value;
-            const filterEndDateStr = document.getElementById('filterEndDate').value;
-            const filterStart = filterStartDateStr ? normalizeDate(filterStartDateStr) : '';
-            const filterEnd = filterEndDateStr ? normalizeDate(filterEndDateStr) : '';
-
-            let ops = operacoes.filter(op=>{
-                const d = normalizeDate(op.data);
-                if(!d) return false;
-                if(filterStart && d < filterStart) return false;
-                if(filterEnd && d > filterEnd) return false;
-                return true;
-            });
-            ops.sort((a,b)=> normalizeDate(a.data).localeCompare(normalizeDate(b.data)));
-            document.getElementById('taxaCdiAnual').value = formatPercent(cdiGlobal);
-            document.getElementById('diasAno').value = diasAno;
-            let html = "<table><thead><tr><th>Data</th><th>Descricão/Resumo</th><th>Banco</th><th>Conta Cedente</th><th>Conta Cessionário</th><th>Compromissada</th><th>Retorno Bruto</th><th>PU IDA</th><th>PU VOLTA</th><th>Taxa CDI Anual (%)</th><th>Ganho (R$) Diário</th><th class='action-cell'>Ações</th></tr></thead><tbody>";
-            const resumo = {};
-            ops.forEach(op=>{
-                const d = normalizeDate(op.data);
-                const comp = parseNumber(op.compromissada);
-                 const ret = parseNumber(op.retorno);
-                const ganho = (ret - comp) * ( (typeof op.descricao === 'string' && op.descricao.toUpperCase().includes('RECOMPRA')) ? -1 : 1 );
-                const taxaUsada = (cleanCdiTaxa(op.cdiTaxa) > 0 && cleanCdiTaxa(op.cdiTaxa) !== 100) ? cleanCdiTaxa(op.cdiTaxa) : cdiGlobal;
-                totalCompromissada += comp; totalRetorno += ret; totalGanho += ganho;
-                if(!resumo[d]) resumo[d] = { data:d, totalCompromissada:0, totalRetorno:0, totalGanho:0, primeiraTaxa: taxaUsada };
-                resumo[d].totalCompromissada += comp; resumo[d].totalRetorno += ret; resumo[d].totalGanho += ganho;
-                if(showIndividual){
-                    const ganhoClass = ganho>0 ? 'ganho' : (ganho<0 ? 'perda' : '');
-                     html += `<tr class="individual-operation-row">
-                        <td class="col-data">${formatDataBR(op.data)}</td>
-                        <td class="col-left">${(op.descricao||'-')}</td>
-                        <td class="col-left">${(op.banco||'-')}</td>
-                        <td>${op.contaCedente||'-'}</td>
-                        <td>${op.contaCessionario||'-'}</td>
-                        <td>${formatBRL(comp)}</td>
-                        <td>${formatBRL(ret)}</td>
-                        <td>${formatPU(parseNumber(op.puIda))}</td>
-                        <td>${formatPU(parseNumber(op.puVolta))}</td>
-                        <td style="text-align:center;">${(Number(taxaUsada)||0).toFixed(4).replace('.',',')}</td>
-                        <td class="${ganhoClass}">${formatBRL(ganho)}</td>
-                        <td class="action-cell">
-                            <button class="btn small" onclick="editOperation(${operacoes.indexOf(op)})">Alterar</button>
-                            <button class="btn small secondary" onclick="deleteOperation(${operacoes.indexOf(op)})">Excluir</button>
-                        </td>
-                    </tr>`;
-                }
-            });
-            const datas = Object.keys(resumo).sort();
-            if(showIndividual && datas.length) html += `<tr><td colspan="12" style="text-align:left;background:rgba(0,0,0,0.02);font-weight:700;">RESUMO DIÁRIO (Consolidação por dia)</td></tr>`;
-            datas.forEach(k=>{
-                const r = resumo[k];
-                const ganhoClass = r.totalGanho>0 ? 'ganho' : (r.totalGanho<0 ? 'perda' : '');
-                 const taxaExib = (cleanCdiTaxa(r.primeiraTaxa) > 0 ? r.primeiraTaxa : cleanCdiTaxa(document.getElementById('taxaCdiAnual').value));
-                html += `<tr class="daily-summary-row">
-                    <td class="col-data">${formatDataBR(r.data)}</td>
-                    <td class="col-left">Soma Diária</td>
-                    <td class="col-left">-</td><td>-</td><td>-</td>
-                    <td>${formatBRL(r.totalCompromissada)}</td>
-                    <td>${formatBRL(r.totalRetorno)}</td>
-                    <td>-</td><td>-</td><td style="text-align:center;">${(Number(taxaExib)||0).toFixed(4).replace('.',',')}</td>
-                    <td class="${ganhoClass}">${formatBRL(r.totalGanho)}</td>
-                    <td class="action-cell">-</td>
-                </tr>`; 
-            });
-            html += "</tbody></table>";
-            document.getElementById('resultTable').innerHTML = html;
-            updateTotalCards();
+            attachFilterListeners();
+            calculateAndRender(); // Renderiza a tabela inicial (vazia ou com dados)
         }
 
-        document.getElementById('addBtn').addEventListener('click', () => {
-            if (!currentUserUid) {
-                log("❌ Faça login primeiro para adicionar lançamentos.");
-                return;
-            }
-
-            const index = parseInt(document.getElementById('editIndex').value);
-            
-            const newOp = {
-                data: document.getElementById('manualData').value,
-                descricao: document.getElementById('manualDesc').value,
-                banco: document.getElementById('manualBanco').value,
-                contaCedente: document.getElementById('manualCedente').value,
-                contaCessionario: document.getElementById('manualCessionario').value,
-                cdiTaxa: document.getElementById('manualCdiTaxa').value,
-                compromissada: document.getElementById('manualCompromissada').value,
-                retorno: document.getElementById('manualRetorno').value,
-                puIda: '-', 
-                puVolta: '-',
-            };
-            
-            if (index > -1) {
-                operacoes[index] = newOp;
-                log(`✅ Operação na posição ${index + 1} salva!`);
-            } else {
-                operacoes.push(newOp);
-                log(`✅ Novo lançamento adicionado!`);
-            }
-            
-            saveState(); 
-            cancelEdit(); 
-            calculateAndRender();
-        });
-        
-        function deleteOperation(index) {
-            if (!currentUserUid) {
-                log("❌ Faça login primeiro para excluir lançamentos.");
-                return;
-            }
-
-            if (confirm("Tem certeza que deseja excluir esta operação?")) {
-                operacoes.splice(index, 1);
-                saveState(); 
-                calculateAndRender();
-                log(`🗑️ Operação na posição ${index + 1} excluída.`);
-            }
-        }
-        
-        function editOperation(index) {
-            if (!currentUserUid) {
-                log("❌ Faça login primeiro para editar lançamentos.");
-                return;
-            }
-
-            const op = operacoes[index];
-            if (!op) return;
-
-            document.getElementById('manualData').value = normalizeDate(op.data);
-            document.getElementById('manualDesc').value = op.descricao || '';
-            document.getElementById('manualBanco').value = op.banco || '';
-            document.getElementById('manualCedente').value = op.contaCedente || '';
-            document.getElementById('manualCessionario').value = op.contaCessionario || '';
-            document.getElementById('manualCdiTaxa').value = formatPercent(cleanCdiTaxa(op.cdiTaxa));
-            document.getElementById('manualCompromissada').value = op.compromissada || '';
-            document.getElementById('manualRetorno').value = op.retorno || '';
-
-            document.getElementById('editIndex').value = index;
-            document.getElementById('addBtn').textContent = 'Salvar Alteração';
-            document.getElementById('cancelEditBtn').style.display = 'block';
-            log(`✏️ Editando operação na posição ${index + 1}.`);
-        }
-        
-        function cancelEdit() {
-            document.getElementById('editIndex').value = -1;
-            document.getElementById('addBtn').textContent = 'Adicionar Lançamento';
-            document.getElementById('cancelEditBtn').style.display = 'none';
-            document.getElementById('manualData').value = '';
-            document.getElementById('manualDesc').value = '';
-            document.getElementById('manualBanco').value = '';
-            document.getElementById('manualCedente').value = '';
-            document.getElementById('manualCessionario').value = '';
-            document.getElementById('manualCdiTaxa').value = '';
-            document.getElementById('manualCompromissada').value = '';
-            document.getElementById('manualRetorno').value = '';
-            log('Cancelamento de edição.');
-        }
-        document.getElementById('cancelEditBtn').addEventListener('click', cancelEdit);
-
-        document.getElementById('deleteAllBtn').addEventListener('click', () => {
-            if (!currentUserUid) {
-                log("❌ Faça login primeiro para excluir todos os dados.");
-                return;
-            }
-            if (confirm("ATENÇÃO: Você tem certeza que deseja EXCLUIR TODOS OS DADOS de operações? Esta ação não pode ser desfeita.")) {
-                operacoes = [];
-                saveState();
-                calculateAndRender();
-                log('🗑️ Todos os dados de operações excluídos.');
-            }
-        });
-
-        function attachFilterListeners() {
-            document.getElementById('filterBtn').addEventListener('click', calculateAndRender);
-            document.getElementById('resetFilterBtn').addEventListener('click', () => {
-                document.getElementById('filterStartDate').value = '';
-                document.getElementById('filterEndDate').value = '';
-                calculateAndRender();
-            });
-        }
-        
-        document.getElementById('exportBtn').addEventListener('click', () => {
-            if (operacoes.length === 0) {
-                alert("Não há dados para exportar.");
-                return;
-            }
-            const data = operacoes.map(op => ({
-                Data: formatDataBR(op.data),
-                Descricao: op.descricao,
-                Banco: op.banco,
-                ContaCedente: op.contaCedente,
-                ContaCessionario: op.contaCessionario,
-                Compromissada: parseNumber(op.compromissada),
-                RetornoBruto: parseNumber(op.retorno),
-                PUIda: parseNumber(op.puIda),
-                PUVolta: parseNumber(op.puVolta),
-                TaxaCDIAnual: cleanCdiTaxa(op.cdiTaxa),
-            }));
-
-            const ws = XLSX.utils.json_to_sheet(data);
-            const wb = XLSX.utils.book_new();
-            XLSX.utils.book_append_sheet(wb, ws, "Operacoes_CDI");
-            XLSX.writeFile(wb, "Controle_CDI_Exportacao.xlsx");
-            log('✅ Dados exportados com sucesso!');
-        });
-        
-        document.getElementById('printBtn').addEventListener('click', () => {
-            window.print();
-        });
-
-        document.getElementById('loadExcelBtn').addEventListener('click', () => {
-            if (!currentUserUid) {
-                log("❌ Faça login primeiro para importar arquivos.");
-                return;
-            }
-            
-            // GARANTINDO QUE ESTAMOS LENDO O INPUT DE ARQUIVO CORRETO
-            const files = document.getElementById('excelFile').files; 
-            
-            if (files.length === 0) {
-                log('Selecione pelo menos um arquivo Excel usando o botão "Procurar".');
-                return;
-            }
-
-            let loadedOps = [];
-            let filesProcessed = 0;
-            const totalFiles = files.length;
-            
-            const processFile = (file) => {
-                log(`Processando arquivo ${file.name}...`);
-
-                if (file.name.toLowerCase().endsWith('.xlsx') || file.name.toLowerCase().endsWith('.xls')) {
-                    const reader = new FileReader();
-                    reader.onload = (e) => {
-                        try {
-                            const data = new Uint8Array(e.target.result);
-                            // Usamos type: 'array' e cellDates: true, dateNF: 'yyyy-mm-dd'
-                            // XLSX.read é o ponto crítico que estava sendo bloqueado pelo eval().
-                            const workbook = XLSX.read(data, { type: 'array', cellDates: true, dateNF: 'yyyy-mm-dd' });
-                            const sheetName = workbook.SheetNames[0];
-                            const worksheet = workbook.Sheets[sheetName];
-                            
-                            // CONVERSÃO PARA JSON
-                            // Usamos { header: 1 } para obter um array de arrays e lidarmos com os cabeçalhos manualmente, 
-                            // o que é mais robusto para a normalização.
-                            const json = XLSX.utils.sheet_to_json(worksheet, { header: 1, raw: false });
-                            
-                            if (json.length > 1) {
-                                const headers = json[0];
-                                const dataRows = json.slice(1);
-                                
-                                const formattedData = dataRows.map(row => {
-                                    let obj = {};
-                                    headers.forEach((header, i) => {
-                                        if (header) {
-                                            obj[header.toString().trim()] = row[i];
-                                        }
-                                    });
-                                    return obj;
-                                });
-
-                                loadedOps.push(...normalizeImportedData(formattedData));
-                            }
-                            filesProcessed++;
-                            checkCompletion();
-                        } catch (err) {
-                            log(`❌ Erro ao processar XLSX ${file.name}: ${err.message}`);
-                            console.error(err);
-                            filesProcessed++;
-                            checkCompletion();
-                        }
-                    };
-                    reader.readAsArrayBuffer(file);
-                }
-                else {
-                    // Se você precisar de suporte a CSV, teremos que incluir o PapaParse novamente,
-                    // mas por enquanto, focamos em resolver o problema do XLSX.
-                    log(`⚠️ Formato não suportado para ${file.name}. Por favor, use XLSX/XLS.`);
-                    filesProcessed++;
-                    checkCompletion();
-                }
-            };
-
-            const checkCompletion = () => {
-                if (filesProcessed === totalFiles) {
-                    if (loadedOps.length > 0) {
-                        const confirmReplace = confirm(`${loadedOps.length} novas operações lidas. Deseja substituir os ${operacoes.length} lançamentos existentes ou adicionar? (Clique 'OK' para ADICIONAR ou 'Cancelar' para SUBSTITUIR)`);
-                        
-                        if (confirmReplace) {
-                            operacoes.push(...loadedOps);
-                            log(`✅ ${loadedOps.length} operações adicionadas. Total: ${operacoes.length}.`);
-                        } else {
-                            operacoes = loadedOps;
-                            log(`✅ ${loadedOps.length} operações carregadas, substituindo as anteriores.`);
-                        }
-                        
-                        saveState(); 
-                    } else {
-                        log('Nenhuma operação válida encontrada nos arquivos selecionados.');
-                    }
-                    document.getElementById('excelFile').value = ''; 
-                    calculateAndRender();
-                }
-            };
-            
-            Array.from(files).forEach(processFile);
-        });
-
-        function normalizeImportedData(data) {
-            const normalized = [];
-            const headerMap = {
-                'DATA': 'data', 'DT': 'data',
-                'DESCRICAO': 'descricao', 'DESCRICÃO': 'descricao', 'RESUMO': 'descricao',
-                'BANCO': 'banco', 'CONTRAPARTE': 'banco',
-                'CONTA CEDENTE': 'contaCedente', 'C. CEDENTE': 'contaCedente',
-                'CONTA CESSIONARIO': 'contaCessionario', 'C. CESSIONARIO': 'contaCessionario',
-                'CDI TAXA': 'cdiTaxa', 'TX. CDI': 'cdiTaxa', 'TX. 252': 'cdiTaxa', 
-                'COMPROMISSADA': 'compromissada', 'VALOR COMPROMISSADA': 'compromissada',
-                'RETORNO BRUTO': 'retorno', 'VALOR RETORNO': 'retorno', 'RETORNO': 'retorno',
-                'PU IDA': 'puIda', 'PU VOLTA': 'puVolta'
-            };
-
-            data.forEach(row => {
-                const newOp = {};
-                let hasData = false;
-
-                for (const key in row) {
-                    if (Object.prototype.hasOwnProperty.call(row, key) && row[key] !== null && row[key] !== undefined) {
-                        const cleanKey = key.toString().trim().toUpperCase();
-                        const targetField = headerMap[cleanKey];
-
-                        if (targetField) {
-                            newOp[targetField] = row[key];
-                            if (targetField === 'compromissada' || targetField === 'retorno') {
-                                if (parseNumber(row[key]) !== 0) {
-                                    hasData = true;
-                                }
-                            } else if (String(row[key]).trim() !== '') {
-                                hasData = true;
-                            }
-                        }
-                    }
-                }
-
-                if (hasData && newOp.data && (newOp.compromissada || newOp.retorno)) {
-                    normalized.push(newOp);
-                }
-            });
-
-            return normalized;
-        }
-
-    </script>
+        </script>
 </body>
 </html>
