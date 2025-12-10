@@ -230,9 +230,7 @@
     </style>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
     
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
-    
-    <script src="https://cdn.sheetjs.com/xlsx-latest/package/dist/xlsx.min.js"></script>
+    <script src="https://cdn.sheetjs.com/xlsx-0.20.1/package/dist/xlsx.min.js"></script>
 
     <script src="https://www.gstatic.com/firebasejs/8.6.8/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.6.8/firebase-database.js"></script>
@@ -919,7 +917,7 @@
             const files = document.getElementById('excelFile').files; 
             
             if (files.length === 0) {
-                log('Selecione pelo menos um arquivo Excel ou CSV usando o botão "Procurar".');
+                log('Selecione pelo menos um arquivo Excel usando o botão "Procurar".');
                 return;
             }
 
@@ -930,23 +928,10 @@
             const processFile = (file) => {
                 log(`Processando arquivo ${file.name}...`);
 
-                if (file.name.toLowerCase().endsWith('.csv') || file.name.toLowerCase().endsWith('.txt')) {
-                    Papa.parse(file, {
-                        header: true,
-                        skipEmptyLines: true,
-                        complete: function(results) {
-                            loadedOps.push(...normalizeImportedData(results.data));
-                            filesProcessed++;
-                            checkCompletion();
-                        },
-                        error: function(err) {
-                            log(`❌ Erro ao processar CSV ${file.name}: ${err.message}`);
-                            filesProcessed++;
-                            checkCompletion();
-                        }
-                    });
-                }
-                else if (file.name.toLowerCase().endsWith('.xlsx') || file.name.toLowerCase().endsWith('.xls')) {
+                // ATENÇÃO: PAPAPARSE (CSV) FOI REMOVIDO PARA EVITAR CONFLITOS CSP.
+                // APENAS LÓGICA DE XLSX/XLS ABAIXO.
+
+                if (file.name.toLowerCase().endsWith('.xlsx') || file.name.toLowerCase().endsWith('.xls')) {
                     const reader = new FileReader();
                     reader.onload = (e) => {
                         try {
@@ -955,6 +940,9 @@
                             const sheetName = workbook.SheetNames[0];
                             const worksheet = workbook.Sheets[sheetName];
                             
+                            // CONVERSÃO PARA JSON
+                            // Usamos { header: 1 } para obter um array de arrays e lidarmos com os cabeçalhos manualmente, 
+                            // o que é mais robusto para a normalização.
                             const json = XLSX.utils.sheet_to_json(worksheet, { header: 1, raw: false });
                             
                             if (json.length > 1) {
@@ -977,6 +965,7 @@
                             checkCompletion();
                         } catch (err) {
                             log(`❌ Erro ao processar XLSX ${file.name}: ${err.message}`);
+                            console.error(err);
                             filesProcessed++;
                             checkCompletion();
                         }
@@ -984,7 +973,7 @@
                     reader.readAsArrayBuffer(file);
                 }
                 else {
-                    log(`⚠️ Formato não suportado para ${file.name}.`);
+                    log(`⚠️ Formato não suportado para ${file.name}. Por favor, use XLSX/XLS.`);
                     filesProcessed++;
                     checkCompletion();
                 }
