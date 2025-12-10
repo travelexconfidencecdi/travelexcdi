@@ -259,11 +259,12 @@
             <div style="font-weight:700;">Resumo Diário</div>
             <div style="font-size:12px;color:var(--muted);">Filtros, importação e ações rápidas</div>
         </div>
+        
         <div id="header-right">
             <button id="printBtn" class="btn small" title="Imprimir">Imprimir</button>
 
             <button id="exportBtn" class="btn small secondary" title="Exportar">Exportar</button>
-
+            
             <label class="file-label" for="excelFile" title="Selecionar arquivos">
                 <input type="file" id="excelFile" accept=".xlsx,.xls,.csv,.txt" multiple>
                 <span class="btn small">Procurar</span>
@@ -913,7 +914,9 @@
                 return;
             }
             
-            const files = document.getElementById('excelFile').files;
+            // GARANTINDO QUE ESTAMOS LENDO O INPUT DE ARQUIVO CORRETO
+            const files = document.getElementById('excelFile').files; 
+            
             if (files.length === 0) {
                 log('Selecione pelo menos um arquivo Excel ou CSV.');
                 return;
