@@ -230,7 +230,7 @@
     </style>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
     
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <script src="https://cdn.sheetjs.com/xlsx-0.20.1/package/dist/xlsx.full.min.js"></script>
 
     <script src="https://www.gstatic.com/firebasejs/8.6.8/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.6.8/firebase-database.js"></script>
@@ -717,7 +717,7 @@
             ops.sort((a,b)=> normalizeDate(a.data).localeCompare(normalizeDate(b.data)));
             document.getElementById('taxaCdiAnual').value = formatPercent(cdiGlobal);
             document.getElementById('diasAno').value = diasAno;
-            let html = "<table><thead><tr><th>Data</th><th>Descrição/Resumo</th><th>Banco</th><th>Conta Cedente</th><th>Conta Cessionário</th><th>Compromissada</th><th>Retorno Bruto</th><th>PU IDA</th><th>PU VOLTA</th><th>Taxa CDI Anual (%)</th><th>Ganho (R$) Diário</th><th class='action-cell'>Ações</th></tr></thead><tbody>";
+            let html = "<table><thead><tr><th>Data</th><th>Descricão/Resumo</th><th>Banco</th><th>Conta Cedente</th><th>Conta Cessionário</th><th>Compromissada</th><th>Retorno Bruto</th><th>PU IDA</th><th>PU VOLTA</th><th>Taxa CDI Anual (%)</th><th>Ganho (R$) Diário</th><th class='action-cell'>Ações</th></tr></thead><tbody>";
             const resumo = {};
             ops.forEach(op=>{
                 const d = normalizeDate(op.data);
