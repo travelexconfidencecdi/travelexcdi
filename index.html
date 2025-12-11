@@ -6,186 +6,283 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <style>
         body {
-            margin: 20px;
             font-family: Arial, sans-serif;
-            background: #f7f7f7;
+            margin: 20px;
+            background: #f5f5f5;
         }
-
+        .container {
+            max-width: 1100px;
+            margin: auto;
+        }
         h1 {
             text-align: center;
-            margin-bottom: 20px;
         }
-
-        .panel {
-            background: white;
-            padding: 20px;
-            border-radius: 8px;
-            box-shadow: 0 0 5px rgba(0,0,0,0.1);
-            margin-bottom: 20px;
-        }
-
-        .flex {
+        .logo-box {
+            width: 200px;
+            height: 200px;
+            border: 2px dashed #999;
+            border-radius: 10px;
             display: flex;
-            gap: 15px;
-            flex-wrap: wrap;
+            justify-content: center;
+            align-items: center;
+            overflow: hidden;
+            background: white;
+            margin: auto;
+            cursor: pointer;
         }
-
-        .flex > div {
+        .logo-box img {
+            max-width: 100%;
+            max-height: 100%;
+        }
+        .btn {
+            padding: 10px 22px;
+            margin: 6px;
+            border: none;
+            background: #1976d2;
+            color: white;
+            cursor: pointer;
+            border-radius: 6px;
+        }
+        .btn:disabled {
+            background: gray;
+            cursor: not-allowed;
+        }
+        .btn-danger {
+            background: #c62828;
+        }
+        .row {
+            display: flex;
+            gap: 20px;
+            margin-top: 25px;
+        }
+        .col {
             flex: 1;
-            min-width: 150px;
         }
-
-        label {
-            font-weight: bold;
+        .log-box {
+            height: 180px;
+            overflow-y: auto;
+            background: #fff;
+            padding: 10px;
+            border-radius: 6px;
+            border: 1px solid #ddd;
+            font-size: 14px;
         }
-
-        input, button {
-            width: 100%;
-            padding: 8px;
-            margin-top: 5px;
+        .table-box {
+            margin-top: 25px;
+            background: #fff;
+            padding: 15px;
+            border-radius: 6px;
         }
-
         table {
             width: 100%;
             border-collapse: collapse;
-            margin-top: 20px;
-        }
-
-        table, th, td {
-            border: 1px solid #ddd;
-        }
-
-        th {
-            background: #eee;
-            padding: 10px;
-        }
-
-        td {
-            padding: 8px;
-        }
-
-        .log {
-            background: #222;
-            color: #0f0;
-            padding: 10px;
-            height: 150px;
-            overflow-y: auto;
-            font-family: monospace;
             font-size: 13px;
-            border-radius: 5px;
         }
-
-        .button {
-            padding: 10px;
-            cursor: pointer;
-            font-weight: bold;
-            border: none;
-            border-radius: 4px;
+        th, td {
+            padding: 8px;
+            border: 1px solid #ccc;
         }
-
-        .button.import { background: #4CAF50; color: white; }
-        .button.calc { background: #2196F3; color: white; }
-        .button.export { background: #FF9800; color: white; }
-        .button.clear { background: #f44336; color: white; }
+        th {
+            background: #e0e0e0;
+        }
     </style>
 </head>
+
 <body>
+<div class="container">
 
-<h1>Controle de Ganho CDI</h1>
+    <h1>Controle de Ganho CDI - Cálculo Diário</h1>
 
-<div class="panel">
+    <h3 style="text-align:center">Logo da Empresa</h3>
 
-    <h2>Filtro de Datas</h2>
-    <div class="flex">
-        <div>
-            <label>Data Início:</label>
-            <input type="date" id="dataInicio">
-        </div>
-        <div>
-            <label>Data Fim:</label>
-            <input type="date" id="dataFim">
+    <div class="logo-box" id="logoBox">
+        <span>Clique para adicionar logo</span>
+    </div>
+
+    <div style="text-align:center; margin-top:10px;">
+        <button id="removeLogoBtn" class="btn btn-danger">Remover Logo</button>
+    </div>
+
+    <br>
+
+    <h3>Importar Arquivo Excel</h3>
+
+    <input type="file" id="excelFile" accept=".xlsx,.xls" />
+    <button id="loadExcelBtn" class="btn">Importar</button>
+
+    <div class="row">
+        <div class="col">
+            <h3>Log do Sistema</h3>
+            <div id="logBox" class="log-box"></div>
         </div>
     </div>
 
-    <h2>Importar Arquivos</h2>
-    <div class="flex">
-        <div>
-            <label>Selecione os Arquivos Excel:</label>
-            <input type="file" id="fileInput" multiple>
-        </div>
-        <div>
-            <button class="button import" id="loadExcelBtn">Importar</button>
-        </div>
+    <div class="table-box">
+        <h3>Operações Importadas</h3>
+        <table id="opsTable">
+            <thead>
+                <tr>
+                    <th>Data</th>
+                    <th>Descrição</th>
+                    <th>Banco</th>
+                    <th>Cedente</th>
+                    <th>Cessionário</th>
+                    <th>Compromissada</th>
+                    <th>Retorno Bruto</th>
+                    <th>PU Ida</th>
+                    <th>PU Volta</th>
+                    <th>Taxa CDI</th>
+                </tr>
+            </thead>
+            <tbody></tbody>
+        </table>
     </div>
 
-</div>
-
-<div class="panel">
-    <h2>Operações Lançadas</h2>
-    <table id="tabela">
-        <thead>
-            <tr>
-                <th>Data</th>
-                <th>Descrição</th>
-                <th>Banco</th>
-                <th>Cedente</th>
-                <th>Cessionário</th>
-                <th>Compromissada</th>
-                <th>Retorno</th>
-                <th>PU Ida</th>
-                <th>PU Volta</th>
-                <th>Taxa CDI</th>
-            </tr>
-        </thead>
-        <tbody></tbody>
-    </table>
-
-    <button class="button calc" onclick="calculateAndRender()">Calcular</button>
-    <button class="button export" id="exportBtn">Exportar Excel</button>
-    <button class="button clear" onclick="clearAll()">Limpar Tudo</button>
-</div>
-
-<div class="panel">
-    <h2>Log do Sistema</h2>
-    <div class="log" id="logBox"></div>
 </div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 
 <script>
+/* ==========================
+   LOG
+========================== */
+function log(msg) {
+    const box = document.getElementById('logBox');
+    box.innerHTML += msg + "<br>";
+    box.scrollTop = box.scrollHeight;
+}
 
+/* ==========================
+   PERSISTÊNCIA DO LOGO
+========================== */
+window.addEventListener('load', () => {
+    const savedLogo = localStorage.getItem('empresaLogo');
+    const logoBox = document.getElementById('logoBox');
+
+    if (savedLogo) {
+        logoBox.innerHTML = `<img src="${savedLogo}">`;
+    }
+});
+
+const logoBox = document.getElementById('logoBox');
+logoBox.addEventListener('click', () => {
+    const inp = document.createElement('input');
+    inp.type = 'file';
+    inp.accept = 'image/*';
+
+    inp.onchange = (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+
+        const reader = new FileReader();
+        reader.onload = function(event) {
+            const base64 = event.target.result;
+            localStorage.setItem('empresaLogo', base64);
+            logoBox.innerHTML = `<img src="${base64}">`;
+        };
+        reader.readAsDataURL(file);
+    };
+
+    inp.click();
+});
+
+const removeLogoBtn = document.getElementById('removeLogoBtn');
+if (removeLogoBtn) {
+    removeLogoBtn.addEventListener('click', () => {
+        if (!confirm("Tem certeza que deseja remover a logo?")) return;
+        localStorage.removeItem('empresaLogo');
+        logoBox.innerHTML = "<span>Clique para adicionar logo</span>";
+    });
+}
+
+/* ==========================
+   VARIÁVEIS PRINCIPAIS
+========================== */
 let operacoes = [];
 
-function log(msg) {
-    const logBox = document.getElementById("logBox");
-    logBox.innerHTML += msg + "<br>";
-    logBox.scrollTop = logBox.scrollHeight;
+function formatDataBR(d) {
+    if (!d) return '';
+    if (typeof d === 'object') {
+        return d.toLocaleDateString('pt-BR');
+    }
+    return d;
 }
 
-function parseNumber(value) {
-    if (!value) return 0;
-    let v = String(value).replace(/\./g, '').replace(',', '.');
-    return parseFloat(v) || 0;
+function cleanCdiTaxa(t) {
+    if (!t) return '';
+    return String(t).replace('%','').trim();
 }
 
-function cleanCdiTaxa(taxa) {
-    if (!taxa) return "";
-    return String(taxa).replace('%','').trim();
+function parseNumber(v) {
+    if (!v || v === "") return "";
+    return Number(String(v).replace(",", "."));
 }
 
-function formatDataBR(dataISO) {
-    if (!dataISO) return '';
-    const [y,m,d] = dataISO.split('-');
-    return `${d}/${m}/${y}`;
+/* ==========================
+   EXCEL READER
+========================== */
+async function loadExcel(file) {
+    const data = await file.arrayBuffer();
+    const wb = XLSX.read(data);
+    const ws = wb.Sheets[wb.SheetNames[0]];
+    return XLSX.utils.sheet_to_json(ws, { header: 1 });
 }
 
-function calculateAndRender() {
-    const tbody = document.querySelector("#tabela tbody");
+function processExcel(rows) {
+
+    // índices
+    const indices = {
+        DESCRICAO: 0,
+        BANCO: 1,
+        CEDENTE: 2,
+        CESSIONARIO: 3,
+        COMP: 4,
+        RET: 5,
+        PU_IDA: 6,
+        PU_VOLTA: 7,
+        TAXA: 8,
+        DATA: 9
+    };
+
+    let newOps = [];
+    let valid = 0;
+
+    for (let i = 1; i < rows.length; i++) {
+        const row = rows[i];
+        if (!row.length) continue;
+
+        let rawData = row[indices.DATA];
+        let dataFormatada = rawData ? new Date(rawData) : "";
+
+        newOps.push({
+            data: dataFormatada,
+            descricao: String(row[indices.DESCRICAO] || ''),
+            banco: String(row[indices.BANCO] || ''),
+            contaCedente: String(row[indices.CEDENTE] || ''),
+            contaCessionario: String(row[indices.CESSIONARIO] || ''),
+            compromissada: String(row[indices.COMP] || ''),
+            retorno: String(row[indices.RET] || ''),
+            puIda: String(row[indices.PU_IDA] || ''),
+            puVolta: String(row[indices.PU_VOLTA] || ''),
+            cdiTaxa: String(row[indices.TAXA] || '')
+        });
+
+        valid++;
+    }
+
+    log(`✅ ${valid} operações válidas encontradas e prontas para importação.`);
+    return newOps;
+}
+
+/* ==========================
+   RENDERIZAÇÃO DA TABELA
+========================== */
+function renderTable() {
+    const tbody = document.querySelector("#opsTable tbody");
     tbody.innerHTML = "";
 
     operacoes.forEach(op => {
         const tr = document.createElement("tr");
-
         tr.innerHTML = `
             <td>${formatDataBR(op.data)}</td>
             <td>${op.descricao}</td>
@@ -198,112 +295,21 @@ function calculateAndRender() {
             <td>${op.puVolta}</td>
             <td>${op.cdiTaxa}</td>
         `;
-
         tbody.appendChild(tr);
     });
-
-    log("🔄 Tabela atualizada.");
 }
 
-function clearAll() {
-    if (!confirm("Tem certeza que deseja limpar tudo?")) return;
-    operacoes = [];
-    calculateAndRender();
-    log("🧹 Todos os dados foram apagados.");
-}
+/* ==========================
+   IMPORTAÇÃO — CORREÇÃO AQUI!
+========================== */
+const fileInput = document.getElementById('excelFile');
+const loadBtn   = document.getElementById('loadExcelBtn');
 
-async function loadExcel(file) {
-    return new Promise((resolve, reject) => {
-        const reader = new FileReader();
+loadBtn.addEventListener('click', async () => {
 
-        reader.onload = evt => {
-            const data = new Uint8Array(evt.target.result);
-            try {
-                const workbook = XLSX.read(data, { type: "array" });
-                const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
-                const json = XLSX.utils.sheet_to_json(firstSheet, { header: 1 });
-                resolve(json);
-            } catch (e) {
-                reject(e);
-            }
-        };
-
-        reader.onerror = reject;
-        reader.readAsArrayBuffer(file);
-    });
-}
-
-function processExcel(data) {
-
-    if (!data || data.length < 2) {
-        log("⚠ Planilha vazia ou formato inválido.");
-        return [];
-    }
-
-    const header = data[0];
-
-    const indices = {
-        DATA: header.indexOf("Data"),
-        DESCRICAO: header.indexOf("Descricao"),
-        BANCO: header.indexOf("Banco"),
-        CEDENTE: header.indexOf("Conta Cedente"),
-        CESSIONARIO: header.indexOf("Conta Cessionario"),
-        COMP: header.indexOf("Compromissada"),
-        RET: header.indexOf("Retorno Bruto"),
-        TAXA: header.indexOf("Taxa CDI Anual (%)"),
-        PU_IDA: header.indexOf("PU Ida"),
-        PU_VOLTA: header.indexOf("PU Volta")
-    };
-
-    let newOps = [];
-    let valid = 0;
-
-    for (let i = 1; i < data.length; i++) {
-        const row = data[i];
-
-        if (!row[indices.DATA]) continue;
-
-        const excelDate = row[indices.DATA];
-        let jsDate;
-
-        if (typeof excelDate === "number") {
-            jsDate = new Date((excelDate - 25569) * 86400 * 1000);
-        } else {
-            jsDate = new Date(excelDate);
-        }
-
-        const dataFormatada = jsDate.toISOString().slice(0, 10);
-
-        const rawComp = row[indices.COMP];
-        const rawRet = row[indices.RET];
-
-        newOps.push({
-            data: dataFormatada,
-            descricao: String(row[indices.DESCRICAO] || ''),
-            banco: String(row[indices.BANCO] || ''),
-            contaCedente: String(row[indices.CEDENTE] || ''),
-            contaCessionario: String(row[indices.CESSIONARIO] || ''),
-            compromissada: String(rawComp || ''),
-            retorno: String(rawRet || ''),
-            cdiTaxa: String(row[indices.TAXA] || ''),
-            puIda: String(row[indices.PU_IDA] || ''),
-            puVolta: String(row[indices.PU_VOLTA] || '')
-        });
-
-        valid++;
-    }
-
-    log(`✅ ${valid} operações válidas encontradas.`);
-    return newOps;
-}
-
-document.getElementById("loadExcelBtn").addEventListener("click", async () => {
-
-    const fileInput = document.getElementById("fileInput");
     const files = fileInput.files;
-
     if (files.length === 0) {
-        alert("Selecione um arquivo primeiro.");
+        alert("Selecione um arquivo.");
         return;
     }
 
@@ -316,65 +322,24 @@ document.getElementById("loadExcelBtn").addEventListener("click", async () => {
             const data = await loadExcel(file);
             const newOps = processExcel(data);
             totalNewOps = totalNewOps.concat(newOps);
-            log(`📁 Arquivo "${file.name}" importado.`);
+
+            log(`📁 "${file.name}" processado. ${newOps.length} operações.`);
         } catch (e) {
             log(`❌ Erro ao processar "${file.name}".`);
-            console.error(e);
         }
     }
 
     if (totalNewOps.length > 0) {
         operacoes = operacoes.concat(totalNewOps);
-        calculateAndRender();
-        log(`🎉 Importação concluída! ${totalNewOps.length} operações adicionadas.`);
+        renderTable();
+        log(`🎉 Importação concluída! Total: ${operacoes.length}.`);
     } else {
-        log("⚠ Nenhuma operação válida encontrada.");
+        log('⚠️ Nenhuma operação válida encontrada.');
     }
 
-    fileInput.value = "";
-
-    /* CORREÇÃO FEITA AQUI */
-    loadExcelBtn.disabled = true;
+    fileInput.value = '';
 });
-
-document.getElementById("exportBtn").addEventListener("click", () => {
-
-    if (operacoes.length === 0) {
-        alert("Não há dados para exportar.");
-        return;
-    }
-
-    const header = [
-        "Data", "Descricao", "Banco", "Conta Cedente", "Conta Cessionario",
-        "Compromissada", "Retorno Bruto", "PU Ida", "PU Volta", "Taxa CDI Anual (%)"
-    ];
-
-    const exportData = operacoes.map(op => {
-        const taxa = cleanCdiTaxa(op.cdiTaxa);
-        return [
-            formatDataBR(op.data),
-            op.descricao,
-            op.banco,
-            op.contaCedente,
-            op.contaCessionario,
-            parseNumber(op.compromissada),
-            parseNumber(op.retorno),
-            parseNumber(op.puIda),
-            parseNumber(op.puVolta),
-            taxa
-        ];
-    });
-
-    const ws = XLSX.utils.aoa_to_sheet([header, ...exportData]);
-    const wb = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(wb, ws, "Ganhos CDI");
-
-    const hoje = new Date().toISOString().slice(0, 10).replace(/-/g, "");
-    XLSX.writeFile(wb, `Controle_Ganhos_CDI_${hoje}.xlsx`);
-
-    log("💾 Excel exportado.");
-});
-
 </script>
+
 </body>
 </html>
