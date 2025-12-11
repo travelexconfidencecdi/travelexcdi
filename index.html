@@ -1,972 +1,380 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-    <meta charset="utf-8" />
-    <title>Controle de Ganhos CDI — Layout Empilhado</title>
-    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <meta charset="UTF-8">
+    <title>Controle de Ganho CDI - Cálculo Diário c/ Persistência</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <style>
-        /* ... SEU CÓDIGO CSS (STYLE) ORIGINAL PERMANECE AQUI INTACTO ... */
-        :root{
-            /* CORES PRINCIPAIS: AZUL MARINHO ESCURO PRIMÁRIO, VERMELHO SECUNDÁRIO */
-            --primary: #0A0A33;  /* Azul Marinho Escuro */
-            --primary-light: #1A1A55; /* Versão mais clara para gradiente/hover */
-            --secondary: #C00000; /* Vermelho Forte (Secundário/Destaque) */
-            --secondary-light: #E00000; /* Vermelho Claro para gradiente/hover */
-            --danger: #c62828;  /* Mantido para ações de exclusão */
-            --bg-start: #f4f8fb;
-            --bg-end: #eef6fb;
-            --card-bg: #ffffff;
-            --card-border: rgba(0,0,0,0.06);
-            --text-dark: #0f1724;
-            --muted: #6b7280;
-            --success: #2e7d32;
-            --gap: 12px;
-            --radius: 10px;
-            --shadow: 0 8px 20px rgba(16,24,40,0.06);
+        body {
+            margin: 20px;
+            font-family: Arial, sans-serif;
+            background: #f7f7f7;
         }
-        /* Base */
-        html,body{height:100%;margin:0;font-family:Inter, Roboto, system-ui, -apple-system, "Segoe UI", Arial;}
-        body{
-            background: linear-gradient(180deg,var(--bg-start),var(--bg-end));
-            color:var(--text-dark);
-            padding:calc(var(--gap) * 1.2);
-            -webkit-font-smoothing:antialiased;
-            font-size:14px;
-        }
-        /* Ajuste do Logo e Título para ficarem à esquerda e alinhados */
-        #siteLogo{
-            display:block; /* Muda para block */
-            max-width:140px;
-            width:100%;
-            height:auto;
-            border-radius:6px;
-            box-shadow:var(--shadow);
-            margin:0 0 6px 0; /* Remove margem automática, alinha à esquerda */
-        }
-        #logo-wrapper{ /* Este se torna desnecessário, mas o mantive no HTML abaixo para o logo */
-            margin-bottom:8px;
-        }
-        /* Header */
-        #header-container{
-            display:flex;
-            align-items:center;
-            gap:10px;
-            margin-bottom:8px;
-            /* Para manter o contêiner à esquerda se o logo estiver no topo */
-            width: fit-content;
-        }
-        #logo-placeholder{ font-size:1.4rem; color:var(--primary); }
-        h1{ margin:0; color:var(--text-dark); font-size:1.25rem; font-weight:700; }
-        /* Contêiner para logo e título juntos */
-        #left-header-content {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-        /* Top actions compacto */
-        #top-actions{
-            display:flex; align-items:center; gap:10px; padding:10px;
-            background:var(--card-bg); border-radius:var(--radius); box-shadow:var(--shadow); border:1px solid var(--card-border);
-            flex-wrap:wrap;
-        }
-        #header-left{ display:flex; align-items:center; gap:10px; }
-        #header-right{ margin-left:auto; display:flex; gap:8px; align-items:center; flex-wrap:wrap; }
-        /* --------------- BOTÕES SÓLIDOS COM CONTORNO BRANCO (ESTILO TRAVELEX) --------------- */
-        .btn {
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            gap: 8px;
-            padding: 8px 12px;
-            border-radius: 8px;
-            cursor: pointer;
-            font-weight: 600;
-            transition: all 0.2s ease;
 
-            /* Estilo Padrão (AZUL MARINHO): Fundo Primary, Texto Branco, Borda Branca */
-            background: var(--primary); /* Fundo Azul Marinho */
-            color: white; /* Texto Branco */
-            border: 1px solid white; /* Borda Branca Sólida */
-            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.08); /* Sombra padrão */
-        }
-        /* Estilo Secundário (VERMELHO): Fundo Secondary, Texto Branco, Borda Branca */
-        .btn.secondary {
-            background: var(--secondary); /* Fundo Vermelho */
-            color: white; /* Texto Branco */
-            border: 1px solid white; /* Borda Branca Sólida */
-        }
-        .btn.small {
-            padding: 6px 10px;
-            font-size: 13px;
-            border-radius: 7px;
-        }
-        .btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
-            background: var(--primary-light); /* Ligeiramente mais claro no hover */
-            border-color: white; /* Mantém a borda branca */
-        }
-        .btn.secondary:hover {
-            background: var(--secondary-light); /* Ligeiramente mais claro no hover */
-            border-color: white; /* Mantém a borda branca */
-            box-shadow: 0 8px 20px rgba(192, 0, 0, 0.25);
-        }
-        .btn:active {
-            transform: none;
-            filter: brightness(0.96);
-            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
-        }
-        /* O botão danger é usado no delete, mas como você quer ele VERMELHO (secondary),
-            ele usará o estilo .btn.secondary, com uma pequena variação de cor */
-        .btn.danger {
-            background: var(--secondary);
-            color: white;
-            border: 1px solid white;
-            box-shadow: 0 4px 10px rgba(198, 40, 40, 0.25);
-        }
-        .btn.danger:hover {
-            filter: brightness(0.85);
-            border-color: white;
-        }
-        /* ----------------------------------------------------------- */
-        /* Layout empilhado: resultados em cima, painel embaixo */
-        #main-container{
-            display:flex;
-            flex-direction:column;
-            gap:14px;
-            align-items:stretch;
-        }
-        /* Cards */
-        .card{
-            background:var(--card-bg); padding:14px; border-radius:10px; box-shadow:var(--shadow); border:1px solid var(--card-border);
-            color:var(--text-dark);
-        }
-        /* Inputs */
-        .input-row{ display:flex; gap:10px; flex-wrap:wrap; align-items:center; margin-bottom:8px; }
-        .input-row label{ font-size:13px; color:var(--muted); font-weight:600; display:block; margin-bottom:6px; }
-        input[type="text"], input[type="date"]{
-            padding:8px 10px; border-radius:8px; border:1px solid rgba(15,23,36,0.06); background:#fff; color:var(--text-dark); min-width:120px;
-        }
-        /* Totals */
-        .totals{ display:grid; grid-template-columns: repeat(auto-fit,minmax(160px,1fr)); gap:12px; margin-bottom:12px; }
-        .total-card{ padding:10px; border-radius:8px; border:1px solid rgba(15,23,36,0.04); background:linear-gradient(180deg,#fff,#fbfdff); }
-        .total-card h4{ margin:0; font-size:12px; color:var(--muted); }
-        .total-card p{ margin:6px 0 0 0; font-size:18px; font-weight:800; color:var(--text-dark); }
-        /* Ganho total em verde */
-        #totalCdiDisplay p { color: var(--success) !important; }
-        /* Tabela */
-        .table-wrap{ overflow:auto; border-radius:8px; }
-        table{ width:100%; border-collapse:collapse; margin-top:8px; font-size:13px; color:var(--text-dark); }
-        thead th{
-            position:sticky; top:0; z-index:2;
-            /* Tira grande agora é Azul Marinho */
-            background: linear-gradient(180deg,var(--primary-light),var(--primary));
-            color:white; padding:10px 8px; text-align:left; font-weight:700;
-            border-bottom:1px solid rgba(0,0,0,0.06);
-        }
-        tbody td{ padding:8px 8px; border-bottom:1px solid rgba(0,0,0,0.04); text-align:right; }
-        tbody tr:nth-child(even){ background: rgba(0,0,0,0.02); }
-        td:first-child, th:first-child{ text-align:center; width:90px; }
-        /* Descrição/Resumo usa o novo primary (Azul Marinho) */
-        .col-left{
-            text-align:left;
-            max-width:260px;
-            overflow:hidden;
-            text-overflow:ellipsis;
-            white-space:nowrap;
-            color: var(--primary);
-            font-weight: 600;
-        }
-        /* Ações compactas */
-        .action-cell{ text-align:center; }
-        /* --------------- GANHO/PERDA (BADGE) E NEGRITO GERAL --------------- */
-        /* Estilo de Badge aplicado ao conteúdo da TD */
-        .ganho, .perda {
-            font-weight: 800;
-            padding: 2px 6px;
-            border-radius: 4px;
-            display: inline-block;
-            min-width: 60px;
+        h1 {
             text-align: center;
+            margin-bottom: 20px;
         }
-        .ganho {
-            color: var(--success) !important;
-            background: rgba(46, 125, 50, 0.1);
-            border: 1px solid rgba(46, 125, 50, 0.2);
+
+        .panel {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 5px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
         }
-        .perda {
-            color: var(--danger) !important;
-            background: rgba(198, 40, 40, 0.1);
-            border: 1px solid rgba(198, 40, 40, 0.2);
+
+        .flex {
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
         }
-        /* Estilo para b/strong em geral */
-        b, strong {
-            font-weight: 800;
-            color: var(--primary); /* Negrito no Azul Marinho do tema */
+
+        .flex > div {
+            flex: 1;
+            min-width: 150px;
         }
-        /* ------------------------------------------------------------------- */
-        /* Responsive */
-        @media (max-width:980px){
-            /* Centraliza em telas pequenas */
-            #siteLogo{ max-width:120px; display:block; margin:0 auto 8px; }
-            #header-container{ margin-bottom:0; width: 100%; justify-content: center; }
-            #left-header-content { justify-content: center; }
-            .input-row{ flex-direction:column; align-items:stretch; }
+
+        label {
+            font-weight: bold;
         }
-        /* Print */
-        @media print{
-            body{ background:white; padding:0; color:black; }
-            #input-panel .file-label, #input-panel .logo-label, #deleteAllBtn { display:none; }
+
+        input, button {
+            width: 100%;
+            padding: 8px;
+            margin-top: 5px;
         }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+
+        table, th, td {
+            border: 1px solid #ddd;
+        }
+
+        th {
+            background: #eee;
+            padding: 10px;
+        }
+
+        td {
+            padding: 8px;
+        }
+
+        .log {
+            background: #222;
+            color: #0f0;
+            padding: 10px;
+            height: 150px;
+            overflow-y: auto;
+            font-family: monospace;
+            font-size: 13px;
+            border-radius: 5px;
+        }
+
+        .button {
+            padding: 10px;
+            cursor: pointer;
+            font-weight: bold;
+            border: none;
+            border-radius: 4px;
+        }
+
+        .button.import { background: #4CAF50; color: white; }
+        .button.calc { background: #2196F3; color: white; }
+        .button.export { background: #FF9800; color: white; }
+        .button.clear { background: #f44336; color: white; }
     </style>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
-
-    <script src="xlsx.mini.min.js"></script>
-
-    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-auth-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-database-compat.js"></script>
-
 </head>
-<body onload="loadState()">
-    <div id="logo-wrapper">
-        <img id="siteLogo" alt="Logo do site">
-    </div>
-    <div id="header-container">
-        <div id="left-header-content">
-            <div id="logo-placeholder">📈</div>
-            <h1>Controle de Ganhos CDI</h1>
+<body>
+
+<h1>Controle de Ganho CDI</h1>
+
+<div class="panel">
+
+    <h2>Filtro de Datas</h2>
+    <div class="flex">
+        <div>
+            <label>Data Início:</label>
+            <input type="date" id="dataInicio">
+        </div>
+        <div>
+            <label>Data Fim:</label>
+            <input type="date" id="dataFim">
         </div>
     </div>
-        <div id="auth-status" class="card" style="padding: 10px; margin-bottom: 14px; display: flex; align-items: center; justify-content: space-between;">
-        <span id="login-message" style="font-weight: 600;">Status: Desconectado</span>
-        <button id="loginBtn" class="btn small">Login (Anônimo)</button>
-    </div>
-        <div id="top-actions" class="card" role="region" aria-label="Ações principais">
-        <div id="header-left">
-            <div style="font-weight:700;">Resumo Diário</div>
-            <div style="font-size:12px;color:var(--muted);">Filtros, importação e ações rápidas</div>
+
+    <h2>Importar Arquivos</h2>
+    <div class="flex">
+        <div>
+            <label>Selecione os Arquivos Excel:</label>
+            <input type="file" id="fileInput" multiple>
         </div>
-                <div id="header-right">
-            <button id="printBtn" class="btn small" title="Imprimir">Imprimir</button>
-            <button id="exportBtn" class="btn small secondary" title="Exportar">Exportar</button>
-                        <label class="file-label" for="excelFile" title="Selecionar arquivos">
-                <input type="file" id="excelFile" accept=".xlsx,.xls,.csv,.txt" multiple>
-                <span class="btn small">Procurar</span>
-            </label>
-            <button id="loadExcelBtn" class="btn small secondary" title="Importar arquivos">Importar</button>
-            <label class="logo-label" for="logoFile" title="Carregar logo">
-                <input type="file" id="logoFile" accept="image/*">
-                <span class="btn small">Procurar</span>
-            </label>
-            <button id="addLogoBtn" class="btn small secondary" title="Carregar Logo">Carregar Logo</button>
-            <button id="removeLogoBtn" class="btn small" title="Remover">Remover</button>
-            <button id="deleteAllBtn" class="btn small secondary danger" title="Excluir tudo">🗑️</button>
+        <div>
+            <button class="button import" id="loadExcelBtn">Importar</button>
         </div>
     </div>
-    <div id="main-container">
-        <div id="results-panel" class="card">
-            <h2 style="margin:0 0 8px 0;">📊 Resumo Diário</h2>
-            <div class="card filter-card" style="margin-bottom:10px;">
-                <div style="display:flex;justify-content:space-between;align-items:center;gap:8px;">
-                    <div style="font-weight:600;color:var(--muted);">Filtros</div>
-                    <div style="font-size:12px;color:var(--muted);">Mostrar detalhe por operação</div>
-                </div>
-                <div class="input-row" style="margin-top:8px;">
-                    <div>
-                        <label for="filterStartDate">Data de Início</label>
-                        <input type="date" id="filterStartDate">
-                    </div>
-                    <div>
-                        <label for="filterEndDate">Data de Fim</label>
-                        <input type="date" id="filterEndDate">
-                    </div>
-                    <div style="display:flex;align-items:flex-end;gap:8px;">
-                        <button id="filterBtn" class="btn small">Filtrar</button>
-                        <button id="resetFilterBtn" class="btn small secondary">Limpar</button>
-                    </div>
-                </div>
-                <div style="margin-top:8px;">
-                    <label style="font-weight:600;color:var(--muted)">
-                        <input type="checkbox" id="showIndividualOps" checked onchange="calculateAndRender()"> Mostrar Detalhe por Operação
-                    </label>
-                </div>
-            </div>
-            <div class="totals">
-                <div class="total-card" id="totalCompromissadaDisplay"><h4>Compromissada TOTAL</h4><p>R$ 0,00</p></div>
-                <div class="total-card" id="totalRetornoDisplay"><h4>Retorno Bruto TOTAL</h4><p>R$ 0,00</p></div>
-                <div class="total-card" id="totalCdiDisplay"><h4>Ganho (R$) TOTAL</h4><p>R$ 0,00</p></div>
-            </div>
-            <div class="table-wrap">
-                <div id="resultTable"></div>
-            </div>
-            <p style="font-size:12px;color:var(--muted);margin-top:10px;">
-                ⚠️ O <strong>Ganho (R$) Diário</strong> é calculado pelo Valor Retorno Bruto - Valor Compromissada, com inversão para RECOMPRA.
-            </p>
-        </div>
-        <div id="input-panel" class="card">
-            <div style="display:flex;justify-content:space-between;align-items:center;">
-                <h3 style="margin:0 0 8px 0;">⭐ Configuração Global</h3>
-            </div>
-            <div class="input-row">
-                <div>
-                    <label for="taxaCdiAnual">Taxa CDI Anual Global (%)</label>
-                    <input type="text" id="taxaCdiAnual" placeholder="14,90" value="14,90" onchange="calculateAndRender()">
-                </div>
-                <div>
-                    <label for="diasAno">Dias no Ano</label>
-                    <input type="text" id="diasAno" placeholder="252" value="252" onchange="calculateAndRender()">
-                </div>
-            </div>
-            <hr style="border:none;border-top:1px solid rgba(15,23,36,0.04);margin:12px 0;">
-            <div>
-                <h3 style="margin:0 0 8px 0;">📂 Importação</h3>
-                <p style="font-size:12px;color:var(--muted);margin:0 0 10px 0;">
-                    *O sistema tenta reconhecer os cabeçalhos, priorizando 'TX. 252' para a taxa CDI.
-                </p>
-            </div>
-            <hr style="border:none;border-top:1px solid rgba(15,23,36,0.04);margin:12px 0;">
-            <div>
-                <h3 style="margin:0 0 8px 0;">➕ Lançamento Manual</h3>
-                <div style="display:flex;flex-direction:column;gap:8px;">
-                    <input type="hidden" id="editIndex" value="-1">
-                    <div><label for="manualData">Data do Lançamento</label><br><input type="date" id="manualData" required></div>
-                    <div><label for="manualDesc">Descrição</label><br><input type="text" id="manualDesc" placeholder="Ex: REVENDA - Aplicação Mês"></div>
-                    <div><label for="manualBanco">Banco / Contraparte</label><br><input type="text" id="manualBanco" placeholder="Ex: BTG Pactual"></div>
-                    <div style="display:flex;gap:8px;">
-                        <div style="flex:1;"><label for="manualCedente">Conta Cedente</label><br><input type="text" id="manualCedente" placeholder="8300005"></div>
-                        <div style="flex:1;"><label for="manualCessionario">Conta Cessionário</label><br><input type="text" id="manualCessionario" placeholder="12000005"></div>
-                    </div>
-                    <div><label for="manualCdiTaxa">Taxa CDI Anual Específica (%)</label><br><input type="text" id="manualCdiTaxa" placeholder="14,90 (Deixar vazio para usar Global)"></div>
-                    <div style="display:flex;gap:8px;">
-                        <div style="flex:1;"><label for="manualCompromissada">Valor Compromissada</label><br><input type="text" id="manualCompromissada" placeholder="10.000,00"></div>
-                        <div style="flex:1;"><label for="manualRetorno">Valor Retorno (Bruto)</label><br><input type="text" id="manualRetorno" placeholder="10.050,25"></div>
-                    </div>
-                    <div style="display:flex;gap:8px;">
-                        <button id="addBtn" class="btn" style="flex:1;">Adicionar Lançamento</button>
-                        <button id="cancelEditBtn" class="btn secondary" style="flex:1;display:none;">Cancelar Edição</button>
-                    </div>
-                </div>
-            </div>
-            <pre id="log" style="height:84px;overflow:auto;margin-top:12px;color:var(--muted);">Aguardando...</pre>
-        </div>
-    </div>
-        <script>
-        // ====================================================================
-        // FIREBASE REALTIME DATABASE E AUTENTICAÇÃO
-        // ====================================================================
 
-        // Suas chaves de configuração do Firebase (MANTIDAS AQUI)
-        const firebaseConfig = {
-            apiKey: "AIzaSyD_vxw2VcSPO_tMXgrl7quZ85ODvpqQuR8",
-            authDomain: "controle-cdi.firebaseapp.com",
-            databaseURL: "https://controle-cdi-default-rtdb.firebaseio.com",
-            projectId: "controle-cdi",
-            storageBucket: "controle-cdi.firebasestorage.app",
-            messagingSenderId: "215359645646",
-            appId: "1:215359645646:web:cd61ae2f72e100d522ad9f",
-            measurementId: "G-TV1M1QWQRC"
-        };
+</div>
 
-        let database = null;
-        let currentUserUid = null; // Armazena o ID único do usuário autenticado
-        const DB_ROOT_PATH = 'usuarios/'; // Caminho seguro no Realtime Database
-
-        // Inicializa o Firebase
-        if (typeof firebase !== 'undefined' && typeof firebase.database !== 'undefined' && typeof firebase.auth !== 'undefined') {
-            firebase.initializeApp(firebaseConfig);
-            database = firebase.database();
-        } else {
-            console.error("Firebase SDKs não carregados. O salvamento/autenticação em nuvem não funcionarão.");
-        }
-
-        // --- Lógica de Autenticação ---
-
-        const loginBtn = document.getElementById('loginBtn');
-        const loginMessage = document.getElementById('login-message');
-
-        // Tenta fazer login anônimo ou monitora o estado de autenticação
-        function handleLogin() {
-            if (!firebase.auth()) {
-                loginMessage.textContent = "Erro: Firebase Auth não carregado.";
-                return;
-            }
-
-            if (currentUserUid) {
-                // Se já estiver logado, faz logout
-                firebase.auth().signOut().then(() => {
-                    log('Desconectado do Firebase.');
-                    currentUserUid = null;
-                    loginBtn.textContent = 'Login (Anônimo)';
-                    loginMessage.textContent = 'Status: Desconectado';
-                    operacoes = []; // Limpa os dados visíveis
-                    calculateAndRender();
-                });
-            } else {
-                // Login Anônimo: Rápido e fácil para um projeto de usuário único
-                loginMessage.textContent = 'Tentando conectar...';
-                firebase.auth().signInAnonymously()
-                    .then(() => {
-                        log('Login anônimo realizado com sucesso.');
-                    })
-                    .catch((error) => {
-                        log(`❌ Erro de Login: ${error.message}`);
-                        loginMessage.textContent = 'Status: Falha no Login';
-                    });
-            }
-        }
-
-        // Listener para o estado da autenticação (chamado no carregamento e em cada mudança de estado)
-        firebase.auth().onAuthStateChanged((user) => {
-            if (user) {
-                // Usuário logado
-                currentUserUid = user.uid;
-                loginMessage.textContent = `Status: Conectado (UID: ${user.uid.substring(0, 8)}...)`;
-                loginBtn.textContent = 'Logout';
-                log('Conexão estabelecida e segura. Carregando seus dados...');
-                loadStateFromFirebase(); // Chama o carregamento SEGURO
-            } else {
-                // Usuário deslogado
-                currentUserUid = null;
-                loginBtn.textContent = 'Login (Anônimo)';
-                loginMessage.textContent = 'Status: Desconectado. Faça login para acessar seus dados.';
-                operacoes = [];
-                calculateAndRender();
-            }
-        });
-
-        if (loginBtn) {
-            loginBtn.addEventListener('click', handleLogin);
-        }
-
-        // ====================================================================
-
-        /* ---------- Funções utilitárias e lógica ---------- */
-        function log(message) { document.getElementById('log').textContent = message; }
-
-        function resetThemeToFixed() {
-            document.documentElement.style.setProperty('--primary', '#0A0A33');
-            document.documentElement.style.setProperty('--primary-light', '#1A1A55');
-            document.documentElement.style.setProperty('--secondary', '#C00000');
-            document.documentElement.style.setProperty('--secondary-light', '#E00000');
-
-            document.querySelectorAll('.btn:not(.secondary):not(.danger)').forEach(b => {
-                b.style.background = 'var(--primary)';
-                b.style.border = '1px solid white';
-                b.style.color = 'white';
-            });
-
-            document.querySelectorAll('.btn.secondary').forEach(b => {
-                b.style.background = 'var(--secondary)';
-                b.style.border = '1px solid white';
-                b.style.color = 'white';
-            });
-
-            document.querySelectorAll('.btn.danger').forEach(b=>{
-                b.style.background = getComputedStyle(document.documentElement).getPropertyValue('--secondary').trim();
-                b.style.color = '#ffffff';
-                b.style.border = '1px solid white';
-            });
-        }
-
-        const logoInput = document.getElementById('logoFile');
-        const siteLogo = document.getElementById('siteLogo');
-        async function compressImageFile(file, quality = 0.7, maxSize = 600) {
-            return new Promise((resolve, reject) => {
-                const reader = new FileReader();
-                reader.onload = () => {
-                    const img = new Image();
-                    img.onload = () => {
-                        const canvas = document.createElement('canvas');
-                        const ratio = Math.min(1, maxSize / Math.max(img.width, img.height));
-                        canvas.width = Math.round(img.width * ratio);
-                        canvas.height = Math.round(img.height * ratio);
-                        const ctx = canvas.getContext('2d');
-                        ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-                        try {
-                            const dataUrl = canvas.toDataURL('image/jpeg', quality);
-                            resolve(dataUrl);
-                        } catch (err) { reject(err); }
-                    };
-                    img.onerror = reject;
-                    img.src = reader.result;
-                };
-                reader.onerror = reject;
-                reader.readAsDataURL(file);
-            });
-        }
-
-        if (logoInput) {
-            logoInput.addEventListener('change', async (e) => {
-                const file = e.target.files && e.target.files[0];
-                if(!file) return;
-
-                try {
-                    const compressed = await compressImageFile(file, 0.7, 600);
-                    siteLogo.src = compressed;
-                    siteLogo.style.display = 'block';
-                    localStorage.setItem('cdiLogo', compressed);
-                    log('✅ Logo salvo localmente.');
-                } catch (err) {
-                    console.error(err);
-                    log('❌ Erro ao processar o logo.');
-                }
-                resetThemeToFixed();
-            });
-
-            const addLogoBtn = document.getElementById('addLogoBtn');
-            if (addLogoBtn) {
-                addLogoBtn.addEventListener('click', () => {
-                    logoInput.click();
-                });
-            }
-        }
-        const removeLogoBtn = document.getElementById('removeLogoBtn');
-        if (removeLogoBtn) {
-            removeLogoBtn.addEventListener('click', ()=>{
-                if(!confirm('Tem certeza que deseja remover logo salvo e restaurar padrão?')) return;
-                localStorage.removeItem('cdiLogo');
-                siteLogo.src = '';
-                siteLogo.style.display = 'none';
-                resetThemeToFixed();
-                log('🗑️ Logo removido. Tema restaurado.');
-            });
-        }
-
-        function cleanCurrency(v){
-             if(typeof v!=='string') v=String(v);
-             let cleanString = v.replace(/[R$\s]/g, '');
-            cleanString = cleanString.replace(/\./g, '');
-            cleanString = cleanString.replace(/,/g, '.');
-            const n=parseFloat(cleanString);
-             return isNaN(n)?0:n;
-         }
-
-        function parseNumber(v){
-             if(v===undefined||v===null||v==='') return 0;
-             if(typeof v==='string' && (v.includes(',') || v.includes('R$'))) return cleanCurrency(v);
-             const n=parseFloat(v);
-             return isNaN(n)?0:n;
-         }
-
-        function cleanCdiTaxa(v){
-             if(v===undefined||v===null||v==='') return 0;
-             if(typeof v!=='string') v=String(v);
-             v=v.replace(/[^0-9,.]/g,'');
-             v = v.replace(/,/g,'.'); // Troca vírgula por ponto universalmente
-            // Remove pontos extras, deixando apenas o último (ou nenhum)
-            const parts = v.split('.');
-            if(parts.length > 2) {
-                v = parts.slice(0, -1).join('') + '.' + parts.slice(-1);
-            }
-            const n=parseFloat(v);
-             return isNaN(n)?0:n;
-         }
-
-        function formatBRL(n){ return n.toLocaleString('pt-BR',{style:'currency',currency:'BRL',minimumFractionDigits:2}); }
-        function formatPercent(n){ if(n===undefined||n===null||isNaN(n)) return ''; return n.toFixed(4).replace('.',','); }
-        function formatPU(n){ if(n===undefined||n===null||isNaN(n)||n===0) return '-'; return n.toLocaleString('pt-BR',{minimumFractionDigits:4,maximumFractionDigits:4}); }
-        function formatDataBR(s){ if(!s) return '-'; if(s.match(/^\d{4}-\d{2}-\d{2}$/)){ const [y,m,d]=s.split('-'); return `${d}/${m}/${y}`; } if(s.match(/^\d{2}\/\d{2}\/\d{4}$/)) return s; const d=new Date(s); if(!isNaN(d)) return d.toLocaleDateString('pt-BR'); return s; }
-
-        function normalizeDate(s){
-             if(!s) return '';
-             s=String(s).trim();
-             if(s.match(/^\d{4}-\d{2}-\d{2}$/)) return s;
-             if(s.match(/^\d{2}\/\d{2}\/\d{4}$/)){
-                 const [d,m,y]=s.split('/');
-                 return `${y}-${m}-${d}`;
-             }
-             const num=parseFloat(s);
-             if(!isNaN(num) && num>25569 && num<70000){ // Excel serial date
-                const base=new Date('1899-12-30');
-                 const date=new Date(base.getTime() + num*24*60*60*1000);
-                 if(!isNaN(date)){
-                     const y=date.getUTCFullYear();
-                     const m=date.getUTCMonth()+1;
-                     const d=date.getUTCDate();
-                     const pad=n=>n<10?'0'+n:n;
-                     return `${y}-${pad(m)}-${pad(d)}`;
-                 }
-             }
-             try{ const d=new Date(s); if(!isNaN(d)) return d.toISOString().split('T')[0]; }catch(e){}
-             return '';
-         }
-
-        /* Persistência e estado */
-        let operacoes = [], totalCompromissada=0, totalRetorno=0, totalGanho=0;
-        let filtroAtivo = false;
-        let dataFiltroInicio = null;
-        let dataFiltroFim = null;
-
-
-        // MODIFICAÇÃO: SAVE STATE AGORA REQUER UID
-        function saveState(){
-             if (!database || !currentUserUid) {
-                log("❌ É necessário fazer login para salvar os dados.");
-                return;
-            }
-
-            const stateToSave = {
-                operacoes: operacoes,
-                taxaCdiAnual: document.getElementById('taxaCdiAnual').value,
-                diasAno: document.getElementById('diasAno').value
-            };
-
-            // SALVA DADOS NO CAMINHO SEGURO: usuarios/UID_DO_USUARIO/operacoes
-            database.ref(`${DB_ROOT_PATH}${currentUserUid}/operacoes`).set(stateToSave)
-                .then(() => {
-                    log(`✅ ${operacoes.length} operações e configurações salvas de forma segura!`);
-                })
-                .catch((error) => {
-                    log(`❌ Erro ao salvar: ${error.message}.`);
-                    console.error("Firebase Save Error:", error);
-                });
-        }
-
-        // FUNÇÃO QUE CARREGA OS DADOS APÓS O LOGIN (CHAMADA APENAS POR onAuthStateChanged)
-        function loadStateFromFirebase(){
-            if (!database || !currentUserUid) {
-                 operacoes = [];
-                 calculateAndRender();
-                 return;
-            }
-
-            // CARREGA DADOS DO CAMINHO SEGURO: usuarios/UID_DO_USUARIO/operacoes
-            database.ref(`${DB_ROOT_PATH}${currentUserUid}/operacoes`).once('value')
-                .then((snapshot) => {
-                    const savedState = snapshot.val();
-                    if (savedState && savedState.operacoes) {
-                        operacoes = savedState.operacoes || [];
-                        document.getElementById('taxaCdiAnual').value = savedState.taxaCdiAnual || '14,90';
-                        document.getElementById('diasAno').value = savedState.diasAno || '252';
-                        log(`💾 ${operacoes.length} operações carregadas com sucesso!`);
-                    } else {
-                        operacoes = [];
-                        log('Nenhum dado salvo encontrado para este usuário.');
-                    }
-
-                    calculateAndRender();
-                 })
-                .catch(error => {
-                    operacoes = [];
-                    log(`❌ Erro ao carregar dados: ${error.message}.`);
-                    console.error("Firebase Load Error:", error);
-                    calculateAndRender();
-                 });
-        }
-
-        function calculateAndRender() {
-            // ... (Lógica de cálculo e renderização da tabela, que está ok) ...
-            const taxaGlobal = cleanCdiTaxa(document.getElementById('taxaCdiAnual').value) / 100;
-            const diasAno = parseNumber(document.getElementById('diasAno').value) || 252;
-            const showOps = document.getElementById('showIndividualOps').checked;
-
-            totalCompromissada = 0;
-            totalRetorno = 0;
-            totalGanho = 0;
-
-            const tabelaHtml = document.createElement('table');
-            tabelaHtml.innerHTML = `<thead>
+<div class="panel">
+    <h2>Operações Lançadas</h2>
+    <table id="tabela">
+        <thead>
+            <tr>
                 <th>Data</th>
-                <th class="col-left">Descrição/Resumo</th>
+                <th>Descrição</th>
                 <th>Banco</th>
-                <th>Conta Cedente</th>
-                <th>Conta Cessionário</th>
+                <th>Cedente</th>
+                <th>Cessionário</th>
                 <th>Compromissada</th>
-                <th>Retorno Bruto</th>
+                <th>Retorno</th>
                 <th>PU Ida</th>
                 <th>PU Volta</th>
-                <th>Taxa CDI Anual (%)</th>
-                <th>Ganho (R$) Diário</th>
-                <th>Ações</th>
-            </thead><tbody></tbody>`;
-            const tbody = tabelaHtml.querySelector('tbody');
+                <th>Taxa CDI</th>
+            </tr>
+        </thead>
+        <tbody></tbody>
+    </table>
 
-            let operacoesFiltradas = operacoes.filter(op => {
-                if (!filtroAtivo) return true;
-                const dataOp = normalizeDate(op.data);
-                if (dataFiltroInicio && dataOp < dataFiltroInicio) return false;
-                if (dataFiltroFim && dataOp > dataFiltroFim) return false;
-                return true;
-            });
+    <button class="button calc" onclick="calculateAndRender()">Calcular</button>
+    <button class="button export" id="exportBtn">Exportar Excel</button>
+    <button class="button clear" onclick="clearAll()">Limpar Tudo</button>
+</div>
 
+<div class="panel">
+    <h2>Log do Sistema</h2>
+    <div class="log" id="logBox"></div>
+</div>
 
-            operacoesFiltradas.forEach((op, index) => {
-                const taxa = cleanCdiTaxa(op.cdiTaxa || taxaGlobal * 100) / 100;
-                const compromissada = parseNumber(op.compromissada);
-                const retornoBruto = parseNumber(op.retornoBruto);
-                
-                // Cálculo:
-                const puIda = compromissada / op.quantidade || 0;
-                const puVolta = retornoBruto / op.quantidade || 0;
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 
-                // Ganho/Perda diário:
-                let ganhoDiario = retornoBruto - compromissada;
-                // Inversão para RECOMPRA (Se a compromissada for maior que o retorno bruto, é um ganho para quem fez a "recompra")
-                if (op.desc.toUpperCase().includes('RECOMPRA') && ganhoDiario < 0) {
-                    ganhoDiario = Math.abs(ganhoDiario);
-                }
+<script>
 
+let operacoes = [];
 
-                totalCompromissada += compromissada;
-                totalRetorno += retornoBruto;
-                totalGanho += ganhoDiario;
+function log(msg) {
+    const logBox = document.getElementById("logBox");
+    logBox.innerHTML += msg + "<br>";
+    logBox.scrollTop = logBox.scrollHeight;
+}
 
-                if (showOps) {
-                    const row = tbody.insertRow();
-                    row.innerHTML = `
-                        <td>${formatDataBR(op.data)}</td>
-                        <td class="col-left">${op.desc}</td>
-                        <td style="text-align:left;">${op.banco}</td>
-                        <td>${op.cedente}</td>
-                        <td>${op.cessionario}</td>
-                        <td>${formatBRL(compromissada)}</td>
-                        <td>${formatBRL(retornoBruto)}</td>
-                        <td>${formatPU(puIda)}</td>
-                        <td>${formatPU(puVolta)}</td>
-                        <td>${formatPercent(taxa * 100)}</td>
-                        <td><span class="${ganhoDiario >= 0 ? 'ganho' : 'perda'}">${formatBRL(ganhoDiario)}</span></td>
-                        <td class="action-cell">
-                            <button class="btn small" onclick="editOperation(${index})">Alterar</button>
-                            <button class="btn small danger" onclick="deleteOperation(${index})">Excluir</button>
-                        </td>
-                    `;
-                }
-            });
+function parseNumber(value) {
+    if (!value) return 0;
+    let v = String(value).replace(/\./g, '').replace(',', '.');
+    return parseFloat(v) || 0;
+}
 
-            document.getElementById('totalCompromissadaDisplay').querySelector('p').textContent = formatBRL(totalCompromissada);
-            document.getElementById('totalRetornoDisplay').querySelector('p').textContent = formatBRL(totalRetorno);
-            document.getElementById('totalCdiDisplay').querySelector('p').textContent = formatBRL(totalGanho);
+function cleanCdiTaxa(taxa) {
+    if (!taxa) return "";
+    return String(taxa).replace('%','').trim();
+}
 
-            if (showOps) {
-                document.getElementById('resultTable').innerHTML = '';
-                document.getElementById('resultTable').appendChild(tabelaHtml);
-            } else {
-                document.getElementById('resultTable').innerHTML = '<p style="text-align:center;color:var(--muted);">Detalhes ocultos. Desmarque "Mostrar Detalhe por Operação" para ver a tabela.</p>';
-            }
-        }
-        
-        // --- FUNÇÕES DE FILTRO ---
-        function applyFilter() {
-            const start = document.getElementById('filterStartDate').value;
-            const end = document.getElementById('filterEndDate').value;
-            
-            dataFiltroInicio = start;
-            dataFiltroFim = end;
-            filtroAtivo = !!start || !!end;
-            
-            calculateAndRender();
-            log(`Filtro aplicado: De ${start || 'Início'} até ${end || 'Fim'}`);
-        }
-        
-        function resetFilter() {
-            document.getElementById('filterStartDate').value = '';
-            document.getElementById('filterEndDate').value = '';
-            dataFiltroInicio = null;
-            dataFiltroFim = null;
-            filtroAtivo = false;
-            
-            calculateAndRender();
-            log('Filtro limpo.');
-        }
+function formatDataBR(dataISO) {
+    if (!dataISO) return '';
+    const [y,m,d] = dataISO.split('-');
+    return `${d}/${m}/${y}`;
+}
 
-        function attachFilterListeners() {
-            document.getElementById('filterBtn').addEventListener('click', applyFilter);
-            document.getElementById('resetFilterBtn').addEventListener('click', resetFilter);
-            document.getElementById('showIndividualOps').addEventListener('change', calculateAndRender);
-        }
+function calculateAndRender() {
+    const tbody = document.querySelector("#tabela tbody");
+    tbody.innerHTML = "";
 
-        // --- FUNÇÕES DE EDIÇÃO E DELEÇÃO (MOCK) ---
-        function editOperation(index) {
-            log(`Alterar operação de índice ${index} (Implementação pendente).`);
-            // Lógica para preencher o formulário manual com os dados da operação[index]
-        }
+    operacoes.forEach(op => {
+        const tr = document.createElement("tr");
 
-        function deleteOperation(index) {
-            if (confirm(`Tem certeza que deseja excluir a operação de índice ${index}?`)) {
-                operacoes.splice(index, 1);
-                calculateAndRender();
-                saveState();
-                log(`🗑️ Operação de índice ${index} excluída.`);
-            }
-        }
-        
-        
-        // ====================================================================
-        // IMPORTAÇÃO DO EXCEL (CORRIGIDO PARA CSP)
-        // ====================================================================
+        tr.innerHTML = `
+            <td>${formatDataBR(op.data)}</td>
+            <td>${op.descricao}</td>
+            <td>${op.banco}</td>
+            <td>${op.contaCedente}</td>
+            <td>${op.contaCessionario}</td>
+            <td>${op.compromissada}</td>
+            <td>${op.retorno}</td>
+            <td>${op.puIda}</td>
+            <td>${op.puVolta}</td>
+            <td>${op.cdiTaxa}</td>
+        `;
 
-        const excelFileInput = document.getElementById('excelFile');
-        const loadExcelBtn = document.getElementById('loadExcelBtn');
+        tbody.appendChild(tr);
+    });
 
-        function processExcelData(data) {
+    log("🔄 Tabela atualizada.");
+}
+
+function clearAll() {
+    if (!confirm("Tem certeza que deseja limpar tudo?")) return;
+    operacoes = [];
+    calculateAndRender();
+    log("🧹 Todos os dados foram apagados.");
+}
+
+async function loadExcel(file) {
+    return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+
+        reader.onload = evt => {
+            const data = new Uint8Array(evt.target.result);
             try {
-                // Leitura do Workbook: use {type: 'array'} para compatibilidade binária
-                if (typeof XLSX === 'undefined') {
-                    log('❌ ERRO: Biblioteca SheetJS (xlsx.mini.min.js) não carregada.');
-                    return;
-                }
-                const workbook = XLSX.read(data, { type: 'array' });
-
-                const sheetName = workbook.SheetNames[0];
-                const worksheet = workbook.Sheets[sheetName];
-
-                // CORREÇÃO CRÍTICA DO CSP: usando { header: 1, raw: true }
-                // 'raw: true' força a biblioteca a não usar funções inseguras como 'eval()'
-                const json = XLSX.utils.sheet_to_json(worksheet, { header: 1, raw: true });
-                
-                if (json.length === 0) {
-                    log('❌ Arquivo Excel está vazio ou não pôde ser lido.');
-                    return;
-                }
-
-                // Mapeamento dos cabeçalhos para as propriedades do objeto 'operacoes'
-                // Tenta mapear pelos nomes que você usa:
-                const headers = json[0] || [];
-                const map = {};
-                
-                // Mapeamento de colunas (ajuste esses nomes de cabeçalho conforme seu Excel)
-                // Coloque o nome EXATO do cabeçalho da sua planilha no lado esquerdo:
-                const knownHeaders = {
-                    'DATA': 'data',
-                    'DATA LIQUIDACAO': 'data',
-                    'DESCRICAO': 'desc',
-                    'BANCO': 'banco',
-                    'CONTA CEDENTE': 'cedente',
-                    'CONTA CESSIONARIO': 'cessionario',
-                    'COMPROMISSADA': 'compromissada',
-                    'RETORNO BRUTO': 'retornoBruto',
-                    'QUANTIDADE': 'quantidade', // Necessário para PU
-                    'TX. CDI ANUAL': 'cdiTaxa',
-                    'TX. 252': 'cdiTaxa' // Priorizando o nome que você mencionou antes
-                };
-
-                headers.forEach((h, i) => {
-                    if (h) {
-                        const normalizedH = String(h).trim().toUpperCase();
-                        if (knownHeaders[normalizedH]) {
-                            map[knownHeaders[normalizedH]] = i;
-                        }
-                    }
-                });
-
-                if (Object.keys(map).length < 5) {
-                    log('⚠️ Não foi possível identificar todas as colunas essenciais (Data, Descrição, Compromissada, Retorno Bruto, Quantidade).');
-                }
-                
-                const novosDados = [];
-
-                // Começa a ler da segunda linha (json[1])
-                for (let i = 1; i < json.length; i++) {
-                    const row = json[i];
-                    if (!row || row.length < Object.keys(map).length || !row[map.data] || !row[map.compromissada]) {
-                        continue; // Pula linhas incompletas ou sem data/compromissada
-                    }
-
-                    const novaOp = {
-                        data: normalizeDate(row[map.data]),
-                        desc: String(row[map.desc] || ''),
-                        banco: String(row[map.banco] || ''),
-                        cedente: String(row[map.cedente] || ''),
-                        cessionario: String(row[map.cessionario] || ''),
-                        compromissada: parseNumber(row[map.compromissada]),
-                        retornoBruto: parseNumber(row[map.retornoBruto]),
-                        // Assume 1 se a quantidade não for encontrada ou for 0
-                        quantidade: parseNumber(row[map.quantidade] || 1), 
-                        cdiTaxa: cleanCdiTaxa(row[map.cdiTaxa] || '')
-                    };
-                    
-                    if(novaOp.data && novaOp.compromissada !== 0) {
-                        novosDados.push(novaOp);
-                    }
-                }
-
-                if (novosDados.length > 0) {
-                    operacoes = operacoes.concat(novosDados);
-                    calculateAndRender();
-                    saveState();
-                    log(`🎉 ${novosDados.length} novas operações importadas com sucesso!`);
-                } else {
-                    log('⚠️ Arquivo lido, mas nenhuma operação válida encontrada.');
-                }
-
+                const workbook = XLSX.read(data, { type: "array" });
+                const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
+                const json = XLSX.utils.sheet_to_json(firstSheet, { header: 1 });
+                resolve(json);
             } catch (e) {
-                log(`❌ ERRO FATAL na leitura do Excel: ${e.message}. Verifique se o arquivo tem o formato .xlsx.`);
-                console.error("Excel Processing Error:", e);
+                reject(e);
             }
+        };
+
+        reader.onerror = reject;
+        reader.readAsArrayBuffer(file);
+    });
+}
+
+function processExcel(data) {
+
+    if (!data || data.length < 2) {
+        log("⚠ Planilha vazia ou formato inválido.");
+        return [];
+    }
+
+    const header = data[0];
+
+    const indices = {
+        DATA: header.indexOf("Data"),
+        DESCRICAO: header.indexOf("Descricao"),
+        BANCO: header.indexOf("Banco"),
+        CEDENTE: header.indexOf("Conta Cedente"),
+        CESSIONARIO: header.indexOf("Conta Cessionario"),
+        COMP: header.indexOf("Compromissada"),
+        RET: header.indexOf("Retorno Bruto"),
+        TAXA: header.indexOf("Taxa CDI Anual (%)"),
+        PU_IDA: header.indexOf("PU Ida"),
+        PU_VOLTA: header.indexOf("PU Volta")
+    };
+
+    let newOps = [];
+    let valid = 0;
+
+    for (let i = 1; i < data.length; i++) {
+        const row = data[i];
+
+        if (!row[indices.DATA]) continue;
+
+        const excelDate = row[indices.DATA];
+        let jsDate;
+
+        if (typeof excelDate === "number") {
+            jsDate = new Date((excelDate - 25569) * 86400 * 1000);
+        } else {
+            jsDate = new Date(excelDate);
         }
 
+        const dataFormatada = jsDate.toISOString().slice(0, 10);
 
-        // Evento 'change' que lê o arquivo
-        excelFileInput.addEventListener('change', (e) => {
-            if (e.target.files.length === 0) {
-                return;
-            }
-            log(`Arquivos selecionados: ${e.target.files.length}. Clique em 'Importar' para processar.`);
+        const rawComp = row[indices.COMP];
+        const rawRet = row[indices.RET];
+
+        newOps.push({
+            data: dataFormatada,
+            descricao: String(row[indices.DESCRICAO] || ''),
+            banco: String(row[indices.BANCO] || ''),
+            contaCedente: String(row[indices.CEDENTE] || ''),
+            contaCessionario: String(row[indices.CESSIONARIO] || ''),
+            compromissada: String(rawComp || ''),
+            retorno: String(rawRet || ''),
+            cdiTaxa: String(row[indices.TAXA] || ''),
+            puIda: String(row[indices.PU_IDA] || ''),
+            puVolta: String(row[indices.PU_VOLTA] || '')
         });
 
-        // Evento de 'click' que dispara o processamento
-        loadExcelBtn.addEventListener('click', () => {
-            const files = excelFileInput.files;
-            if (files.length === 0) {
-                log('Por favor, selecione um arquivo Excel primeiro.');
-                return;
-            }
+        valid++;
+    }
 
-            // Processa APENAS o primeiro arquivo selecionado
-            const file = files[0];
-            const reader = new FileReader();
+    log(`✅ ${valid} operações válidas encontradas.`);
+    return newOps;
+}
 
-            reader.onload = (e) => {
-                processExcelData(e.target.result);
-            };
+document.getElementById("loadExcelBtn").addEventListener("click", async () => {
 
-            reader.onerror = (e) => {
-                log(`❌ Erro de leitura de arquivo: ${e.target.error.name}`);
-            };
+    const fileInput = document.getElementById("fileInput");
+    const files = fileInput.files;
 
-            reader.readAsArrayBuffer(file);
-        });
+    if (files.length === 0) {
+        alert("Selecione um arquivo primeiro.");
+        return;
+    }
 
+    log(`⏳ Processando ${files.length} arquivo(s)...`);
 
-        // --- FUNÇÃO PARA DELETAR TUDO ---
-        document.getElementById('deleteAllBtn').addEventListener('click', () => {
-            if (confirm("ATENÇÃO: Você tem certeza que deseja APAGAR TODOS os dados de operações e configurações no Firebase?")) {
-                if (!database || !currentUserUid) {
-                    log("❌ É necessário fazer login para apagar os dados.");
-                    return;
-                }
-                
-                database.ref(`${DB_ROOT_PATH}${currentUserUid}/operacoes`).remove()
-                    .then(() => {
-                        operacoes = [];
-                        calculateAndRender();
-                        log('🗑️ TODOS os dados de operações foram apagados permanentemente do Firebase.');
-                    })
-                    .catch(error => {
-                        log(`❌ Erro ao apagar: ${error.message}.`);
-                    });
-            }
-        });
+    let totalNewOps = [];
 
-        // A função principal de carregamento é apenas um wrapper para ações iniciais.
-        window.loadState = ()=>{
-            resetThemeToFixed();
-
-            // Tenta carregar o logo (que é local)
-            try {
-                const savedLogo = localStorage.getItem('cdiLogo');
-                if (savedLogo) {
-                    siteLogo.src = savedLogo;
-                    siteLogo.style.display = 'block';
-                    log('💾 Logo carregado do salvamento local.');
-                }
-            } catch (err) { console.warn(err); }
-
-            attachFilterListeners();
-            calculateAndRender(); // Renderiza a tabela inicial (vazia ou com dados)
+    for (const file of files) {
+        try {
+            const data = await loadExcel(file);
+            const newOps = processExcel(data);
+            totalNewOps = totalNewOps.concat(newOps);
+            log(`📁 Arquivo "${file.name}" importado.`);
+        } catch (e) {
+            log(`❌ Erro ao processar "${file.name}".`);
+            console.error(e);
         }
+    }
 
-        </script>
+    if (totalNewOps.length > 0) {
+        operacoes = operacoes.concat(totalNewOps);
+        calculateAndRender();
+        log(`🎉 Importação concluída! ${totalNewOps.length} operações adicionadas.`);
+    } else {
+        log("⚠ Nenhuma operação válida encontrada.");
+    }
+
+    fileInput.value = "";
+
+    /* CORREÇÃO FEITA AQUI */
+    loadExcelBtn.disabled = true;
+});
+
+document.getElementById("exportBtn").addEventListener("click", () => {
+
+    if (operacoes.length === 0) {
+        alert("Não há dados para exportar.");
+        return;
+    }
+
+    const header = [
+        "Data", "Descricao", "Banco", "Conta Cedente", "Conta Cessionario",
+        "Compromissada", "Retorno Bruto", "PU Ida", "PU Volta", "Taxa CDI Anual (%)"
+    ];
+
+    const exportData = operacoes.map(op => {
+        const taxa = cleanCdiTaxa(op.cdiTaxa);
+        return [
+            formatDataBR(op.data),
+            op.descricao,
+            op.banco,
+            op.contaCedente,
+            op.contaCessionario,
+            parseNumber(op.compromissada),
+            parseNumber(op.retorno),
+            parseNumber(op.puIda),
+            parseNumber(op.puVolta),
+            taxa
+        ];
+    });
+
+    const ws = XLSX.utils.aoa_to_sheet([header, ...exportData]);
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, "Ganhos CDI");
+
+    const hoje = new Date().toISOString().slice(0, 10).replace(/-/g, "");
+    XLSX.writeFile(wb, `Controle_Ganhos_CDI_${hoje}.xlsx`);
+
+    log("💾 Excel exportado.");
+});
+
+</script>
 </body>
 </html>
