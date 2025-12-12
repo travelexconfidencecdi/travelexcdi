@@ -5,7 +5,7 @@
     <title>Controle de Ganhos CDI — Layout Empilhado</title>
     <meta name="viewport" content="width=device-width,initial-scale=1" />
     <style>
-        /* ... SEU CÓDIGO CSS (STYLE) ORIGINAL PERMANECE AQUI INTACTO ... */
+        /* ... SEU CÓDIGO CSS ORIGINAL ... */
         :root{
             /* CORES PRINCIPAIS: AZUL MARINHO ESCURO PRIMÁRIO, VERMELHO SECUNDÁRIO */
             --primary: #0A0A33;  /* Azul Marinho Escuro */
@@ -220,8 +220,15 @@
     </style>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
     
-    <script src="xlsx.mini.min.js"></script>
+    <script src="https://cdn.sheetjs.com/xlsx-0.20.0/package/dist/xlsx.full.min.js"></script>
     
+    <script>
+        // Esta é uma técnica antiga, mas confiável para garantir o carregamento do script
+        if (typeof XLSX === 'undefined') {
+            document.write('<script src="xlsx.mini.min.js"><\/script>');
+        }
+    </script>
+
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-database-compat.js"></script>
@@ -401,7 +408,7 @@
                 calculateAndRender();
             });
         } else {
-            // Login Anônimo: Rápido e fácil para um projeto de usuário único
+            // Login Anônimo
             loginMessage.textContent = 'Tentando conectar...';
             firebase.auth().signInAnonymously()
                 .then(() => {
@@ -426,8 +433,7 @@
             currentUserUid = null;
             loginBtn.textContent = 'Login (Anônimo)';
             loginMessage.textContent = 'Status: Desconectado. Faça login para acessar seus dados.';
-            operacoes = [];
-            calculateAndRender();
+            // Não limpa operacoes aqui, pois loadState() cuida do estado inicial.
         }
     });
 
@@ -435,7 +441,6 @@
         loginBtn.addEventListener('click', handleLogin);
     }
     
-    // Conecta o botão Salvar manual ao saveState
     const saveBtn = document.getElementById('saveBtn');
     if (saveBtn) {
         saveBtn.addEventListener('click', saveState);
@@ -445,10 +450,12 @@
     /* ---------- Funções utilitárias e lógica ---------- */
     function log(message) { document.getElementById('log').textContent = message; }
     
-    // ... (Suas outras funções: resetThemeToFixed, compressImageFile, logoInput listener, removeLogoBtn listener) ...
-    // Para simplificar a resposta, assumo que estas estão corretas.
+    // Suas outras funções de utilidade (logo, compressão, limpeza de moeda, etc.)
+    const logoInput = document.getElementById('logoFile');
+    const siteLogo = document.getElementById('siteLogo');
     
-    // Funções de Limpeza e Formatação (Seus trechos OK)
+    // ... Funções de compressão e manipulação de logo (Omitidas para brevidade, mas devem estar aqui) ...
+
     function cleanCurrency(v){ 
          if(typeof v!=='string') v=String(v); 
          let cleanString = v.replace(/[R$\s]/g, '');
@@ -468,7 +475,6 @@
          if(typeof v!=='string') v=String(v); 
          v=v.replace(/[^0-9,.]/g,''); 
          v = v.replace(/,/g,'.'); // Troca vírgula por ponto universalmente
-        // Remove pontos extras, deixando apenas o último (ou nenhum)
         const parts = v.split('.');
         if(parts.length > 2) {
             v = parts.slice(0, -1).join('') + '.' + parts.slice(-1);
@@ -489,7 +495,7 @@
              return `${y}-${m}-${d}`; 
          } 
          const num=parseFloat(s); 
-         if(!isNaN(num) && num>25569 && num<70000){ // Excel serial date
+         if(!isNaN(num) && num>25569 && num<70000){ 
             const base=new Date('1899-12-30'); 
              const date=new Date(base.getTime() + num*24*60*60*1000); 
              if(!isNaN(date)){ 
@@ -504,13 +510,14 @@
          return ''; 
      }
 
+
     /* Persistência e estado */
     let operacoes = [], totalCompromissada=0, totalRetorno=0, totalGanho=0;
     let filtroAtivo = false;
     let dataFiltroInicio = null;
     let dataFiltroFim = null;
     
-    // FUNÇÕES DO FIREBASE (CORRIGIDAS/COMPLETAS)
+    // FUNÇÕES DO FIREBASE
     function saveState(){
          if (!database || !currentUserUid) {
             log("❌ É necessário fazer login para salvar os dados.");
@@ -521,7 +528,6 @@
             taxaCdiAnual: document.getElementById('taxaCdiAnual').value,
             diasAno: document.getElementById('diasAno').value
         };
-        // SALVA DADOS NO CAMINHO SEGURO: usuarios/UID_DO_USUARIO/operacoes
         database.ref(`${DB_ROOT_PATH}${currentUserUid}/operacoes`).set(stateToSave)
             .then(() => {
                 log(`✅ ${operacoes.length} operações e configurações salvas de forma segura!`);
@@ -561,7 +567,7 @@
     }
 
     function loadState() {
-        // Tenta carregar o logo e chama loadStateFromFirebase através do onAuthStateChanged
+        // Carrega o logo localmente
         const savedLogo = localStorage.getItem('cdiLogo');
         if (savedLogo) {
             document.getElementById('siteLogo').src = savedLogo;
@@ -570,22 +576,20 @@
             document.getElementById('siteLogo').style.display = 'none';
         }
 
-        // Tenta carregar as configurações padrão se não estiver logado
+        // Se o Firebase ainda não conectou (onAuthStateChanged), renderiza o estado inicial (vazio ou padrão)
         if (!currentUserUid) {
-            // Você pode adicionar uma carga inicial se não houver login
             calculateAndRender();
         }
     }
 
 
     // ====================================================================
-    // LÓGICA DE IMPORTAÇÃO DE EXCEL (NOVA FUNÇÃO ADICIONADA)
+    // LÓGICA DE IMPORTAÇÃO DE EXCEL (COMPLETA E CORRIGIDA)
     // ====================================================================
 
     const excelFileInput = document.getElementById('excelFile');
     const loadExcelBtn = document.getElementById('loadExcelBtn');
     
-    // Mapeamento de cabeçalhos do seu Excel
     const HEADER_MAP = {
         data: ['DATA', 'DT', 'DATA COMPROMISSADA', 'DATA RECOMPRA'],
         descricao: ['DESCRIÇÃO', 'RESUMO', 'OPERACAO'],
@@ -602,7 +606,6 @@
         for (const internalKey in HEADER_MAP) {
             const potentialHeaders = HEADER_MAP[internalKey];
             for (let i = 0; i < headerRow.length; i++) {
-                // Tratamento de string e case-insensitive
                 const excelHeader = String(headerRow[i]).toUpperCase().trim();
                 if (potentialHeaders.includes(excelHeader)) {
                     map[internalKey] = i;
@@ -616,6 +619,7 @@
     function readExcelFile(file) {
         return new Promise((resolve, reject) => {
             if (typeof XLSX === 'undefined') {
+                // ESTE É O ERRO QUE ESTAVA OCORRENDO ANTES
                 reject(new Error("Biblioteca XLSX não carregada. Verifique 'xlsx.mini.min.js'."));
                 return;
             }
@@ -624,12 +628,10 @@
             reader.onload = (e) => {
                 try {
                     const data = new Uint8Array(e.target.result);
-                    // IMPORTANTE: Tenta ler datas serializadas (útil para Excel)
                     const workbook = XLSX.read(data, { type: 'array', cellDates: true, cellNF: false, cellText: false });
                     const sheetName = workbook.SheetNames[0];
                     const worksheet = workbook.Sheets[sheetName];
 
-                    // Converte para JSON, preservando as datas como texto no formato ISO
                     const rawJson = XLSX.utils.sheet_to_json(worksheet, { header: 1, raw: false, defval: null });
                     
                     if (rawJson.length < 1) {
@@ -642,7 +644,6 @@
                     const headerMap = mapHeader(headerRow);
                     
                     const novosDados = dataRows.map(row => {
-                        // Se o dado for undefined/null, usa a string vazia para evitar erros
                         return {
                             data: normalizeDate(row[headerMap.data]),
                             descricao: String(row[headerMap.descricao] || ''),
@@ -654,7 +655,7 @@
                             retorno: cleanCurrency(row[headerMap.retorno]),
                             source: 'Importado'
                         };
-                    }).filter(op => op.data); // Filtra linhas sem data válida
+                    }).filter(op => op.data);
 
                     resolve(novosDados);
                 } catch (error) {
@@ -690,10 +691,9 @@
         }
 
         if (novosRegistros.length > 0) {
-            // Adiciona os novos registros e mantém os antigos
             const combinedOps = [...operacoes, ...novosRegistros];
             
-            // Simples filtro de duplicatas
+            // Filtro de duplicatas
             const uniqueOps = combinedOps.filter((op, index, self) =>
                 index === self.findIndex((t) => (
                     t.data === op.data && 
@@ -705,7 +705,7 @@
             operacoes = uniqueOps;
             log(`Importação concluída: ${importCount} novos lançamentos (Total: ${operacoes.length}).`);
             calculateAndRender();
-            saveState(); // Salva em nuvem após a importação
+            saveState(); 
         } else {
             log('Nenhum registro válido foi importado.');
         }
@@ -716,7 +716,7 @@
     }
     
     // ====================================================================
-    // LÓGICA DE CÁLCULO, RENDERIZAÇÃO E CRUD MANUAL (COMPLETAÇÃO DO SEU TRECHO)
+    // LÓGICA DE CÁLCULO E RENDERIZAÇÃO
     // ====================================================================
     
     function calculateAndRender() {
@@ -726,7 +726,7 @@
         
         let filteredOps = operacoes.slice();
         
-        // 1. Lógica de Filtro (Se estiver ativa)
+        // 1. Lógica de Filtro
         if (filtroAtivo && dataFiltroInicio && dataFiltroFim) {
              const start = new Date(dataFiltroInicio + 'T00:00:00');
              const end = new Date(dataFiltroFim + 'T23:59:59');
@@ -746,18 +746,7 @@
         const operacoesComCalculo = filteredOps.map(op => {
             const taxa = op.cdiTaxa > 0 ? (op.cdiTaxa / 100) : taxaGlobal;
             
-            // Cálculo do Ganho/Perda
             let ganhoPerda = op.retorno - op.compromissada;
-            
-            // Lógica de Inversão para RECOMPRA
-            if (op.descricao && String(op.descricao).toUpperCase().includes('RECOMPRA')) {
-                // Na recompra, o valor que saiu da sua conta é o retorno, e o valor que voltou é a compromissada (ou vice-versa)
-                // O Ganho/Perda é o valor final - valor inicial. 
-                // Se Retorno é o que 'entrou' e Compromissada é o que 'saiu', na RECOMPRA você quer que o ganho seja positivo se Retorno > Compromissada.
-                // Mas, se for uma recompra do seu lado (venda do ativo), você quer o valor de venda (Retorno) menos o valor de custo (Compromissada).
-                // Vamos manter o cálculo simples: Retorno - Compromissada. Se for negativo, é perda.
-                ganhoPerda = op.retorno - op.compromissada; 
-            }
 
             totalCompromissada += op.compromissada;
             totalRetorno += op.retorno;
@@ -803,14 +792,16 @@
                 <tbody>
             `;
 
-            sortedOps.forEach((op, index) => {
+            sortedOps.forEach((op) => {
+                // O método operacoes.indexOf(op) funciona melhor se as operações forem únicas
+                const originalIndex = operacoes.findIndex(o => o === op); 
                 const ganhoClass = op.ganho >= 0 ? 'ganho' : 'perda';
                 
                 tabelaHtml += `
                     <tr>
                         <td class="action-cell">
-                            <button class="btn small" onclick="editOperation(${operacoes.indexOf(op)})">✏️</button>
-                            <button class="btn small secondary danger" onclick="deleteOperation(${operacoes.indexOf(op)})">✖️</button>
+                            <button class="btn small" onclick="editOperation(${originalIndex})">✏️</button>
+                            <button class="btn small secondary danger" onclick="deleteOperation(${originalIndex})">✖️</button>
                         </td>
                         <td>${formatDataBR(op.data)}</td>
                         <td class="col-left">${op.descricao}</td>
@@ -860,7 +851,7 @@
 
         resetManualForm();
         calculateAndRender();
-        saveState(); // Salva após CRUD
+        saveState(); 
     }
 
     function editOperation(index) {
@@ -887,7 +878,7 @@
             operacoes.splice(index, 1);
             log('🗑️ Lançamento excluído.');
             calculateAndRender();
-            saveState(); // Salva após deleção
+            saveState(); 
         }
     }
 
@@ -939,10 +930,15 @@
         }
     });
 
-    // Lógica do Botão Exportar (Exemplo simples CSV/Excel)
+    // Lógica do Botão Exportar
     document.getElementById('exportBtn').addEventListener('click', () => {
         if (operacoes.length === 0) {
             log('Não há dados para exportar.');
+            return;
+        }
+
+        if (typeof XLSX === 'undefined') {
+            log('❌ Erro: Biblioteca XLSX não carregada para exportação.');
             return;
         }
 
@@ -968,8 +964,8 @@
     document.getElementById('printBtn').addEventListener('click', () => {
         window.print();
     });
-
-    // Coloque aqui o restante do seu código JavaScript (logo, etc.)
+    
+    // ... Coloque aqui as funções de logo (compressImageFile, resetThemeToFixed, etc.) ...
     
 </script>
 </body>
