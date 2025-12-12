@@ -1,85 +1,280 @@
 <!DOCTYPE html>
-const table=document.createElement('table');
-table.innerHTML = `<thead>
-<th>Ações</th><th>Data</th><th class='col-left'>Descrição</th><th>Banco</th>
-<th>Cedente</th><th>Cessionário</th><th>Compromissada</th><th>Retorno</th>
-<th>Ganho</th></thead><tbody></tbody>`;
+<html lang="pt-BR">
+<head>
+    <meta charset="utf-8">
+    <title>Controle de Ganhos CDI — Original</title>
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        h1 { margin-bottom: 10px; }
+        .btn { padding: 8px 12px; cursor: pointer; background: #0A0A33; color: #fff; border: 1px solid #fff; border-radius: 4px; }
+        .btn.secondary { background: #C00000; }
+        .btn.danger { background: #900000; }
+        table { width: 100%; border-collapse: collapse; margin-top: 15px; }
+        table th, table td { padding: 6px; border: 1px solid #888; text-align: center; }
+        .col-left { text-align: left; }
+        .ganho { color: green; font-weight: bold; }
+        .perda { color: red; font-weight: bold; }
+        #siteLogo { max-height: 80px; display:none; margin-bottom: 15px; }
+    </style>
+</head>
 
+<body onload="loadState()">
 
-const tbody=table.querySelector('tbody');
+    <h1>Controle de Ganhos CDI</h1>
 
+    <img id="siteLogo">
 
-operacoes.forEach((op,i)=>{
-const c=parseNumber(op.compromissada);
-const r=parseNumber(op.retorno);
-const g=r-c;
-totalC+=c; totalR+=r; totalG+=g;
+    <button id="addLogoBtn" class="btn">Adicionar Logo</button>
+    <button id="removeLogoBtn" class="btn danger">Remover Logo</button>
+    <input type="file" id="logoFile" accept="image/*" style="display:none">
 
+    <hr>
 
-if(showOps){
-const row=tbody.insertRow();
-row.insertCell().innerHTML = `<button class='btn small secondary' onclick='deleteEntry(${i})'>Excluir</button>`;
-row.insertCell().textContent = formatDataBR(op.data);
-row.insertCell().className='col-left';
-row.insertCell().textContent = op.descricao;
-row.insertCell().textContent = op.banco;
-row.insertCell().textContent = op.cedente;
-row.insertCell().textContent = op.cessionario;
-row.insertCell().textContent = formatBRL(c);
-row.insertCell().textContent = formatBRL(r);
-row.insertCell().innerHTML = `<span class='${g>=0?'ganho':'perda'}'>${formatBRL(g)}</span>`;
-}
-});
+    <h3>Importar Excel</h3>
+    <input type="file" id="excelFile" multiple>
+    <button id="loadExcelBtn" class="btn secondary">Importar</button>
 
+    <hr>
 
-container.appendChild(table);
-document.querySelector('#totalCompromissadaDisplay p').textContent=formatBRL(totalC);
-document.querySelector('#totalRetornoDisplay p').textContent=formatBRL(totalR);
-document.querySelector('#totalCdiDisplay p').textContent=formatBRL(totalG);
-}
+    <h3>Adicionar Lançamento Manual</h3>
+    <input type="hidden" id="editIndex" value="-1">
 
+    <label>Data: <input type="date" id="manualData"></label>
+    <label>Descrição: <input type="text" id="manualDesc"></label>
+    <label>Banco: <input type="text" id="manualBanco"></label>
+    <label>Cedente: <input type="text" id="manualCedente"></label>
+    <label>Cessionário: <input type="text" id="manualCessionario"></label>
+    <label>Taxa CDI: <input type="text" id="manualCdiTaxa"></label>
+    <label>Compromissada: <input type="text" id="manualCompromissada"></label>
+    <label>Retorno: <input type="text" id="manualRetorno"></label>
 
-/* --- Importar Excel --- */
-document.getElementById('loadExcelBtn').onclick=()=>{
-const files = document.getElementById('excelFile').files;
-if(!files.length){ log('Nenhum arquivo.'); return; }
+    <button id="addBtn" class="btn">Adicionar Lançamento</button>
+    <button id="cancelEditBtn" class="btn danger" style="display:none">Cancelar Edição</button>
 
+    <hr>
 
-let newOps=[];
+    <label><input type="checkbox" id="showIndividualOps" checked onchange="calculateAndRender()"> Mostrar Detalhes</label>
 
+    <hr>
 
-[...files].forEach(file=>{
-const reader=new FileReader();
-reader.onload=e=>{
-const wb=XLSX.read(new Uint8Array(e.target.result),{type:'array'});
-wb.SheetNames.forEach(name=>{
-const sheet=XLSX.utils.sheet_to_json(wb.Sheets[name],{header:1});
-sheet.slice(1).forEach(row=>{
-if(!row.length) return;
-newOps.push({
-data: normalizeDate(row[0]),
-descricao: String(row[1]||''),
-banco: String(row[2]||''),
-cedente: String(row[3]||''),
-cessionario: String(row[4]||''),
-compromissada: String(row[5]||''),
-retorno: String(row[6]||''),
-});
-});
-});
-operacoes = operacoes.concat(newOps);
-calculateAndRender();
-saveState();
-log("Importado com sucesso.");
-};
-reader.readAsArrayBuffer(file);
-});
-};
+    <div id="resultTable"></div>
 
+    <h3>Totais</h3>
+    <div id="totalCompromissadaDisplay"><p>R$ 0,00</p></div>
+    <div id="totalRetornoDisplay"><p>R$ 0,00</p></div>
+    <div id="totalCdiDisplay"><p>R$ 0,00</p></div>
 
-function deleteEntry(i){ operacoes.splice(i,1); calculateAndRender(); saveState(); }
-</script>
+    <div id="log" style="margin-top:20px;font-weight:bold;"></div>
 
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
+
+    <!-- XLSX (Excel) -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+
+    <script>
+        const firebaseConfig = {
+            apiKey: "AIzaSyD_vxw2VcSPO_tMXgrl7quZ85ODvpqQuR8",
+            authDomain: "controle-cdi.firebaseapp.com",
+            databaseURL: "https://controle-cdi-default-rtdb.firebaseio.com",
+            projectId: "controle-cdi",
+            storageBucket: "controle-cdi.firebasestorage.app",
+            messagingSenderId: "215359645646",
+            appId: "1:215359645646:web:cd61ae2f72e100d522ad9f",
+            measurementId: "G-TV1M1QWQRC"
+        };
+
+        firebase.initializeApp(firebaseConfig);
+        const database = firebase.database();
+
+        let currentUserUid = null;
+        let operacoes = [];
+
+        firebase.auth().signInAnonymously().then(user => {
+            currentUserUid = user.user.uid;
+            loadStateFromFirebase();
+        });
+
+        function log(msg) {
+            document.getElementById('log').textContent = msg;
+        }
+
+        function parseNumber(v) {
+            if(!v) return 0;
+            return Number(String(v).replace(/[R$\s.]/g,'').replace(',','.')) || 0;
+        }
+
+        function cleanCurrency(v){
+            return parseNumber(v);
+        }
+
+        function formatBRL(n){
+            return n.toLocaleString("pt-BR",{style:"currency",currency:"BRL"});
+        }
+
+        function formatDataBR(s){
+            if(!s) return "-";
+            const [y,m,d] = s.split("-");
+            return `${d}/${m}/${y}`;
+        }
+
+        function normalizeDate(s){
+            if(!s) return "";
+            if(s.includes("/")){
+                const [d,m,y] = s.split("/");
+                return `${y}-${m}-${d}`;
+            }
+            return s;
+        }
+
+        function saveState(){
+            if(!currentUserUid) return;
+
+            database.ref("usuarios/"+currentUserUid+"/operacoes").set(operacoes)
+                .then(() => log("Dados salvos na nuvem."))
+                .catch(err => log("Erro ao salvar: " + err.message));
+        }
+
+        function loadState(){
+            calculateAndRender();
+        }
+
+        function loadStateFromFirebase(){
+            if(!currentUserUid) return;
+
+            database.ref("usuarios/"+currentUserUid+"/operacoes").once("value")
+                .then(snap => {
+                    operacoes = snap.val() || [];
+                    calculateAndRender();
+                });
+        }
+
+        function calculateAndRender(){
+            let container = document.getElementById("resultTable");
+            container.innerHTML = "";
+
+            let totalC = 0, totalR = 0, totalG = 0;
+            const showOps = document.getElementById('showIndividualOps').checked;
+
+            const table = document.createElement("table");
+            table.innerHTML = `
+                <thead>
+                    <tr>
+                        <th>Ações</th>
+                        <th>Data</th>
+                        <th class="col-left">Descrição</th>
+                        <th>Banco</th>
+                        <th>Cedente</th>
+                        <th>Cessionário</th>
+                        <th>Compromissada</th>
+                        <th>Retorno</th>
+                        <th>Ganho</th>
+                    </tr>
+                </thead>
+                <tbody></tbody>
+            `;
+
+            const tbody = table.querySelector("tbody");
+
+            operacoes.forEach((op,i)=>{
+                const c=parseNumber(op.compromissada);
+                const r=parseNumber(op.retorno);
+                const g=r-c;
+
+                totalC+=c;
+                totalR+=r;
+                totalG+=g;
+
+                if(showOps){
+                    const row=tbody.insertRow();
+                    row.insertCell().innerHTML = `<button class="btn danger" onclick="deleteEntry(${i})">Excluir</button>`;
+                    row.insertCell().textContent = formatDataBR(op.data);
+                    row.insertCell().className='col-left';
+                    row.insertCell().textContent = op.descricao;
+                    row.insertCell().textContent = op.banco;
+                    row.insertCell().textContent = op.cedente;
+                    row.insertCell().textContent = op.cessionario;
+                    row.insertCell().textContent = formatBRL(c);
+                    row.insertCell().textContent = formatBRL(r);
+                    row.insertCell().innerHTML = `<span class="${g>=0?"ganho":"perda"}">${formatBRL(g)}</span>`;
+                }
+            });
+
+            container.appendChild(table);
+
+            document.querySelector('#totalCompromissadaDisplay p').textContent=formatBRL(totalC);
+            document.querySelector('#totalRetornoDisplay p').textContent=formatBRL(totalR);
+            document.querySelector('#totalCdiDisplay p').textContent=formatBRL(totalG);
+        }
+
+        function deleteEntry(i){
+            operacoes.splice(i,1);
+            calculateAndRender();
+            saveState();
+        }
+
+        document.getElementById("loadExcelBtn").onclick = () => {
+            const files = document.getElementById("excelFile").files;
+            if(!files.length){ log("Nenhum arquivo."); return; }
+
+            [...files].forEach(file=>{
+                const reader=new FileReader();
+                reader.onload=e=>{
+                    const wb=XLSX.read(new Uint8Array(e.target.result),{type:"array"});
+                    wb.SheetNames.forEach(name=>{
+                        const sheet=XLSX.utils.sheet_to_json(wb.Sheets[name],{header:1});
+                        sheet.slice(1).forEach(row=>{
+                            if(!row.length) return;
+                            operacoes.push({
+                                data: normalizeDate(row[0]),
+                                descricao: String(row[1]||""),
+                                banco: String(row[2]||""),
+                                cedente: String(row[3]||""),
+                                cessionario: String(row[4]||""),
+                                compromissada: String(row[5]||""),
+                                retorno: String(row[6]||"")
+                            });
+                        });
+                    });
+                    calculateAndRender();
+                    saveState();
+                    log("Importado com sucesso.");
+                };
+                reader.readAsArrayBuffer(file);
+            });
+        };
+
+        /* LOGO */
+        document.getElementById("addLogoBtn").onclick = () => document.getElementById("logoFile").click();
+
+        document.getElementById("logoFile").onchange = async (e)=>{
+            const file = e.target.files[0];
+            if(!file) return;
+
+            const reader = new FileReader();
+            reader.onload = () => {
+                document.getElementById("siteLogo").src = reader.result;
+                document.getElementById("siteLogo").style.display = "block";
+                localStorage.setItem("cdiLogo", reader.result);
+            };
+            reader.readAsDataURL(file);
+        };
+
+        document.getElementById("removeLogoBtn").onclick = ()=>{
+            localStorage.removeItem("cdiLogo");
+            document.getElementById("siteLogo").style.display="none";
+        };
+
+        const savedLogo = localStorage.getItem("cdiLogo");
+        if(savedLogo){
+            document.getElementById("siteLogo").src=savedLogo;
+            document.getElementById("siteLogo").style.display="block";
+        }
+
+    </script>
 
 </body>
 </html>
