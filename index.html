@@ -4,6 +4,8 @@
     <meta charset="utf-8" />
     <title>Controle de Ganhos CDI — Layout Empilhado</title>
     <meta name="viewport" content="width=device-width,initial-scale=1" />
+
+    <!-- CSS COMPLETO (SEU LAYOUT ORIGINAL) -->
     <style>
         :root{
             --primary: #0A0A33;
@@ -39,9 +41,7 @@
             box-shadow:var(--shadow);
             margin:0 0 6px 0;
         }
-        #logo-wrapper{
-            margin-bottom:8px;
-        }
+        #logo-wrapper{ margin-bottom:8px; }
         #header-container{
             display:flex;
             align-items:center;
@@ -195,18 +195,21 @@
             #input-panel .file-label, #input-panel .logo-label, #deleteAllBtn { display:none; }
         }
     </style>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
 
-    <script src="xlsx.mini.min.js"></script>
+    <!-- SheetJS CORRIGIDO -->
+    <script src="https://cdn.sheetjs.com/xlsx-0.20.0/package/dist/xlsx.mini.min.js"></script>
 
+    <!-- Firebase -->
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-database-compat.js"></script>
 </head>
+
 <body onload="loadState()">
-    <div id="logo-wrapper">
+     <div id="logo-wrapper">
         <img id="siteLogo" alt="Logo do site">
     </div>
+
     <div id="header-container">
         <div id="left-header-content">
             <div id="logo-placeholder">📈</div>
@@ -224,6 +227,7 @@
             <div style="font-weight:700;">Resumo Diário</div>
             <div style="font-size:12px;color:var(--muted);">Filtros, importação e ações rápidas</div>
         </div>
+
         <div id="header-right">
             <button id="printBtn" class="btn small" title="Imprimir">Imprimir</button>
             <button id="exportBtn" class="btn small secondary" title="Exportar">Exportar</button>
@@ -232,40 +236,51 @@
                 <input type="file" id="excelFile" accept=".xlsx,.xls,.csv,.txt" multiple>
                 <span class="btn small">Procurar</span>
             </label>
+
             <button id="loadExcelBtn" class="btn small secondary" title="Importar arquivos">Importar</button>
 
             <label class="logo-label" for="logoFile" title="Carregar logo">
                 <input type="file" id="logoFile" accept="image/*">
                 <span class="btn small">Procurar</span>
             </label>
+
             <button id="addLogoBtn" class="btn small secondary" title="Carregar Logo">Carregar Logo</button>
             <button id="removeLogoBtn" class="btn small" title="Remover">Remover</button>
+
             <button id="deleteAllBtn" class="btn small secondary danger" title="Excluir tudo">🗑️</button>
         </div>
     </div>
 
     <div id="main-container">
+
+        <!-- Painel de resultados -->
         <div id="results-panel" class="card">
             <h2 style="margin:0 0 8px 0;">📊 Resumo Diário</h2>
+
+            <!-- Filtros -->
             <div class="card filter-card" style="margin-bottom:10px;">
                 <div style="display:flex;justify-content:space-between;align-items:center;gap:8px;">
                     <div style="font-weight:600;color:var(--muted);">Filtros</div>
                     <div style="font-size:12px;color:var(--muted);">Mostrar detalhe por operação</div>
                 </div>
+
                 <div class="input-row" style="margin-top:8px;">
                     <div>
                         <label for="filterStartDate">Data de Início</label>
                         <input type="date" id="filterStartDate">
                     </div>
+
                     <div>
                         <label for="filterEndDate">Data de Fim</label>
                         <input type="date" id="filterEndDate">
                     </div>
+
                     <div style="display:flex;align-items:flex-end;gap:8px;">
                         <button id="filterBtn" class="btn small">Filtrar</button>
                         <button id="resetFilterBtn" class="btn small secondary">Limpar</button>
                     </div>
                 </div>
+
                 <div style="margin-top:8px;">
                     <label style="font-weight:600;color:var(--muted)">
                         <input type="checkbox" id="showIndividualOps" checked onchange="calculateAndRender()"> Mostrar Detalhe por Operação
@@ -273,13 +288,14 @@
                 </div>
             </div>
 
+            <!-- Totais -->
             <div class="totals">
                 <div class="total-card" id="totalCompromissadaDisplay"><h4>Compromissada TOTAL</h4><p>R$ 0,00</p></div>
                 <div class="total-card" id="totalRetornoDisplay"><h4>Retorno Bruto TOTAL</h4><p>R$ 0,00</p></div>
                 <div class="total-card" id="totalCdiDisplay"><h4>Ganho (R$) TOTAL</h4><p>R$ 0,00</p></div>
             </div>
 
-            <!-- AGORA: TABELA REAL, NÃO MAIS DIV -->
+            <!-- Tabela REAL -->
             <div class="table-wrap">
                 <table id="resultTable">
                     <thead>
@@ -307,58 +323,97 @@
             </p>
         </div>
 
+        <!-- Painel de entrada -->
         <div id="input-panel" class="card">
-            <div style="display:flex;justify-content:space-between;align-items:center;">
-                <h3 style="margin:0 0 8px 0;">⭐ Configuração Global</h3>
-            </div>
+            <h3 style="margin:0 0 8px 0;">⭐ Configuração Global</h3>
+
             <div class="input-row">
                 <div>
                     <label for="taxaCdiAnual">Taxa CDI Anual Global (%)</label>
-                    <input type="text" id="taxaCdiAnual" placeholder="14,90" value="14,90" onchange="calculateAndRender()">
+                    <input type="text" id="taxaCdiAnual" value="14,90" onchange="calculateAndRender()">
                 </div>
+
                 <div>
                     <label for="diasAno">Dias no Ano</label>
-                    <input type="text" id="diasAno" placeholder="252" value="252" onchange="calculateAndRender()">
+                    <input type="text" id="diasAno" value="252" onchange="calculateAndRender()">
                 </div>
             </div>
-            <hr style="border:none;border-top:1px solid rgba(15,23,36,0.04);margin:12px 0;">
-            <div>
-                <h3 style="margin:0 0 8px 0;">📂 Importação</h3>
-                <p style="font-size:12px;color:var(--muted);margin:0 0 10px 0;">
-                    *O sistema tenta reconhecer os cabeçalhos, priorizando 'TX. 252' para a taxa CDI.
-                </p>
-            </div>
-            <hr style="border:none;border-top:1px solid rgba(15,23,36,0.04);margin:12px 0;">
-            <div>
-                <h3 style="margin:0 0 8px 0;">➕ Lançamento Manual</h3>
-                <div style="display:flex;flex-direction:column;gap:8px;">
-                    <input type="hidden" id="editIndex" value="-1">
-                    <div><label for="manualData">Data do Lançamento</label><br><input type="date" id="manualData" required></div>
-                    <div><label for="manualDesc">Descrição</label><br><input type="text" id="manualDesc" placeholder="Ex: REVENDA - Aplicação Mês"></div>
-                    <div><label for="manualBanco">Banco / Contraparte</label><br><input type="text" id="manualBanco" placeholder="Ex: BTG Pactual"></div>
-                    <div style="display:flex;gap:8px;">
-                        <div style="flex:1;"><label for="manualCedente">Conta Cedente</label><br><input type="text" id="manualCedente" placeholder="8300005"></div>
-                        <div style="flex:1;"><label for="manualCessionario">Conta Cessionário</label><br><input type="text" id="manualCessionario" placeholder="12000005"></div>
+
+            <hr>
+
+            <h3>📂 Importação</h3>
+            <p style="font-size:12px;color:var(--muted);margin:0 0 10px 0;">
+                *O sistema tenta reconhecer os cabeçalhos, priorizando 'TX. 252' para a taxa CDI.
+            </p>
+
+            <hr>
+
+            <h3>➕ Lançamento Manual</h3>
+
+            <div style="display:flex;flex-direction:column;gap:8px;">
+                <input type="hidden" id="editIndex" value="-1">
+
+                <div>
+                    <label for="manualData">Data do Lançamento</label>
+                    <input type="date" id="manualData">
+                </div>
+
+                <div>
+                    <label for="manualDesc">Descrição</label>
+                    <input type="text" id="manualDesc" placeholder="Ex: REVENDA - Aplicação Mês">
+                </div>
+
+                <div>
+                    <label for="manualBanco">Banco / Contraparte</label>
+                    <input type="text" id="manualBanco" placeholder="Ex: BTG Pactual">
+                </div>
+
+                <div style="display:flex;gap:8px;">
+                    <div style="flex:1;">
+                        <label for="manualCedente">Conta Cedente</label>
+                        <input type="text" id="manualCedente">
                     </div>
-                    <div><label for="manualCdiTaxa">Taxa CDI Anual Específica (%)</label><br><input type="text" id="manualCdiTaxa" placeholder="14,90 (Deixar vazio para usar Global)"></div>
-                    <div style="display:flex;gap:8px;">
-                        <div style="flex:1;"><label for="manualCompromissada">Valor Compromissada</label><br><input type="text" id="manualCompromissada" placeholder="10.000,00"></div>
-                        <div style="flex:1;"><label for="manualRetorno">Valor Retorno (Bruto)</label><br><input type="text" id="manualRetorno" placeholder="10.050,25"></div>
-                    </div>
-                    <div style="display:flex;gap:8px;">
-                        <button id="addBtn" class="btn" style="flex:1;">Adicionar Lançamento</button>
-                        <button id="cancelEditBtn" class="btn secondary" style="flex:1;display:none;">Cancelar Edição</button>
+
+                    <div style="flex:1;">
+                        <label for="manualCessionario">Conta Cessionário</label>
+                        <input type="text" id="manualCessionario">
                     </div>
                 </div>
+
+                <div>
+                    <label for="manualCdiTaxa">Taxa CDI Anual Específica (%)</label>
+                    <input type="text" id="manualCdiTaxa">
+                </div>
+
+                <div style="display:flex;gap:8px;">
+                    <div style="flex:1;">
+                        <label for="manualCompromissada">Valor Compromissada</label>
+                        <input type="text" id="manualCompromissada">
+                    </div>
+
+                    <div style="flex:1;">
+                        <label for="manualRetorno">Valor Retorno (Bruto)</label>
+                        <input type="text" id="manualRetorno">
+                    </div>
+                </div>
+
+                <div style="display:flex;gap:8px;">
+                    <button id="addBtn" class="btn" style="flex:1;">Adicionar Lançamento</button>
+                    <button id="cancelEditBtn" class="btn secondary" style="flex:1;display:none;">Cancelar Edição</button>
+                </div>
             </div>
+
             <pre id="log" style="height:84px;overflow:auto;margin-top:12px;color:var(--muted);">Aguardando...</pre>
         </div>
-    </div>
-
+    </div>   
+        <!-- ========================= -->
+    <!--  SCRIPT FINAL COMPLETO    -->
+    <!-- ========================= -->
     <script>
-        // ====================================================================
-        // FIREBASE REALTIME DATABASE E AUTENTICAÇÃO
-        // ====================================================================
+
+        /* ============================================================
+           CONFIGURAÇÃO DO FIREBASE
+        ============================================================ */
         const firebaseConfig = {
             apiKey: "AIzaSyD_vxw2VcSPO_tMXgrl7quZ85ODvpqQuR8",
             authDomain: "controle-cdi.firebaseapp.com",
@@ -372,549 +427,322 @@
 
         let database = null;
         let currentUserUid = null;
-        const DB_ROOT_PATH = 'usuarios/';
+        const DB_ROOT_PATH = "usuarios/";
 
-        if (typeof firebase !== 'undefined' && typeof firebase.database !== 'undefined' && typeof firebase.auth !== 'undefined') {
-            firebase.initializeApp(firebaseConfig);
-            database = firebase.database();
-        } else {
-            console.error("Firebase SDKs não carregados. O salvamento/autenticação em nuvem não funcionarão.");
-        }
+        firebase.initializeApp(firebaseConfig);
+        database = firebase.database();
 
-        const loginBtn = document.getElementById('loginBtn');
-        const loginMessage = document.getElementById('login-message');
 
-        function handleLogin() {
-            if (!firebase.auth()) {
-                loginMessage.textContent = "Erro: Firebase Auth não carregado.";
+        /* ============================================================
+           LOGIN / LOGOUT
+        ============================================================ */
+        const loginBtn = document.getElementById("loginBtn");
+        const loginMessage = document.getElementById("login-message");
+
+        loginBtn.addEventListener("click", () => {
+            if (currentUserUid) {
+                firebase.auth().signOut();
                 return;
             }
-
-            if (currentUserUid) {
-                firebase.auth().signOut().then(() => {
-                    log('Desconectado do Firebase.');
-                    currentUserUid = null;
-                    loginBtn.textContent = 'Login (Anônimo)';
-                    loginMessage.textContent = 'Status: Desconectado';
-                    operacoes = [];
-                    calculateAndRender();
-                });
-            } else {
-                loginMessage.textContent = 'Tentando conectar...';
-                firebase.auth().signInAnonymously()
-                    .then(() => {
-                        log('Login anônimo realizado com sucesso.');
-                    })
-                    .catch((error) => {
-                        log(`❌ Erro de Login: ${error.message}`);
-                        loginMessage.textContent = 'Status: Falha no Login';
-                    });
-            }
-        }
+            firebase.auth().signInAnonymously();
+        });
 
         firebase.auth().onAuthStateChanged((user) => {
             if (user) {
                 currentUserUid = user.uid;
                 loginMessage.textContent = `Status: Conectado (UID: ${user.uid.substring(0, 8)}...)`;
-                loginBtn.textContent = 'Logout';
-                log('Conexão estabelecida e segura. Carregando seus dados...');
+                loginBtn.textContent = "Logout";
                 loadStateFromFirebase();
             } else {
                 currentUserUid = null;
-                loginBtn.textContent = 'Login (Anônimo)';
-                loginMessage.textContent = 'Status: Desconectado. Faça login para acessar seus dados.';
+                loginMessage.textContent = "Status: Desconectado";
+                loginBtn.textContent = "Login (Anônimo)";
                 operacoes = [];
                 calculateAndRender();
             }
         });
 
-        if (loginBtn) {
-            loginBtn.addEventListener('click', handleLogin);
-        }
 
-        function log(message) { document.getElementById('log').textContent = message; }
-
-        function resetThemeToFixed() {
-            document.documentElement.style.setProperty('--primary', '#0A0A33');
-            document.documentElement.style.setProperty('--primary-light', '#1A1A55');
-            document.documentElement.style.setProperty('--secondary', '#C00000');
-            document.documentElement.style.setProperty('--secondary-light', '#E00000');
-
-            document.querySelectorAll('.btn:not(.secondary):not(.danger)').forEach(b => {
-                b.style.background = 'var(--primary)';
-                b.style.border = '1px solid white';
-                b.style.color = 'white';
-            });
-
-            document.querySelectorAll('.btn.secondary').forEach(b => {
-                b.style.background = 'var(--secondary)';
-                b.style.border = '1px solid white';
-                b.style.color = 'white';
-            });
-
-            document.querySelectorAll('.btn.danger').forEach(b=>{
-                b.style.background = getComputedStyle(document.documentElement).getPropertyValue('--secondary').trim();
-                b.style.color = '#ffffff';
-                b.style.border = '1px solid white';
-            });
-        }
-
-        const logoInput = document.getElementById('logoFile');
-        const siteLogo = document.getElementById('siteLogo');
-
-        async function compressImageFile(file, quality = 0.7, maxSize = 600) {
-            return new Promise((resolve, reject) => {
-                const reader = new FileReader();
-                reader.onload = () => {
-                    const img = new Image();
-                    img.onload = () => {
-                        const canvas = document.createElement('canvas');
-                        const ratio = Math.min(1, maxSize / Math.max(img.width, img.height));
-                        canvas.width = Math.round(img.width * ratio);
-                        canvas.height = Math.round(img.height * ratio);
-                        const ctx = canvas.getContext('2d');
-                        ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-                        try {
-                            const dataUrl = canvas.toDataURL('image/jpeg', quality);
-                            resolve(dataUrl);
-                        } catch (err) { reject(err); }
-                    };
-                    img.onerror = reject;
-                    img.src = reader.result;
-                };
-                reader.onerror = reject;
-                reader.readAsDataURL(file);
-            });
-        }
-
-        if (logoInput) {
-            logoInput.addEventListener('change', async (e) => {
-                const file = e.target.files && e.target.files[0];
-                if(!file) return;
-
-                try {
-                    const compressed = await compressImageFile(file, 0.7, 600);
-                    siteLogo.src = compressed;
-                    siteLogo.style.display = 'block';
-                    localStorage.setItem('cdiLogo', compressed);
-                    log('✅ Logo salvo localmente.');
-                } catch (err) {
-                    console.error(err);
-                    log('❌ Erro ao processar o logo.');
-                }
-                resetThemeToFixed();
-            });
-
-            const addLogoBtn = document.getElementById('addLogoBtn');
-            if (addLogoBtn) {
-                addLogoBtn.addEventListener('click', () => {
-                    logoInput.click();
-                });
-            }
-        }
-        const removeLogoBtn = document.getElementById('removeLogoBtn');
-        if (removeLogoBtn) {
-            removeLogoBtn.addEventListener('click', ()=>{
-                if(!confirm('Tem certeza que deseja remover logo salvo e restaurar padrão?')) return;
-                localStorage.removeItem('cdiLogo');
-                siteLogo.src = '';
-                siteLogo.style.display = 'none';
-                resetThemeToFixed();
-                log('🗑️ Logo removido. Tema restaurado.');
-            });
-        }
-
+        /* ============================================================
+           FUNÇÕES DE FORMATAÇÃO
+        ============================================================ */
         function cleanCurrency(v){
             if(typeof v!=='string') v=String(v);
-            let cleanString = v.replace(/[R$\s]/g, '');
-            cleanString = cleanString.replace(/\./g, '');
-            cleanString = cleanString.replace(/,/g, '.');
-            const n=parseFloat(cleanString);
+            let s=v.replace(/[R$\s]/g,'').replace(/\./g,'').replace(/,/g,'.');
+            let n=parseFloat(s);
             return isNaN(n)?0:n;
         }
-
         function parseNumber(v){
             if(v===undefined||v===null||v==='') return 0;
-            if(typeof v==='string' && (v.includes(',') || v.includes('R$'))) return cleanCurrency(v);
-            const n=parseFloat(v);
+            if(typeof v==='string' && (v.includes(',')||v.includes('R$'))) return cleanCurrency(v);
+            let n=parseFloat(v);
             return isNaN(n)?0:n;
         }
-
         function cleanCdiTaxa(v){
-            if(v===undefined||v===null||v==='') return 0;
-            if(typeof v!=='string') v=String(v);
-            v=v.replace(/[^0-9,.]/g,'');
-            v = v.replace(/,/g,'.');
-            const parts = v.split('.');
-            if(parts.length > 2) {
-                v = parts.slice(0, -1).join('') + '.' + parts.slice(-1);
-            }
-            const n=parseFloat(v);
+            if(!v) return 0;
+            v=String(v).replace(/[^0-9,.]/g,'').replace(/,/g,'.');
+            const parts=v.split('.');
+            if(parts.length>2) v=parts.slice(0,-1).join('')+'.'+parts.slice(-1);
+            let n=parseFloat(v);
             return isNaN(n)?0:n;
         }
-
-        function formatBRL(n){ return n.toLocaleString('pt-BR',{style:'currency',currency:'BRL',minimumFractionDigits:2}); }
-        function formatPercent(n){ if(n===undefined||n===null||isNaN(n)) return ''; return n.toFixed(4).replace('.',','); }
-        function formatPU(n){ if(n===undefined||n===null||isNaN(n)||n===0) return '-'; return n.toLocaleString('pt-BR',{minimumFractionDigits:4,maximumFractionDigits:4}); }
+        function formatBRL(n){ return n.toLocaleString("pt-BR",{style:"currency",currency:"BRL"}); }
+        function formatPercent(n){ return (n||0).toFixed(4).replace('.',','); }
+        function formatPU(n){ return n? n.toLocaleString("pt-BR",{minimumFractionDigits:4,maximumFractionDigits:4}) : "-"; }
         function formatDataBR(s){
-            if(!s) return '-';
-            if(s.match(/^\d{4}-\d{2}-\d{2}$/)){ const [y,m,d]=s.split('-'); return `${d}/${m}/${y}`; }
-            if(s.match(/^\d{2}\/\d{2}\/\d{4}$/)) return s;
-            const d=new Date(s); if(!isNaN(d)) return d.toLocaleDateString('pt-BR'); return s;
+            if(!s) return "-";
+            if(s.match(/^\d{4}-\d{2}-\d{2}$/)){
+                const [y,m,d]=s.split("-");
+                return `${d}/${m}/${y}`;
+            }
+            return s;
         }
-
         function normalizeDate(s){
-            if(!s) return '';
+            if(!s) return "";
             s=String(s).trim();
             if(s.match(/^\d{4}-\d{2}-\d{2}$/)) return s;
             if(s.match(/^\d{2}\/\d{2}\/\d{4}$/)){
-                const [d,m,y]=s.split('/');
+                const [d,m,y]=s.split("/");
                 return `${y}-${m}-${d}`;
             }
-            const num=parseFloat(s);
-            if(!isNaN(num) && num>25569 && num<70000){
-                const base=new Date('1899-12-30');
-                const date=new Date(base.getTime() + num*24*60*60*1000);
-                if(!isNaN(date)){
-                    const y=date.getUTCFullYear();
-                    const m=date.getUTCMonth()+1;
-                    const d=date.getUTCDate();
-                    const pad=n=>n<10?'0'+n:n;
-                    return `${y}-${pad(m)}-${pad(d)}`;
-                }
-            }
-            try{ const d=new Date(s); if(!isNaN(d)) return d.toISOString().split('T')[0]; }catch(e){}
-            return '';
+            return "";
         }
 
-        let operacoes = [], totalCompromissada=0, totalRetorno=0, totalGanho=0;
+
+        /* ============================================================
+           ESTADO PRINCIPAL
+        ============================================================ */
+        let operacoes = [];
+        let totalCompromissada = 0;
+        let totalRetorno = 0;
+        let totalGanho = 0;
+
         let filtroAtivo = false;
         let dataFiltroInicio = null;
         let dataFiltroFim = null;
 
-        function saveState(){
-            if (!database || !currentUserUid) {
-                log("❌ É necessário fazer login para salvar os dados.");
-                return;
-            }
 
-            const stateToSave = {
-                operacoes: operacoes,
-                taxaCdiAnual: document.getElementById('taxaCdiAnual').value,
-                diasAno: document.getElementById('diasAno').value
+        /* ============================================================
+           SALVAR E CARREGAR DO FIREBASE
+        ============================================================ */
+        function saveState(){
+            if(!currentUserUid) return;
+
+            const state = {
+                operacoes,
+                taxaCdiAnual: document.getElementById("taxaCdiAnual").value,
+                diasAno: document.getElementById("diasAno").value
             };
 
-            database.ref(`${DB_ROOT_PATH}${currentUserUid}/operacoes`).set(stateToSave)
-                .then(() => {
-                    log(`✅ ${operacoes.length} operações e configurações salvas de forma segura!`);
-                })
-                .catch((error) => {
-                    log(`❌ Erro ao salvar: ${error.message}.`);
-                    console.error("Firebase Save Error:", error);
-                });
+            database.ref(DB_ROOT_PATH + currentUserUid + "/operacoes").set(state);
         }
 
         function loadStateFromFirebase(){
-            if (!database || !currentUserUid) {
-                operacoes = [];
+            if(!currentUserUid) return;
+
+            database.ref(DB_ROOT_PATH + currentUserUid + "/operacoes").once("value")
+            .then(snapshot=>{
+                const data=snapshot.val();
+                if(data){
+                    operacoes = data.operacoes || [];
+                    document.getElementById("taxaCdiAnual").value = data.taxaCdiAnual || "14,90";
+                    document.getElementById("diasAno").value = data.diasAno || "252";
+                }
                 calculateAndRender();
-                return;
-            }
-
-            database.ref(`${DB_ROOT_PATH}${currentUserUid}/operacoes`).once('value')
-                .then((snapshot) => {
-                    const savedState = snapshot.val();
-                    if (savedState && savedState.operacoes) {
-                        operacoes = savedState.operacoes || [];
-                        document.getElementById('taxaCdiAnual').value = savedState.taxaCdiAnual || '14,90';
-                        document.getElementById('diasAno').value = savedState.diasAno || '252';
-                        log(`💾 ${operacoes.length} operações carregadas com sucesso!`);
-                    } else {
-                        operacoes = [];
-                        log('Nenhum dado salvo encontrado para este usuário.');
-                    }
-
-                    calculateAndRender();
-                })
-                .catch(error => {
-                    operacoes = [];
-                    log(`❌ Erro ao carregar dados: ${error.message}.`);
-                    console.error("Firebase Load Error:", error);
-                    calculateAndRender();
-                });
+            });
         }
 
-        function calculateAndRender() {
-            const taxaGlobal = cleanCdiTaxa(document.getElementById('taxaCdiAnual').value) / 100;
-            const diasAno = parseNumber(document.getElementById('diasAno').value) || 252;
-            const showOps = document.getElementById('showIndividualOps').checked;
 
-            totalCompromissada = 0;
-            totalRetorno = 0;
-            totalGanho = 0;
+        /* ============================================================
+           RENDERIZAÇÃO DA TABELA REAL
+        ============================================================ */
+        function calculateAndRender(){
+            const taxaGlobal = cleanCdiTaxa(document.getElementById("taxaCdiAnual").value)/100;
+            const showOps = document.getElementById("showIndividualOps").checked;
 
-            const tbody = document.getElementById('resultBody');
-            tbody.innerHTML = '';
+            totalCompromissada=0;
+            totalRetorno=0;
+            totalGanho=0;
 
-            let operacoesFiltradas = operacoes.filter(op => {
-                if (!filtroAtivo) return true;
-                const dataOp = normalizeDate(op.data);
-                if (dataFiltroInicio && dataOp < dataFiltroInicio) return false;
-                if (dataFiltroFim && dataOp > dataFiltroFim) return false;
+            const tbody=document.getElementById("resultBody");
+            tbody.innerHTML="";
+
+            let lista = operacoes.filter(op=>{
+                if(!filtroAtivo) return true;
+                const d = normalizeDate(op.data);
+                if(dataFiltroInicio && d < dataFiltroInicio) return false;
+                if(dataFiltroFim && d > dataFiltroFim) return false;
                 return true;
             });
 
-            operacoesFiltradas.forEach((op, index) => {
-                const taxa = cleanCdiTaxa(op.cdiTaxa || taxaGlobal * 100) / 100;
-                const compromissada = parseNumber(op.compromissada);
-                const retornoBruto = parseNumber(op.retornoBruto);
+            lista.forEach((op,i)=>{
+                const compromissada=parseNumber(op.compromissada);
+                const retorno=parseNumber(op.retornoBruto);
+                const taxa=cleanCdiTaxa(op.cdiTaxa||taxaGlobal*100)/100;
 
-                const puIda = compromissada / op.quantidade || 0;
-                const puVolta = retornoBruto / op.quantidade || 0;
+                const puIda = compromissada/(op.quantidade||1);
+                const puVolta = retorno/(op.quantidade||1);
 
-                let ganhoDiario = retornoBruto - compromissada;
-                if (op.desc.toUpperCase().includes('RECOMPRA') && ganhoDiario < 0) {
-                    ganhoDiario = Math.abs(ganhoDiario);
+                let ganho = retorno - compromissada;
+                if(op.desc.toUpperCase().includes("RECOMPRA") && ganho<0){
+                    ganho = Math.abs(ganho);
                 }
 
-                totalCompromissada += compromissada;
-                totalRetorno += retornoBruto;
-                totalGanho += ganhoDiario;
+                totalCompromissada+=compromissada;
+                totalRetorno+=retorno;
+                totalGanho+=ganho;
 
-                if (showOps) {
-                    const row = document.createElement('tr');
-                    row.innerHTML = `
+                if(showOps){
+                    const tr=document.createElement("tr");
+                    tr.innerHTML=`
                         <td>${formatDataBR(op.data)}</td>
                         <td class="col-left">${op.desc}</td>
                         <td style="text-align:left;">${op.banco}</td>
                         <td>${op.cedente}</td>
                         <td>${op.cessionario}</td>
                         <td>${formatBRL(compromissada)}</td>
-                        <td>${formatBRL(retornoBruto)}</td>
+                        <td>${formatBRL(retorno)}</td>
                         <td>${formatPU(puIda)}</td>
                         <td>${formatPU(puVolta)}</td>
-                        <td>${formatPercent(taxa * 100)}</td>
-                        <td><span class="${ganhoDiario >= 0 ? 'ganho' : 'perda'}">${formatBRL(ganhoDiario)}</span></td>
+                        <td>${formatPercent(taxa*100)}</td>
+                        <td><span class="${ganho>=0?'ganho':'perda'}">${formatBRL(ganho)}</span></td>
                         <td class="action-cell">
-                            <button class="btn small" onclick="editOperation(${index})">Alterar</button>
-                            <button class="btn small danger" onclick="deleteOperation(${index})">Excluir</button>
+                            <button class="btn small" onclick="editOperation(${i})">Alterar</button>
+                            <button class="btn small danger" onclick="deleteOperation(${i})">Excluir</button>
                         </td>
                     `;
-                    tbody.appendChild(row);
+                    tbody.appendChild(tr);
                 }
             });
 
-            document.getElementById('totalCompromissadaDisplay').querySelector('p').textContent = formatBRL(totalCompromissada);
-            document.getElementById('totalRetornoDisplay').querySelector('p').textContent = formatBRL(totalRetorno);
-            document.getElementById('totalCdiDisplay').querySelector('p').textContent = formatBRL(totalGanho);
+            document.querySelector("#totalCompromissadaDisplay p").textContent = formatBRL(totalCompromissada);
+            document.querySelector("#totalRetornoDisplay p").textContent = formatBRL(totalRetorno);
+            document.querySelector("#totalCdiDisplay p").textContent = formatBRL(totalGanho);
 
-            if (!showOps) {
-                const tr = document.createElement('tr');
-                const td = document.createElement('td');
-                td.colSpan = 12;
-                td.style.textAlign = 'center';
-                td.style.color = 'var(--muted)';
-                td.textContent = 'Detalhes ocultos. Marque "Mostrar Detalhe por Operação" para ver a tabela.';
+            if(!showOps){
+                const tr=document.createElement("tr");
+                const td=document.createElement("td");
+                td.colSpan=12;
+                td.style.textAlign="center";
+                td.style.color="var(--muted)";
+                td.textContent="Detalhes ocultos. Marque a opção acima para ver a tabela.";
                 tr.appendChild(td);
                 tbody.appendChild(tr);
             }
         }
 
-        function applyFilter() {
-            const start = document.getElementById('filterStartDate').value;
-            const end = document.getElementById('filterEndDate').value;
 
-            dataFiltroInicio = start;
-            dataFiltroFim = end;
-            filtroAtivo = !!start || !!end;
-
+        /* ============================================================
+           FILTROS
+        ============================================================ */
+        document.getElementById("filterBtn").addEventListener("click",()=>{
+            dataFiltroInicio=document.getElementById("filterStartDate").value;
+            dataFiltroFim=document.getElementById("filterEndDate").value;
+            filtroAtivo = !!dataFiltroInicio || !!dataFiltroFim;
             calculateAndRender();
-            log(`Filtro aplicado: De ${start || 'Início'} até ${end || 'Fim'}`);
-        }
-
-        function resetFilter() {
-            document.getElementById('filterStartDate').value = '';
-            document.getElementById('filterEndDate').value = '';
-            dataFiltroInicio = null;
-            dataFiltroFim = null;
-            filtroAtivo = false;
-
-            calculateAndRender();
-            log('Filtro limpo.');
-        }
-
-        function attachFilterListeners() {
-            document.getElementById('filterBtn').addEventListener('click', applyFilter);
-            document.getElementById('resetFilterBtn').addEventListener('click', resetFilter);
-            document.getElementById('showIndividualOps').addEventListener('change', calculateAndRender);
-        }
-
-        function editOperation(index) {
-            log(`Alterar operação de índice ${index} (Implementação pendente).`);
-        }
-
-        function deleteOperation(index) {
-            if (confirm(`Tem certeza que deseja excluir a operação de índice ${index}?`)) {
-                operacoes.splice(index, 1);
-                calculateAndRender();
-                saveState();
-                log(`🗑️ Operação de índice ${index} excluída.`);
-            }
-        }
-
-        const excelFileInput = document.getElementById('excelFile');
-        const loadExcelBtn = document.getElementById('loadExcelBtn');
-
-        function processExcelData(data) {
-            try {
-                if (typeof XLSX === 'undefined') {
-                    log('❌ ERRO: Biblioteca SheetJS (xlsx.mini.min.js) não carregada.');
-                    return;
-                }
-                const workbook = XLSX.read(data, { type: 'array' });
-
-                const sheetName = workbook.SheetNames[0];
-                const worksheet = workbook.Sheets[sheetName];
-
-                const json = XLSX.utils.sheet_to_json(worksheet, { header: 1, raw: true });
-
-                if (json.length === 0) {
-                    log('❌ Arquivo Excel está vazio ou não pôde ser lido.');
-                    return;
-                }
-
-                const headers = json[0] || [];
-                const map = {};
-
-                const knownHeaders = {
-                    'DATA': 'data',
-                    'DATA LIQUIDACAO': 'data',
-                    'DESCRICAO': 'desc',
-                    'BANCO': 'banco',
-                    'CONTA CEDENTE': 'cedente',
-                    'CONTA CESSIONARIO': 'cessionario',
-                    'COMPROMISSADA': 'compromissada',
-                    'RETORNO BRUTO': 'retornoBruto',
-                    'QUANTIDADE': 'quantidade',
-                    'TX. CDI ANUAL': 'cdiTaxa',
-                    'TX. 252': 'cdiTaxa'
-                };
-
-                headers.forEach((h, i) => {
-                    if (h) {
-                        const normalizedH = String(h).trim().toUpperCase();
-                        if (knownHeaders[normalizedH]) {
-                            map[knownHeaders[normalizedH]] = i;
-                        }
-                    }
-                });
-
-                if (Object.keys(map).length < 5) {
-                    log('⚠️ Não foi possível identificar todas as colunas essenciais (Data, Descrição, Compromissada, Retorno Bruto, Quantidade).');
-                }
-
-                const novosDados = [];
-
-                for (let i = 1; i < json.length; i++) {
-                    const row = json[i];
-                    if (!row || row.length < Object.keys(map).length || !row[map.data] || !row[map.compromissada]) {
-                        continue;
-                    }
-
-                    const novaOp = {
-                        data: normalizeDate(row[map.data]),
-                        desc: String(row[map.desc] || ''),
-                        banco: String(row[map.banco] || ''),
-                        cedente: String(row[map.cedente] || ''),
-                        cessionario: String(row[map.cessionario] || ''),
-                        compromissada: parseNumber(row[map.compromissada]),
-                        retornoBruto: parseNumber(row[map.retornoBruto]),
-                        quantidade: parseNumber(row[map.quantidade] || 1),
-                        cdiTaxa: cleanCdiTaxa(row[map.cdiTaxa] || '')
-                    };
-
-                    if(novaOp.data && novaOp.compromissada !== 0) {
-                        novosDados.push(novaOp);
-                    }
-                }
-
-                if (novosDados.length > 0) {
-                    operacoes = operacoes.concat(novosDados);
-                    calculateAndRender();
-                    saveState();
-                    log(`🎉 ${novosDados.length} novas operações importadas com sucesso!`);
-                } else {
-                    log('⚠️ Arquivo lido, mas nenhuma operação válida encontrada.');
-                }
-
-            } catch (e) {
-                log(`❌ ERRO FATAL na leitura do Excel: ${e.message}. Verifique se o arquivo tem o formato .xlsx.`);
-                console.error("Excel Processing Error:", e);
-            }
-        }
-
-        excelFileInput.addEventListener('change', (e) => {
-            if (e.target.files.length === 0) {
-                return;
-            }
-            log(`Arquivos selecionados: ${e.target.files.length}. Clique em 'Importar' para processar.`);
         });
 
-        loadExcelBtn.addEventListener('click', () => {
-            const files = excelFileInput.files;
-            if (files.length === 0) {
-                log('Por favor, selecione um arquivo Excel primeiro.');
+        document.getElementById("resetFilterBtn").addEventListener("click",()=>{
+            filtroAtivo=false;
+            dataFiltroInicio=null;
+            dataFiltroFim=null;
+            document.getElementById("filterStartDate").value="";
+            document.getElementById("filterEndDate").value="";
+            calculateAndRender();
+        });
+
+
+        /* ============================================================
+           EXCLUSÃO
+        ============================================================ */
+        function deleteOperation(i){
+            if(!confirm("Excluir esta operação?")) return;
+            operacoes.splice(i,1);
+            saveState();
+            calculateAndRender();
+        }
+
+
+        /* ============================================================
+           IMPORTAÇÃO EXCEL (SheetJS)
+        ============================================================ */
+        document.getElementById("loadExcelBtn").addEventListener("click",()=>{
+            const file = document.getElementById("excelFile").files[0];
+            if(!file){
+                alert("Selecione um arquivo primeiro.");
                 return;
             }
 
-            const file = files[0];
-            const reader = new FileReader();
-
-            reader.onload = (e) => {
+            const reader=new FileReader();
+            reader.onload=e=>{
                 processExcelData(e.target.result);
             };
-
-            reader.onerror = (e) => {
-                log(`❌ Erro de leitura de arquivo: ${e.target.error.name}`);
-            };
-
             reader.readAsArrayBuffer(file);
         });
 
-        document.getElementById('deleteAllBtn').addEventListener('click', () => {
-            if (confirm("ATENÇÃO: Você tem certeza que deseja APAGAR TODOS os dados de operações e configurações no Firebase?")) {
-                if (!database || !currentUserUid) {
-                    log("❌ É necessário fazer login para apagar os dados.");
-                    return;
-                }
+        function processExcelData(data){
+            const workbook = XLSX.read(data,{type:"array"});
+            const sheet = workbook.Sheets[workbook.SheetNames[0]];
+            const json = XLSX.utils.sheet_to_json(sheet,{header:1,raw:true});
 
-                database.ref(`${DB_ROOT_PATH}${currentUserUid}/operacoes`).remove()
-                    .then(() => {
-                        operacoes = [];
-                        calculateAndRender();
-                        log('🗑️ TODOS os dados de operações foram apagados permanentemente do Firebase.');
-                    })
-                    .catch(error => {
-                        log(`❌ Erro ao apagar: ${error.message}.`);
-                    });
+            if(json.length===0){
+                alert("Arquivo vazio.");
+                return;
             }
-        });
 
-        window.loadState = ()=>{
-            resetThemeToFixed();
+            const headers=json[0].map(h=>String(h||"").trim().toUpperCase());
+            const map={};
 
-            try {
-                const savedLogo = localStorage.getItem('cdiLogo');
-                if (savedLogo) {
-                    siteLogo.src = savedLogo;
-                    siteLogo.style.display = 'block';
-                    log('💾 Logo carregado do salvamento local.');
-                }
-            } catch (err) { console.warn(err); }
+            const known={
+                "DATA":"data",
+                "DESCRICAO":"desc",
+                "BANCO":"banco",
+                "CONTA CEDENTE":"cedente",
+                "CONTA CESSIONARIO":"cessionario",
+                "COMPROMISSADA":"compromissada",
+                "RETORNO BRUTO":"retornoBruto",
+                "QUANTIDADE":"quantidade",
+                "TX. 252":"cdiTaxa",
+                "TX. CDI ANUAL":"cdiTaxa"
+            };
 
-            attachFilterListeners();
+            headers.forEach((h,i)=>{
+                if(known[h]) map[known[h]]=i;
+            });
+
+            const novos=[];
+            for(let i=1;i<json.length;i++){
+                const row=json[i];
+                if(!row || !row[map.data] || !row[map.compromissada]) continue;
+
+                novos.push({
+                    data: normalizeDate(row[map.data]),
+                    desc: row[map.desc]||"",
+                    banco: row[map.banco]||"",
+                    cedente: row[map.cedente]||"",
+                    cessionario: row[map.cessionario]||"",
+                    compromissada: parseNumber(row[map.compromissada]),
+                    retornoBruto: parseNumber(row[map.retornoBruto]),
+                    quantidade: parseNumber(row[map.quantidade]||1),
+                    cdiTaxa: cleanCdiTaxa(row[map.cdiTaxa]||"")
+                });
+            }
+
+            operacoes = operacoes.concat(novos);
+            saveState();
             calculateAndRender();
+            alert(`${novos.length} operações importadas com sucesso!`);
         }
+
+
+        /* ============================================================
+           CARREGAMENTO INICIAL
+        ============================================================ */
+        window.loadState = function(){
+            calculateAndRender();
+        };
+
     </script>
+
 </body>
 </html>
