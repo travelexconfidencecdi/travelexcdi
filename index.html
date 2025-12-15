@@ -220,7 +220,7 @@
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-database-compat.js"></script>
 </head>
 
-<body onload="loadState()">
+<body onload="loadLogo()">
     <div id="logo-wrapper">
         <img id="siteLogo" alt="Logo do site">
     </div>
@@ -425,7 +425,7 @@
         ============================================================ */
         const firebaseConfig = {
             // Configurações genéricas de Firebase
-            apiKey: "AIzaSyD_vxw2VcSPO_tMXgrl7quZ85ODvpqQuR8",
+            apiKey: "AIzaSyD_vxw2VcSPO_tMXgrb7quZ85ODvpqQuR8", // Chave de demonstração/genérica
             authDomain: "controle-cdi.firebaseapp.com",
             databaseURL: "https://controle-cdi-default-rtdb.firebaseio.com",
             projectId: "controle-cdi",
@@ -444,7 +444,6 @@
 
         /* ============================================================
             LOGIN / LOGOUT / CADASTRO POR EMAIL E SENHA
-            (MODIFICADO PARA PERMITIR USO EM MÚLTIPLOS DISPOSITIVOS)
         ============================================================ */
         const loginBtn = document.getElementById("loginBtn");
         const logoutBtn = document.getElementById("logoutBtn");
@@ -477,13 +476,12 @@
                 log("Preencha email e senha para cadastrar.");
                 return;
             }
-            // OBS: Adicionei uma validação mínima de senha para o Firebase aceitar (mínimo 6 caracteres)
             if (password.length < 6) {
                 log("❌ A senha deve ter no mínimo 6 caracteres.");
                 return;
             }
             firebase.auth().createUserWithEmailAndPassword(email, password)
-                .then(() => { log("✅ Cadastro realizado com sucesso. Faça login em outros dispositivos."); })
+                .then(() => { log("✅ Cadastro realizado com sucesso e login automático."); })
                 .catch(error => { log(`❌ Erro no Cadastro: ${error.message}`); });
         });
 
@@ -519,7 +517,7 @@
 
 
         /* ============================================================
-            FUNÇÕES DE FORMATAÇÃO E UTILIDADE (ADOTANDO SUA LÓGICA LOCAL)
+            FUNÇÕES DE FORMATAÇÃO E UTILIDADE 
         ============================================================ */
         
         function cleanCurrency(v){
@@ -770,7 +768,7 @@
         }
 
         /* ============================================================
-            FUNÇÕES DE MANIPULAÇÃO DE DADOS (AGORA CHAMAM saveState())
+            FUNÇÕES DE MANIPULAÇÃO DE DADOS 
         ============================================================ */
 
         // Event Listeners para botões do painel de input...
@@ -807,11 +805,11 @@
                 banco,
                 cedente,
                 cessionario,
-                cdiTaxa: cdiTaxa || null, // Se for 0, usa a global
+                cdiTaxa: cdiTaxa || null, 
                 compromissada,
                 retornoBruto: retorno,
-                puIda: compromissada / retorno, // Cálculo simplificado de PU
-                puVolta: retorno / retorno // Cálculo simplificado de PU
+                puIda: compromissada / retorno, 
+                puVolta: retorno / retorno 
             };
 
             if (editIndex !== -1 && operacoes[editIndex]) {
@@ -824,7 +822,7 @@
 
             resetManualForm();
             calculateAndRender();
-            saveState(); // <--- SALVA NA NUVEM APÓS CADA ALTERAÇÃO
+            saveState(); // SALVA NA NUVEM APÓS CADA ALTERAÇÃO
         }
 
         // Deletar Operação
@@ -832,7 +830,7 @@
             if (!confirm("Excluir esta operação?")) return;
             operacoes.splice(i, 1);
             calculateAndRender();
-            saveState(); // <--- SALVA NA NUVEM APÓS DELETAR
+            saveState(); // SALVA NA NUVEM APÓS DELETAR
             log("✅ Operação excluída.");
         }
 
@@ -841,7 +839,7 @@
             if (!confirm("Tem certeza que deseja EXCLUIR TODAS as operações? Esta ação não pode ser desfeita!")) return;
             operacoes = [];
             calculateAndRender();
-            saveState(); // <--- SALVA NA NUVEM APÓS DELETAR TUDO
+            saveState(); // SALVA NA NUVEM APÓS DELETAR TUDO
             log("🗑️ Todas as operações foram excluídas.");
         });
 
@@ -880,16 +878,200 @@
             document.getElementById("addBtn").classList.remove("secondary");
             document.getElementById("cancelEditBtn").style.display = 'none';
         }
-        
-        // As demais funções (Exportar, Importar Excel, Logo) permanecem
-        // inalteradas e funcionam como antes.
-        
-        // ... (COLOCAR O RESTANTE DO CÓDIGO DO EXCEL E LOGO AQUI) ...
-        // ... (para manter o código completo, este bloco deve ser substituído pelo restante original) ...
+
 
         /* ============================================================
-            FIM DO SCRIPT
+            FUNÇÕES DE IMPORTAÇÃO (SheetJS/Excel) - CORRIGIDO E COMPLETO
         ============================================================ */
+        const excelFile = document.getElementById('excelFile');
+        const loadExcelBtn = document.getElementById('loadExcelBtn');
+
+        excelFile.addEventListener('change', (e) => {
+            const files = e.target.files;
+            if (files.length > 0) {
+                log(`Arquivo selecionado: ${files[0].name}. Clique em 'Importar' para carregar.`);
+            }
+        });
+
+        loadExcelBtn.addEventListener('click', () => {
+            const files = excelFile.files;
+            if (files.length === 0) {
+                log("⚠️ Por favor, selecione um arquivo primeiro.");
+                return;
+            }
+            handleExcelFile(files);
+        });
+
+
+        function handleExcelFile(files) {
+            if (files.length === 0) return;
+            const file = files[0];
+            const reader = new FileReader();
+
+            reader.onload = function(e) {
+                const data = new Uint8Array(e.target.result);
+                const workbook = XLSX.read(data, { type: 'array', cellDates: true, raw: false });
+                const firstSheetName = workbook.SheetNames[0];
+                const worksheet = workbook.Sheets[firstSheetName];
+                
+                // Converte a planilha para um array de objetos (JSON)
+                const json = XLSX.utils.sheet_to_json(worksheet, { header: 1, raw: false });
+
+                if (json.length < 2) {
+                    log("❌ Arquivo vazio ou sem dados.");
+                    return;
+                }
+
+                // Mapeamento de Cabeçalhos
+                const headerRow = json[0];
+                const headers = headerRow.map(h => normalizeHeader(h));
+                
+                // Mapeamento esperado no arquivo
+                const map = {
+                    'DATA': ['DATA', 'DTOPERACAO', 'DTREFERENCIA'],
+                    'COMPROMISSADA': ['VLIDA', 'VALORIDA', 'VLBRUTO'], // VL_IDA
+                    'RETORNOBRUTO': ['VLVOLTA', 'VALORVOLTA', 'VLTOTAL'], // VL_VOLTA
+                    'BANCO': ['BANCO', 'CORRETORA', 'CONTRAPARTE'],
+                    'CEDENTE': ['CCEDENTE', 'CONTACEDENTE'],
+                    'CESSIONARIO': ['CCESSIONARIO', 'CONTACESSIONARIO'],
+                    'DESCRICAO': ['DESCRICAO', 'RESUMO', 'OPERACAO']
+                };
+
+                const colIndices = {};
+                Object.keys(map).forEach(key => {
+                    const possibleNames = map[key];
+                    for (let i = 0; i < headers.length; i++) {
+                        if (possibleNames.includes(headers[i])) {
+                            colIndices[key] = i;
+                            break;
+                        }
+                    }
+                });
+
+                // Processa as linhas de dados (começa da segunda linha, índice 1)
+                let importedCount = 0;
+                const newOps = [];
+
+                for (let i = 1; i < json.length; i++) {
+                    const row = json[i];
+                    
+                    if (row.length === 0 || !row[colIndices['DATA']] || (!row[colIndices['COMPROMISSADA']] && !row[colIndices['RETORNOBRUTO']])) continue;
+
+                    const dataStr = String(row[colIndices['DATA']] || '');
+                    const compromissadaValue = parseNumber(row[colIndices['COMPROMISSADA']] || 0);
+                    const retornoValue = parseNumber(row[colIndices['RETORNOBRUTO']] || 0);
+                    
+                    const compromissada = compromissadaValue || retornoValue;
+                    const retorno = retornoValue || compromissadaValue;
+
+                    if (compromissada === 0 && retorno === 0) continue; 
+
+                    const puIda = parseNumber(row[colIndices['PUIDA']] || 1); 
+                    const puVolta = parseNumber(row[colIndices['PUVOLTA']] || 1);
+
+                    const newOp = {
+                        data: normalizeDate(dataStr),
+                        desc: row[colIndices['DESCRICAO']] || '',
+                        banco: row[colIndices['BANCO']] || '',
+                        cedente: row[colIndices['CEDENTE']] || '',
+                        cessionario: row[colIndices['CESSIONARIO']] || '',
+                        cdiTaxa: null, 
+                        compromissada: compromissada,
+                        retornoBruto: retorno,
+                        puIda: puIda,
+                        puVolta: puVolta
+                    };
+
+                    newOps.push(newOp);
+                    importedCount++;
+                }
+
+                if (importedCount > 0) {
+                    operacoes = operacoes.concat(newOps);
+                    calculateAndRender();
+                    saveState(); // Salva na nuvem após importação
+                    log(`🎉 ${importedCount} operações importadas e salvas na nuvem!`);
+                } else {
+                    log("❌ Nenhum dado válido encontrado para importação.");
+                }
+            };
+            
+            reader.readAsArrayBuffer(file);
+        }
+
+        /* ============================================================
+            FUNÇÕES DE LOGO, EXPORTAÇÃO E IMPRESSÃO 
+        ============================================================ */
+
+        document.getElementById('exportBtn').addEventListener('click', () => {
+            const dataForExport = operacoes.map(op => ({
+                'Data': formatDataBR(op.data),
+                'Descrição': op.desc || '',
+                'Banco': op.banco || '',
+                'Conta Cedente': op.cedente || '',
+                'Conta Cessionário': op.cessionario || '',
+                'Compromissada': op.compromissada,
+                'Retorno Bruto': op.retornoBruto,
+                'PU Ida': op.puIda,
+                'PU Volta': op.puVolta,
+                'Taxa CDI Anual (%)': op.cdiTaxa || '',
+                'Ganho (R$) Diário': (op.retornoBruto - op.compromissada) * (op.desc && op.desc.toUpperCase().includes("RECOMPRA") ? -1 : 1)
+            }));
+
+            const ws = XLSX.utils.json_to_sheet(dataForExport);
+            const wb = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(wb, ws, "GanhosCDI");
+            XLSX.writeFile(wb, "GanhosCDI_Exportado.xlsx");
+            log("💾 Dados exportados com sucesso.");
+        });
+
+        document.getElementById('printBtn').addEventListener('click', () => {
+            window.print();
+        });
+
+
+        // Funções de Logo
+
+        const logoFile = document.getElementById('logoFile');
+        const addLogoBtn = document.getElementById('addLogoBtn');
+        const removeLogoBtn = document.getElementById('removeLogoBtn');
+        const siteLogo = document.getElementById('siteLogo');
+
+        logoFile.addEventListener('change', (e) => {
+            if (e.target.files.length > 0) {
+                log(`Imagem selecionada: ${e.target.files[0].name}. Clique em 'Carregar Logo' para aplicar.`);
+            }
+        });
+
+        addLogoBtn.addEventListener('click', () => {
+            const file = logoFile.files[0];
+            if (!file) {
+                log("⚠️ Selecione uma imagem primeiro.");
+                return;
+            }
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const base64Image = e.target.result;
+                siteLogo.src = base64Image;
+                localStorage.setItem('siteLogo', base64Image);
+                log("🖼️ Logo carregada e salva localmente.");
+            };
+            reader.readAsDataURL(file);
+        });
+
+        removeLogoBtn.addEventListener('click', () => {
+            siteLogo.src = "";
+            localStorage.removeItem('siteLogo');
+            log("🖼️ Logo removida.");
+        });
+
+        function loadLogo() {
+            const savedLogo = localStorage.getItem('siteLogo');
+            if (savedLogo) {
+                siteLogo.src = savedLogo;
+            }
+        }
+        
     </script>
 </body>
 </html>
