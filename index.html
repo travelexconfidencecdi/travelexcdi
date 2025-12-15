@@ -849,8 +849,7 @@
             const sheet = workbook.Sheets[workbook.Sheets[0] || workbook.SheetNames[0]]; 
 
             // Lê a planilha em formato de array de arrays, sem formatar os dados
-            const json = XLSX.utils.sheet_to_json(sheet,{header:1,raw:true});
-
+            const json = XLSX.utils.sheet_to_json(sheet,{header:1,raw:false});
 
             if(json.length < 2){
                 alert("Arquivo vazio ou com apenas o cabeçalho.");
@@ -863,43 +862,27 @@
 
             // Mapeamento CORRIGIDO:
             const known = {
-               const known = {
-          // DATA
-          "DTINICIO": "data",
-          "DATAINICIO": "data",
-          "DATA": "data",
-
-         // VENCIMENTO (opcional)
-        "DTVENCTO": "dataVencimento",
-        "DATAVENCTO": "dataVencimento",
-
-        // PU / QTD
-       "PUIDA": "puIda",
-       "PUVOLTA": "puVolta",
-      "QUANTIDADE": "quantidade",
-
-       // TAXA
-      "TX252": "cdiTaxa",
-      "TAXACDI": "cdiTaxa",
-
-      // DESCRIÇÃO
-      "TIPOOPERACAO": "desc",
-      "OPERACAO": "desc",
-      "PAPEL": "desc2",
-
-      // CONTAS / BANCO
-      "VEICULOLEGAL": "banco",
-      "BANCO": "banco",
-      "CONTRAPARTE": "cedente",
-      "CONTA CEDENTE": "cedente",
-      "CONTA CESSIONARIO": "cessionario",
-
-      // VALORES
-      "VLIDA": "compromissada",
-      "VL VOLTA": "retornoBruto",
-      "VLVOLTA": "retornoBruto"
-  };
-
+                "DTINICIO": "data",
+                "DTVENCTO": "dataVencimento", 
+                "TIPOOPERACAO": "desc",       
+                "PAPEL": "desc2",
+                
+                // CORREÇÃO CRUCIAL: Mapeamos VL IDA/VOLTA para os valores totais
+                "VLIDA": "compromissada",
+                "VLVOLTA": "retornoBruto",
+                
+                // Mapeamento de BANCO / CONTRAPARTE (VEÍCULO LEGAL é o Banco, CONTRAPARTE é a contraparte/cedente)
+                "VEICULEGAL": "banco",        
+                "CONTRAPARTE": "cedente",     
+                
+                // Campos de PU/Quantidade (para cálculo ou exibição)
+                "PUIDA": "puIda", 
+                "PUVOLTA": "puVolta",
+                "QUANTIDADE": "quantidade",
+                
+                // Taxa
+                "TX252": "cdiTaxa",           
+            };
 
             headers.forEach((h,i)=>{
                 if(known[h]) map[known[h]]=i;
