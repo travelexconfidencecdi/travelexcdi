@@ -351,7 +351,7 @@
 
             <h3>📂 Importação</h3>
             <p style="font-size:12px;color:var(--muted);margin:0 0 10px 0;">
-                *O sistema tenta reconhecer os cabeçalhos. Ele prioriza **VL IDA** e **VL VOLTA** para o cálculo.
+                *O sistema prioriza as colunas **VL IDA** e **VL VOLTA** para os valores totais. **CONTRAPARTE** é mapeado como Conta Cedente.
             </p>
 
             <hr style="border:none;border-top:1px solid rgba(15,23,36,0.04);margin:12px 0;">
@@ -826,7 +826,7 @@
         }
         
         /* ============================================================
-           IMPORTAÇÃO EXCEL (SheetJS) - COM Mapeamento Corrigido
+           IMPORTAÇÃO EXCEL (SheetJS) - VERSÃO CORRIGIDA PARA VALORES E CONTAS
         ============================================================ */
 
         document.getElementById("loadExcelBtn").addEventListener("click",()=>{
@@ -848,6 +848,7 @@
             const workbook = XLSX.read(data,{type:"array"});
             const sheet = workbook.Sheets[workbook.Sheets[0] || workbook.SheetNames[0]]; 
 
+            // Lê a planilha em formato de array de arrays, sem formatar os dados
             const json = XLSX.utils.sheet_to_json(sheet,{header:1,raw:false});
 
             if(json.length < 2){
@@ -859,23 +860,27 @@
             
             const map={};
 
-            // Mapeamento REVISADO E PRIORIZADO (com base nos seus arquivos)
+            // Mapeamento CORRIGIDO:
             const known = {
                 "DTINICIO": "data",
                 "DTVENCTO": "dataVencimento", 
                 "TIPOOPERACAO": "desc",       
-                "PAPEL": "desc2",             
-                "VEICULEGAL": "banco",        
-                "CONTRAPARTE": "cedente",     
+                "PAPEL": "desc2",
                 
-                // Valores Totais (PRIORIDADE ALTA)
+                // CORREÇÃO CRUCIAL: Mapeamos VL IDA/VOLTA para os valores totais
                 "VLIDA": "compromissada",
                 "VLVOLTA": "retornoBruto",
                 
-                // Campos para cálculo alternativo/exibição
+                // Mapeamento de BANCO / CONTRAPARTE (VEÍCULO LEGAL é o Banco, CONTRAPARTE é a contraparte/cedente)
+                "VEICULEGAL": "banco",        
+                "CONTRAPARTE": "cedente",     
+                
+                // Campos de PU/Quantidade (para cálculo ou exibição)
                 "PUIDA": "puIda", 
                 "PUVOLTA": "puVolta",
                 "QUANTIDADE": "quantidade",
+                
+                // Taxa
                 "TX252": "cdiTaxa",           
             };
 
@@ -911,6 +916,8 @@
                 let puIda = 0;
                 let puVolta = 0;
 
+                // --- LÓGICA DE LEITURA E CÁLCULO ---
+                
                 // 1. Tenta ler PU e QTD para fins de registro
                 puIda = map.puIda !== undefined ? parseNumber(row[map.puIda]) : 0;
                 puVolta = map.puVolta !== undefined ? parseNumber(row[map.puVolta]) : 0;
@@ -918,11 +925,12 @@
 
                 if (hasDirectValueFields) {
                     // Prioridade 1: Leitura de Valor Total (VL IDA / VL VOLTA)
+                    // Usamos a função parseNumber que lida com diferentes formatos (R$ / , / .)
                     compromissada = parseNumber(row[map.compromissada]);
                     retornoBruto = parseNumber(row[map.retornoBruto]);
                     
                 } else if (hasPUCalculationFields) {
-                    // Prioridade 2: Cálculo PU * QTD
+                    // Prioridade 2: Cálculo PU * QTD (Caso não haja VL IDA/VOLTA)
                     if(puIda === 0 || puVolta === 0 || qtd === 0) continue;
                     compromissada = puIda * qtd; 
                     retornoBruto = puVolta * qtd;
