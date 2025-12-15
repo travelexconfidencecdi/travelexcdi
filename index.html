@@ -7,12 +7,11 @@
 
     <style>
         :root{
-            /* CORES PRINCIPAIS: AZUL MARINHO ESCURO PRIMÁRIO, VERMELHO SECUNDÁRIO */
-            --primary: #0A0A33;  /* Azul Marinho Escuro */
-            --primary-light: #1A1A55; /* Versão mais clara para gradiente/hover */                  
-            --secondary: #C00000; /* Vermelho Forte (Secundário/Destaque) */
-            --secondary-light: #E00000; /* Vermelho Claro para gradiente/hover */                  
-            --danger: #c62828;  /* Mantido para ações de exclusão */
+            --primary: #0A0A33;
+            --primary-light: #1A1A55;
+            --secondary: #C00000;
+            --secondary-light: #E00000;
+            --danger: #c62828;
             --bg-start: #f4f8fb;
             --bg-end: #eef6fb;
             --card-bg: #ffffff;
@@ -24,7 +23,6 @@
             --radius: 10px;
             --shadow: 0 8px 20px rgba(16,24,40,0.06);
         }
-        /* Base */
         html,body{height:100%;margin:0;font-family:Inter, Roboto, system-ui, -apple-system, "Segoe UI", Arial;}
         body{
             background: linear-gradient(180deg,var(--bg-start),var(--bg-end));
@@ -33,34 +31,12 @@
             -webkit-font-smoothing:antialiased;
             font-size:14px;
         }
-        /* Ajuste do Logo e Título para ficarem à esquerda e alinhados */
-        #siteLogo{ 
-            display:block; 
-            max-width:140px; 
-            width:100%; 
-            height:auto; 
-            border-radius:6px; 
-            box-shadow:var(--shadow); 
-            margin:0 0 6px 0;
-        }
+        #siteLogo{ display:block; max-width:140px; width:100%; height:auto; border-radius:6px; box-shadow:var(--shadow); margin:0 0 6px 0;}
         #logo-wrapper{ margin-bottom:8px; }
-        /* Header */
-        #header-container{ 
-            display:flex; 
-            align-items:center; 
-            gap:10px; 
-            margin-bottom:8px; 
-            width: fit-content; 
-        }
-        #logo-placeholder{ font-size:1.4rem; color:var(--primary); } 
+        #header-container{ display:flex; align-items:center; gap:10px; margin-bottom:8px; width: fit-content; }
+        #logo-placeholder{ font-size:1.4rem; color:var(--primary); }
         h1{ margin:0; color:var(--text-dark); font-size:1.25rem; font-weight:700; }
-        /* Contêiner para logo e título juntos */
-        #left-header-content {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-        /* Top actions compacto */
+        #left-header-content { display: flex; align-items: center; gap: 10px; }
         #top-actions{
             display:flex; align-items:center; gap:10px; padding:10px;
             background:var(--card-bg); border-radius:var(--radius); box-shadow:var(--shadow); border:1px solid var(--card-border);
@@ -68,7 +44,6 @@
         }
         #header-left{ display:flex; align-items:center; gap:10px; }
         #header-right{ margin-left:auto; display:flex; gap:8px; align-items:center; flex-wrap:wrap; }
-        /* --------------- BOTÕES SÓLIDOS COM CONTORNO BRANCO (ESTILO TRAVELEX) --------------- */
         .btn {
             display: inline-flex;
             align-items: center;
@@ -80,133 +55,46 @@
             font-weight: 600;
             transition: all 0.2s ease;
             background: var(--primary);
-            color: white; 
-            border: 1px solid white; 
-            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.08); 
+            color: white;
+            border: 1px solid white;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.08);
         }
-        /* Estilo Secundário (VERMELHO) */
-        .btn.secondary {
-            background: var(--secondary);
-            color: white; 
-            border: 1px solid white; 
-        }
-        .btn.small { 
-            padding: 6px 10px; 
-            font-size: 13px; 
-            border-radius: 7px; 
-        }
-        .btn:hover { 
-            transform: translateY(-2px); 
-            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15); 
-            background: var(--primary-light); 
-            border-color: white; 
-        }
-        .btn.secondary:hover {
-            background: var(--secondary-light); 
-            border-color: white;
-            box-shadow: 0 8px 20px rgba(192, 0, 0, 0.25);
-        }
-        .btn:active { 
-            transform: none; 
-            filter: brightness(0.96); 
-            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
-        }
-        .btn.danger { 
-            background: var(--secondary); 
-            color: white; 
-            border: 1px solid white; 
-            box-shadow: 0 4px 10px rgba(198, 40, 40, 0.25);
-        }
-        .btn.danger:hover { 
-            filter: brightness(0.85); 
-            border-color: white; 
-        }
-        /* ----------------------------------------------------------- */
-        /* Layout empilhado: resultados em cima, painel embaixo */
-        #main-container{
-            display:flex;
-            flex-direction:column;
-            gap:14px;
-            align-items:stretch;
-        }
-        /* Cards */
-        .card{
-            background:var(--card-bg); padding:14px; border-radius:10px; box-shadow:var(--shadow); border:1px solid var(--card-border);
-            color:var(--text-dark);
-        }
-        /* Inputs */
+        .btn.secondary { background: var(--secondary); color: white; border: 1px solid white; }
+        .btn.small { padding: 6px 10px; font-size: 13px; border-radius: 7px; }
+        .btn:hover { transform: translateY(-2px); box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15); background: var(--primary-light); border-color: white; }
+        .btn.secondary:hover { background: var(--secondary-light); border-color: white; box-shadow: 0 8px 20px rgba(192, 0, 0, 0.25); }
+        .btn:active { transform: none; filter: brightness(0.96); box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);}
+        .btn.danger { background: var(--secondary); color: white; border: 1px solid white; box-shadow: 0 4px 10px rgba(198, 40, 40, 0.25);}
+        .btn.danger:hover { filter: brightness(0.85); border-color: white; }
+        #main-container{ display:flex; flex-direction:column; gap:14px; align-items:stretch; }
+        .card{ background:var(--card-bg); padding:14px; border-radius:10px; box-shadow:var(--shadow); border:1px solid var(--card-border); color:var(--text-dark); }
         .input-row{ display:flex; gap:10px; flex-wrap:wrap; align-items:center; margin-bottom:8px; }
         .input-row label{ font-size:13px; color:var(--muted); font-weight:600; display:block; margin-bottom:6px; }
-        input[type="text"], input[type="date"], input[type="email"], input[type="password"]{
-            padding:8px 10px; border-radius:8px; border:1px solid rgba(15,23,36,0.06); background:#fff; color:var(--text-dark); min-width:120px;
-        }
-        /* Totals */
+        input[type="text"], input[type="date"], input[type="email"], input[type="password"]{ padding:8px 10px; border-radius:8px; border:1px solid rgba(15,23,36,0.06); background:#fff; color:var(--text-dark); min-width:120px; }
         .totals{ display:grid; grid-template-columns: repeat(auto-fit,minmax(160px,1fr)); gap:12px; margin-bottom:12px; }
         .total-card{ padding:10px; border-radius:8px; border:1px solid rgba(15,23,36,0.04); background:linear-gradient(180deg,#fff,#fbfdff); }
         .total-card h4{ margin:0; font-size:12px; color:var(--muted); }
         .total-card p{ margin:6px 0 0 0; font-size:18px; font-weight:800; color:var(--text-dark); }
-        /* Ganho total em verde */
         #totalCdiDisplay p { color: var(--success) !important; }
-        /* Tabela */
         .table-wrap{ overflow:auto; border-radius:8px; }
         table{ width:100%; border-collapse:collapse; margin-top:8px; font-size:13px; color:var(--text-dark); }
-        thead th{
-            position:sticky; top:0; z-index:2;
-            background: linear-gradient(180deg,var(--primary-light),var(--primary));
-            color:white; padding:10px 8px; text-align:left; font-weight:700;
-            border-bottom:1px solid rgba(0,0,0,0.06);
-        }
+        thead th{ position:sticky; top:0; z-index:2; background: linear-gradient(180deg,var(--primary-light),var(--primary)); color:white; padding:10px 8px; text-align:left; font-weight:700; border-bottom:1px solid rgba(0,0,0,0.06); }
         tbody td{ padding:8px 8px; border-bottom:1px solid rgba(0,0,0,0.04); text-align:right; }
         tbody tr:nth-child(even){ background: rgba(0,0,0,0.02); }
         td:first-child, th:first-child{ text-align:center; width:90px; }
-        /* Descrição/Resumo usa o novo primary (Azul Marinho) */
-        .col-left{ 
-            text-align:left; 
-            max-width:260px; 
-            overflow:hidden; 
-            text-overflow:ellipsis; 
-            white-space:nowrap; 
-            color: var(--primary); 
-            font-weight: 600;
-        }
-        /* Ações compactas */
+        .col-left{ text-align:left; max-width:260px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; color: var(--primary); font-weight: 600; }
         .action-cell{ text-align:center; }
-        /* --------------- GANHO/PERDA (BADGE) E NEGRITO GERAL --------------- */
-        /* Estilo de Badge aplicado ao conteúdo da TD */
-        .ganho, .perda { 
-            font-weight: 800; 
-            padding: 2px 6px; 
-            border-radius: 4px; 
-            display: inline-block; 
-            min-width: 60px; 
-            text-align: center;
-        }
-        .ganho { 
-            color: var(--success) !important;
-            background: rgba(46, 125, 50, 0.1); 
-            border: 1px solid rgba(46, 125, 50, 0.2);
-        }
-        .perda { 
-            color: var(--danger) !important; 
-            background: rgba(198, 40, 40, 0.1); 
-            border: 1px solid rgba(198, 40, 40, 0.2);
-        }
-        /* Estilo para b/strong em geral */
-        b, strong {
-            font-weight: 800; 
-            color: var(--primary); /* Negrito no Azul Marinho do tema */
-        }
-        /* ------------------------------------------------------------------- */
-        /* Responsive */
+        .ganho, .perda { font-weight: 800; padding: 2px 6px; border-radius: 4px; display: inline-block; min-width: 60px; text-align: center;}
+        .ganho { color: var(--success) !important; background: rgba(46, 125, 50, 0.1); border: 1px solid rgba(46, 125, 50, 0.2);}
+        .perda { color: var(--danger) !important; background: rgba(198, 40, 40, 0.1); border: 1px solid rgba(198, 40, 40, 0.2);}
+        b, strong { font-weight: 800; color: var(--primary); }
         @media (max-width:980px){
-            /* Centraliza em telas pequenas */
             #siteLogo{ max-width:120px; display:block; margin:0 auto 8px; }
             #header-container{ margin-bottom:0; width: 100%; justify-content: center; }
             #left-header-content { justify-content: center; }
             .filter-card { margin-bottom: 12px !important; }
             .input-row{ flex-direction:column; align-items:stretch; }
         }
-        /* Print */
         @media print{
             body{ background:white; padding:0; color:black; }
             #input-panel .file-label, #input-panel .logo-label, #deleteAllBtn, #top-actions, #auth-status { display:none; }
@@ -421,11 +309,10 @@
 
     <script>
         /* ============================================================
-            CONFIGURAÇÃO DO FIREBASE
+            CONFIGURAÇÃO DO FIREBASE (Chave de demonstração/genérica)
         ============================================================ */
         const firebaseConfig = {
-            // Configurações genéricas de Firebase
-            apiKey: "AIzaSyD_vxw2VcSPO_tMXgrb7quZ85ODvpqQuR8", // Chave de demonstração/genérica
+            apiKey: "AIzaSyD_vxw2VcSPO_tMXgrb7quZ85ODvpqQuR8", 
             authDomain: "controle-cdi.firebaseapp.com",
             databaseURL: "https://controle-cdi-default-rtdb.firebaseio.com",
             projectId: "controle-cdi",
@@ -442,6 +329,8 @@
         firebase.initializeApp(firebaseConfig);
         database = firebase.database();
 
+        const log = (message) => { document.getElementById('log').textContent = message; };
+
         /* ============================================================
             LOGIN / LOGOUT / CADASTRO POR EMAIL E SENHA
         ============================================================ */
@@ -453,14 +342,12 @@
         const authEmail = document.getElementById("authEmail");
         const authPassword = document.getElementById("authPassword");
 
-        const log = (message) => { document.getElementById('log').textContent = message; };
-
         // FUNÇÃO DE LOGIN
         loginBtn.addEventListener("click", () => {
             const email = authEmail.value;
             const password = authPassword.value;
             if (!email || !password) {
-                log("Preencha email e senha para fazer login.");
+                log("⚠️ Preencha email e senha para fazer login.");
                 return;
             }
             firebase.auth().signInWithEmailAndPassword(email, password)
@@ -473,7 +360,7 @@
             const email = authEmail.value;
             const password = authPassword.value;
             if (!email || !password) {
-                log("Preencha email e senha para cadastrar.");
+                log("⚠️ Preencha email e senha para cadastrar.");
                 return;
             }
             if (password.length < 6) {
@@ -517,9 +404,12 @@
 
 
         /* ============================================================
-            FUNÇÕES DE FORMATAÇÃO E UTILIDADE 
+            (RESTO DO CÓDIGO - FUNÇÕES DE FORMATAÇÃO, SALVAR/CARREGAR, 
+             RENDERIZAÇÃO E IMPORTAÇÃO - CÓDIGO MAIS LONGO FOI OMITIDO 
+             AQUI PARA FOCO, MAS ESTÁ INCLUÍDO NO ARQUIVO COMPLETO)
         ============================================================ */
         
+        // ... (Funções de Formatação) ...
         function cleanCurrency(v){
             if(typeof v!=='string') v=String(v);
             let cleanString = v.replace(/[R$\s]/g, '');
@@ -565,7 +455,7 @@
                 return `${y}-${m}-${d}`;
             }
             const num=parseFloat(s);
-            if(!isNaN(num) && num>25569 && num<70000){ // Excel serial date
+            if(!isNaN(num) && num>25569 && num<70000){ 
                const base=new Date('1899-12-30'); 
                 const date=new Date(base.getTime() + num*24*60*60*1000);
                 if(!isNaN(date)){
@@ -584,24 +474,21 @@
             return String(str || "")
                 .toUpperCase()
                 .normalize("NFD")
-                .replace(/[\u0300-\u036f]/g, "") // remove acentos
-                .replace(/[^A-Z0-9]/g, "") // remove TUDO que não for letra ou número (incluindo . / - espaços)
+                .replace(/[\u0300-\u036f]/g, "")
+                .replace(/[^A-Z0-9]/g, "")
                 .trim();
         }
 
-        /* ============================================================
-            ESTADO PRINCIPAL
-        ============================================================ */
+
+        // ... (Estado Principal) ...
         let operacoes = [];
         let totalCompromissada = 0;
         let totalRetorno = 0;
         let totalGanho = 0;
 
-        /* ============================================================
-            SALVAR E CARREGAR DO FIREBASE (FUNÇÕES DE NUVEM)
-        ============================================================ */
+
+        // ... (Salvar e Carregar do Firebase) ...
         function saveState(){
-            // Só salva se o usuário estiver autenticado
             if(!currentUserUid) {
                 log("⚠️ Desconectado. Não é possível salvar na nuvem. Faça Login/Cadastro.");
                 return;
@@ -613,7 +500,6 @@
                 diasAno: document.getElementById("diasAno").value
             };
             
-            // Salva no caminho específico do UID
             database.ref(DB_ROOT_PATH + currentUserUid + "/operacoes").set(state)
                 .then(() => log("💾 Dados salvos na nuvem (Firebase)."))
                 .catch(e => log("❌ Erro ao salvar no Firebase: " + e.message));
@@ -638,13 +524,11 @@
             })
             .catch(e => log("❌ Erro ao carregar do Firebase: " + e.message));
         }
-        
-        // Chamada para manter o localStorage para configurações locais (opcional, mas mantido)
-        function loadState(){} // Função mantida vazia, pois loadStateFromFirebase assume o controle
 
-        /* ============================================================
-            RENDERIZAÇÃO DA TABELA
-        ============================================================ */
+        function loadState(){}
+
+
+        // ... (Renderização da Tabela) ...
         function calculateAndRender(){
             const taxaGlobal = cleanCdiTaxa(document.getElementById("taxaCdiAnual").value)/100;
             const showOps = document.getElementById("showIndividualOps").checked;
@@ -696,7 +580,6 @@
                 resumo[d].totalRetorno += retorno;
                 resumo[d].totalGanho += ganho;
                 
-
                 if(showOps){
                     const tr=document.createElement("tr");
                     const ganhoClass = ganho>=0?'ganho':'perda';
@@ -722,7 +605,6 @@
                 }
             });
 
-            // Adiciona Linhas de Resumo Diário
             const datas = Object.keys(resumo).sort();
             if(showOps && datas.length) {
                 const trHeader=document.createElement("tr");
@@ -767,11 +649,8 @@
             }
         }
 
-        /* ============================================================
-            FUNÇÕES DE MANIPULAÇÃO DE DADOS 
-        ============================================================ */
 
-        // Event Listeners para botões do painel de input...
+        // ... (Funções de Manipulação de Dados: addOrUpdateOperation, deleteOperation, deleteAllBtn, editOperation, resetManualForm) ...
         document.getElementById("addBtn").addEventListener("click", addOrUpdateOperation);
         document.getElementById("cancelEditBtn").addEventListener("click", resetManualForm);
         document.getElementById("filterBtn").addEventListener("click", calculateAndRender);
@@ -781,8 +660,6 @@
              calculateAndRender();
         });
 
-
-        // Adicionar ou Atualizar Operação
         function addOrUpdateOperation() {
             const data = document.getElementById("manualData").value;
             const desc = document.getElementById("manualDesc").value;
@@ -822,28 +699,25 @@
 
             resetManualForm();
             calculateAndRender();
-            saveState(); // SALVA NA NUVEM APÓS CADA ALTERAÇÃO
+            saveState();
         }
 
-        // Deletar Operação
         function deleteOperation(i) {
             if (!confirm("Excluir esta operação?")) return;
             operacoes.splice(i, 1);
             calculateAndRender();
-            saveState(); // SALVA NA NUVEM APÓS DELETAR
+            saveState();
             log("✅ Operação excluída.");
         }
 
-        // Deletar TODAS as operações
         document.getElementById("deleteAllBtn").addEventListener("click", () => {
             if (!confirm("Tem certeza que deseja EXCLUIR TODAS as operações? Esta ação não pode ser desfeita!")) return;
             operacoes = [];
             calculateAndRender();
-            saveState(); // SALVA NA NUVEM APÓS DELETAR TUDO
+            saveState();
             log("🗑️ Todas as operações foram excluídas.");
         });
 
-        // Editar Operação (Carrega dados no formulário)
         function editOperation(i) {
             const op = operacoes[i];
             document.getElementById("editIndex").value = i;
@@ -862,7 +736,6 @@
             log(`Modo Edição: Editando operação ${i + 1}`);
         }
 
-        // Resetar Formulário Manual
         function resetManualForm() {
             document.getElementById("editIndex").value = -1;
             document.getElementById("manualData").value = "";
@@ -881,7 +754,7 @@
 
 
         /* ============================================================
-            FUNÇÕES DE IMPORTAÇÃO (SheetJS/Excel) - CORRIGIDO E COMPLETO
+            FUNÇÕES DE IMPORTAÇÃO (SheetJS/Excel)
         ============================================================ */
         const excelFile = document.getElementById('excelFile');
         const loadExcelBtn = document.getElementById('loadExcelBtn');
@@ -914,7 +787,6 @@
                 const firstSheetName = workbook.SheetNames[0];
                 const worksheet = workbook.Sheets[firstSheetName];
                 
-                // Converte a planilha para um array de objetos (JSON)
                 const json = XLSX.utils.sheet_to_json(worksheet, { header: 1, raw: false });
 
                 if (json.length < 2) {
@@ -922,15 +794,13 @@
                     return;
                 }
 
-                // Mapeamento de Cabeçalhos
                 const headerRow = json[0];
                 const headers = headerRow.map(h => normalizeHeader(h));
                 
-                // Mapeamento esperado no arquivo
                 const map = {
                     'DATA': ['DATA', 'DTOPERACAO', 'DTREFERENCIA'],
-                    'COMPROMISSADA': ['VLIDA', 'VALORIDA', 'VLBRUTO'], // VL_IDA
-                    'RETORNOBRUTO': ['VLVOLTA', 'VALORVOLTA', 'VLTOTAL'], // VL_VOLTA
+                    'COMPROMISSADA': ['VLIDA', 'VALORIDA', 'VLBRUTO'],
+                    'RETORNOBRUTO': ['VLVOLTA', 'VALORVOLTA', 'VLTOTAL'],
                     'BANCO': ['BANCO', 'CORRETORA', 'CONTRAPARTE'],
                     'CEDENTE': ['CCEDENTE', 'CONTACEDENTE'],
                     'CESSIONARIO': ['CCESSIONARIO', 'CONTACESSIONARIO'],
@@ -948,7 +818,6 @@
                     }
                 });
 
-                // Processa as linhas de dados (começa da segunda linha, índice 1)
                 let importedCount = 0;
                 const newOps = [];
 
@@ -989,7 +858,7 @@
                 if (importedCount > 0) {
                     operacoes = operacoes.concat(newOps);
                     calculateAndRender();
-                    saveState(); // Salva na nuvem após importação
+                    saveState();
                     log(`🎉 ${importedCount} operações importadas e salvas na nuvem!`);
                 } else {
                     log("❌ Nenhum dado válido encontrado para importação.");
@@ -1000,7 +869,7 @@
         }
 
         /* ============================================================
-            FUNÇÕES DE LOGO, EXPORTAÇÃO E IMPRESSÃO 
+            FUNÇÕES DE LOGO, EXPORTAÇÃO E IMPRESSÃO
         ============================================================ */
 
         document.getElementById('exportBtn').addEventListener('click', () => {
@@ -1028,9 +897,6 @@
         document.getElementById('printBtn').addEventListener('click', () => {
             window.print();
         });
-
-
-        // Funções de Logo
 
         const logoFile = document.getElementById('logoFile');
         const addLogoBtn = document.getElementById('addLogoBtn');
