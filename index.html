@@ -187,12 +187,12 @@
             #siteLogo{ max-width:120px; display:block; margin:0 auto 8px; }
             #header-container{ margin-bottom:0; width: 100%; justify-content: center; }
             #left-header-content { justify-content: center; }
-            .filter-card { margin-bottom: 12px !important; } /* CORREÇÃO: Espaçamento em mobile */
+            .filter-card { margin-bottom: 12px !important; }
             .input-row{ flex-direction:column; align-items:stretch; }
         }
         @media print{
             body{ background:white; padding:0; color:black; }
-            #input-panel .file-label, #input-panel .logo-label, #deleteAllBtn, #top-actions, #auth-status { display:none; } /* Oculta elementos não essenciais */
+            #input-panel .file-label, #input-panel .logo-label, #deleteAllBtn, #top-actions, #auth-status { display:none; }
         }
     </style>
 
@@ -254,7 +254,8 @@
         <div id="results-panel" class="card">
             <h2 style="margin:0 0 8px 0;">📊 Resumo Diário</h2>
 
-            <div class="card filter-card" style="margin-bottom:10px;" aria-label="Opções de Filtragem de Dados"> <div style="display:flex;justify-content:space-between;align-items:center;gap:8px;">
+            <div class="card filter-card" style="margin-bottom:10px;" aria-label="Opções de Filtragem de Dados">
+                <div style="display:flex;justify-content:space-between;align-items:center;gap:8px;">
                     <div style="font-weight:600;color:var(--muted);">Filtros</div>
                     <div style="font-size:12px;color:var(--muted);">Mostrar detalhe por operação</div>
                 </div>
@@ -462,9 +463,6 @@
             if (lastComma > lastDot) {
                 // Se a última for vírgula, trata como separador decimal (e retira pontos de milhar)
                 s = s.replace(/\./g, '').replace(/,/g, '.');
-            } else if (lastDot > lastComma && lastComma !== -1) {
-                // Se o último for ponto, mas houver vírgula anterior, provavelmente é formato BR com ponto errado.
-                // Não faz nada, a vírgula de milhar é ignorada e o ponto final é o decimal.
             } else if (lastComma !== -1 && lastDot === -1) {
                  // Tem vírgula, mas não tem ponto. Assume vírgula como decimal.
                  s = s.replace(/,/g, '.');
@@ -494,31 +492,16 @@
             }
             return s;
         }
-      function normalizeDate(s){
-    if(!s) return "";
-
-    // DATA NUMÉRICA DO EXCEL
-    if (typeof s === "number") {
-        const d = XLSX.SSF.parse_date_code(s);
-        if (d) {
-            return `${d.y}-${String(d.m).padStart(2,'0')}-${String(d.d).padStart(2,'0')}`;
+        function normalizeDate(s){
+            if(!s) return "";
+            s=String(s).trim();
+            if(s.match(/^\d{4}-\d{2}-\d{2}$/)) return s;
+            if(s.match(/^\d{2}\/\d{2}\/\d{4}$/)){
+                const [d,m,y]=s.split("/");
+                return `${y}-${m}-${d}`;
+            }
+            return "";
         }
-    }
-
-    s = String(s).trim();
-
-    // yyyy-mm-dd
-    if (s.match(/^\d{4}-\d{2}-\d{2}$/)) return s;
-
-    // dd/mm/yyyy
-    if (s.match(/^\d{2}\/\d{2}\/\d{4}$/)) {
-        const [d,m,y] = s.split("/");
-        return `${y}-${m}-${d}`;
-    }
-
-    return "";
-}
-
 
         /* ============================================================
            ESTADO PRINCIPAL
@@ -593,7 +576,7 @@
 
                 let ganho = retorno - compromissada;
                 // Lógica de inversão para "RECOMPRA" onde o retorno é menor que a compromissada
-                if(op.desc.toUpperCase().includes("RECOMPRA") && ganho<0){
+                if(op.desc && op.desc.toUpperCase().includes("RECOMPRA") && ganho<0){
                     ganho = Math.abs(ganho);
                 }
 
@@ -605,10 +588,10 @@
                     const tr=document.createElement("tr");
                     tr.innerHTML=`
                         <td>${formatDataBR(op.data)}</td>
-                        <td class="col-left">${op.desc}</td>
-                        <td style="text-align:left;">${op.banco}</td>
-                        <td>${op.cedente}</td>
-                        <td>${op.cessionario}</td>
+                        <td class="col-left">${op.desc || '-'}</td>
+                        <td style="text-align:left;">${op.banco || '-'}</td>
+                        <td>${op.cedente || '-'}</td>
+                        <td>${op.cessionario || '-'}</td>
                         <td>${formatBRL(compromissada)}</td>
                         <td>${formatBRL(retorno)}</td>
                         <td>${formatPU(puIda)}</td>
@@ -668,7 +651,6 @@
             calculateAndRender();
         }
 
-        // LÓGICA DE EXCLUSÃO GERAL (🗑️)
         document.getElementById("deleteAllBtn").addEventListener("click", () => {
             if (!confirm("Tem certeza que deseja EXCLUIR TODAS as operações? Esta ação não pode ser desfeita e será aplicada no Firebase.")) {
                 return;
@@ -680,13 +662,12 @@
         });
 
         /* ============================================================
-           LANÇAMENTO MANUAL / EDIÇÃO (ADICIONADO)
+           LANÇAMENTO MANUAL / EDIÇÃO
         ============================================================ */
         const addBtn = document.getElementById("addBtn");
         const cancelEditBtn = document.getElementById("cancelEditBtn");
         const editIndex = document.getElementById("editIndex");
 
-        // Função para resetar os campos do formulário manual
         function resetManualForm() {
             document.getElementById("manualData").value = "";
             document.getElementById("manualDesc").value = "";
@@ -702,7 +683,6 @@
             cancelEditBtn.style.display = "none";
         }
 
-        // Lógica de Adicionar/Salvar Edição
         addBtn.addEventListener("click", () => {
             const data = document.getElementById("manualData").value;
             const desc = document.getElementById("manualDesc").value;
@@ -731,11 +711,9 @@
 
             const index = parseInt(editIndex.value);
             if (index >= 0) {
-                // Modo Edição
                 operacoes[index] = newOp;
                 alert("Operação alterada com sucesso!");
             } else {
-                // Modo Adição
                 operacoes.push(newOp);
                 alert("Operação adicionada com sucesso!");
             }
@@ -745,21 +723,18 @@
             resetManualForm();
         });
 
-        // Lógica de Cancelar Edição
         cancelEditBtn.addEventListener("click", resetManualForm);
 
-        // Lógica de Editar (chamada da tabela)
         window.editOperation = function(i) {
             const op = operacoes[i];
 
             document.getElementById("manualData").value = normalizeDate(op.data);
             document.getElementById("manualDesc").value = op.desc;
-            document.getElementById("manualBanco").value = op.banco;
+            document.getElementById("manualBanco").value = op.banco || '';
             document.getElementById("manualCedente").value = op.cedente;
             document.getElementById("manualCessionario").value = op.cessionario;
-            document.getElementById("manualCdiTaxa").value = op.cdiTaxa || ""; // Taxa específica
+            document.getElementById("manualCdiTaxa").value = op.cdiTaxa || "";
             
-            // Exibe números com vírgula para edição (formato BR)
             document.getElementById("manualCompromissada").value = String(op.compromissada).replace('.', ',');
             document.getElementById("manualRetorno").value = String(op.retornoBruto).replace('.', ',');
             
@@ -767,32 +742,30 @@
             addBtn.textContent = "Salvar Alteração";
             cancelEditBtn.style.display = "inline-flex";
 
-            // Rola a página para o painel de entrada
             document.getElementById("input-panel").scrollIntoView({ behavior: "smooth" });
         }
         
         /* ============================================================
-           IMPORTAÇÃO EXCEL (SheetJS)
+           IMPORTAÇÃO EXCEL (SheetJS) - CORRIGIDA PARA SEU ARQUIVO
         ============================================================ */
 
-        /**
-         * Normaliza uma string de cabeçalho, removendo acentos e convertendo para maiúsculas.
-         */
         function normalizeHeader(str){
             return String(str || "")
                 .toUpperCase()
                 .normalize("NFD")
                 .replace(/[\u0300-\u036f]/g, "") // remove acentos
+                .replace(/[()\/$%,.]/g, '') // remove caracteres especiais (incluindo o ponto)
                 .trim();
         }
 
         document.getElementById("loadExcelBtn").addEventListener("click",()=>{
-            const file = document.getElementById("excelFile").files[0];
-            if(!file){
+            const files = document.getElementById("excelFile").files;
+            if(files.length === 0){
                 alert("Selecione um arquivo primeiro.");
                 return;
             }
-
+            const file = files[0];
+            
             const reader=new FileReader();
             reader.onload=e=>{
                 processExcelData(e.target.result);
@@ -803,51 +776,63 @@
         function processExcelData(data){
             const workbook = XLSX.read(data,{type:"array"});
             const sheet = workbook.Sheets[workbook.SheetNames[0]];
-            const json = XLSX.utils.sheet_to_json(sheet,{header:1,raw:true});
+            const json = XLSX.utils.sheet_to_json(sheet,{header:1,raw:false});
 
-            if(json.length===0){
-                alert("Arquivo vazio.");
+            if(json.length < 2){
+                alert("Arquivo vazio ou com apenas o cabeçalho.");
                 return;
             }
 
-            // CORREÇÃO: Normaliza os cabeçalhos para ignorar acentos e case
             const headers = json[0].map(h => normalizeHeader(h));
             
             const map={};
 
+            // Mapeamento dos títulos normalizados do seu arquivo para as chaves do objeto 'operacoes'
             const known={
-                "DATA":"data",
-                "DESCRICAO":"desc",
-                "BANCO":"banco",
+                "DATA DO OPERACAO":"data",
+                "DESCRICAO DO MOVIMENTO":"desc",
                 "CONTA CEDENTE":"cedente",
                 "CONTA CESSIONARIO":"cessionario",
-                "COMPROMISSADA":"compromissada",
-                "RETORNO BRUTO":"retornoBruto",
-                "QUANTIDADE":"quantidade",
-                "TX. 252":"cdiTaxa",
-                "TX. CDI ANUAL":"cdiTaxa"
+                "VALOR COMPROMISSADO R":"compromissada",   // Ajustado para o nome do seu cabeçalho
+                "VALOR BRUTO RETORNO R":"retornoBruto",    // Ajustado para o nome do seu cabeçalho
+                "TAXA CDI ANUAL":"cdiTaxa",
+                "PU DE IDA":"puIda",
+                "PU DE VOLTA":"puVolta"
             };
             
             headers.forEach((h,i)=>{
                 if(known[h]) map[known[h]]=i;
             });
 
+            // Verificação de colunas obrigatórias
+            if (!map.data || !map.compromissada || !map.retornoBruto) {
+                alert("Não foi possível mapear as colunas obrigatórias: Data, Compromissada e Retorno Bruto. Verifique o cabeçalho do arquivo.");
+                return;
+            }
+
             const novos=[];
             for(let i=1;i<json.length;i++){
                 const row=json[i];
-                // Verifica a existência das colunas mapeadas e da linha
-                if(!row || !row[map.data]) continue;
+                
+                if(!row || !row[map.data] || !row[map.compromissada]) continue;
+
+                let rawDate = row[map.data];
+                if (typeof rawDate === 'number' && rawDate > 1) {
+                    const date = XLSX.SSF.parse_date_code(rawDate, {});
+                    rawDate = `${date.y}-${String(date.m).padStart(2, '0')}-${String(date.d).padStart(2, '0')}`;
+                }
+
 
                 novos.push({
-                    data: normalizeDateExcel(row[map.data]),
+                    data: normalizeDate(rawDate),
                     desc: row[map.desc]||"",
                     banco: row[map.banco]||"",
                     cedente: row[map.cedente]||"",
                     cessionario: row[map.cessionario]||"",
                     compromissada: parseNumber(row[map.compromissada]),
                     retornoBruto: parseNumber(row[map.retornoBruto]),
-                    quantidade: parseNumber(row[map.quantidade]||1),
-                    cdiTaxa: cleanCdiTaxa(row[map.cdiTaxa]||"")
+                    quantidade: 1, 
+                    cdiTaxa: cleanCdiTaxa(row[map.cdiTaxa] || "")
                 });
             }
             operacoes = operacoes.concat(novos);
@@ -862,23 +847,20 @@
         window.loadState = function(){
             calculateAndRender();
             
-            // Implementação simples dos botões de ação que faltavam
             document.getElementById('printBtn').addEventListener('click', () => window.print());
             
-            // TO-DO: Implementar Exportação e Lógica de Logo
             document.getElementById('exportBtn').addEventListener('click', () => {
+                // Implementação da Exportação seria aqui.
                 alert("Funcionalidade de Exportação será implementada aqui.");
-                // Lógica de exportação para CSV ou JSON
             });
 
-            // Lógica do Logo (Apenas placeholders, o código real de upload precisaria de mais funções)
             document.getElementById('addLogoBtn').addEventListener('click', () => {
-                alert("A funcionalidade de Carregar Logo requer código adicional para upload de imagem e persistência.");
+                alert("A funcionalidade de Carregar Logo requer código adicional.");
             });
             document.getElementById('removeLogoBtn').addEventListener('click', () => {
                 document.getElementById('siteLogo').src = '';
                 document.getElementById('siteLogo').style.display = 'none';
-                alert("Logo removido. A persistência do logo dependeria de código Firebase Storage.");
+                alert("Logo removido.");
             });
         };
     </script>
