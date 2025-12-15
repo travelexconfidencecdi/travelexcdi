@@ -862,30 +862,41 @@
             const map={};
 
             // Mapeamento CORRIGIDO:
-           const known = {
+         const known = {
+    // DATA
+    "DTINICIO": "data",
+    "DATAINICIO": "data",
     "DATA": "data",
-    "DT MOVIMENTO": "data",
 
-    "DESCRICAO": "desc",
-    "HISTORICO": "desc",
+    // VENCIMENTO (opcional)
+    "DTVENCTO": "dataVencimento",
+    "DATAVENCTO": "dataVencimento",
 
+    // PU / QTD
+    "PUIDA": "puIda",
+    "PUVOLTA": "puVolta",
+    "QUANTIDADE": "quantidade",
+
+    // TAXA
+    "TX252": "cdiTaxa",
+    "TAXACDI": "cdiTaxa",
+
+    // DESCRIÇÃO
+    "TIPOOPERACAO": "desc",
+    "OPERACAO": "desc",
+    "PAPEL": "desc2",
+
+    // CONTAS / BANCO
+    "VEICULOLEGAL": "banco",
     "BANCO": "banco",
-    "INSTITUICAO": "banco",
-
+    "CONTRAPARTE": "cedente",
     "CONTA CEDENTE": "cedente",
-    "CEDENTE": "cedente",
-    "CT CEDENTE": "cedente",
-
     "CONTA CESSIONARIO": "cessionario",
-    "CESSIONARIO": "cessionario",
-    "CT CESSIONARIO": "cessionario",
 
-    "COMPROMISSADA": "compromissada",
-    "VL IDA": "compromissada",
-
-    "RETORNO BRUTO": "retornoBruto",
+    // VALORES
+    "VLIDA": "compromissada",
     "VL VOLTA": "retornoBruto",
-
+    "VLVOLTA": "retornoBruto"
     "QUANTIDADE": "quantidade",
 
     "TX. 252": "cdiTaxa",
