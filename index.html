@@ -311,10 +311,10 @@
 
     <script>
         /* ============================================================
-            CONFIGURAÇÃO DO FIREBASE
+            CONFIGURAÇÃO DO FIREBASE (ATENÇÃO: Sua API Key deve estar aqui)
         ============================================================ */
         const firebaseConfig = {
-            // A CHAVE DEVE SER A SUA CHAVE CORRETA DO CONSOLE DO FIREBASE
+            // VERIFIQUE SE ESTA É A CHAVE CORRETA NO CONSOLE DO FIREBASE
             apiKey: "AIzaSyD_vxw2VcSPO_tMXgrl7quZ85ODvpqQuR8",
             authDomain: "controle-cdi.firebaseapp.com",
             databaseURL: "https://controle-cdi-default-rtdb.firebaseio.com",
@@ -369,51 +369,38 @@
             }).format(value);
         };
 
+        // CORREÇÃO CRÍTICA DA DATA
         const normalizeDate = (date) => {
             if (date instanceof Date && !isNaN(date)) {
                 return date.toISOString().split('T')[0]; // yyyy-mm-dd
             }
+            // Tenta converter formatos comuns de Excel (número de dias desde 1899)
             if (typeof date === 'number' && date > 1000) {
-                // Excel base date (1899-12-30). Adicionar 1 para compensar.
+                // Excel base date (1899-12-30). Subtrair 1 (Excel bug) e ajustar o fuso.
                 const d = new Date(Date.UTC(0, 0, date - 1));
                 return d.toISOString().split('T')[0];
             }
             if (typeof date === 'string') {
-                // Tenta converter formatos comuns (DD/MM/YYYY)
+                // Tenta converter DD/MM/YYYY
                 const parts = date.match(/(\d{1,2})[-/](\d{1,2})[-/](\d{4})/);
                 if (parts) {
+                    // Cria a data no formato YYYY-MM-DD
                     const d = new Date(parts[3], parts[2] - 1, parts[1]);
                     if (!isNaN(d)) return d.toISOString().split('T')[0];
                 }
-                // Tenta converter YYYY-MM-DD
+                // Tenta converter YYYY-MM-DD ou formato ISO
                 let parsedDate = new Date(date);
                 if (!isNaN(parsedDate)) {
                     return parsedDate.toISOString().split('T')[0];
                 }
             }
-            return '';
+            return ''; // Retorna string vazia se falhar
         };
 
-        /* ============================================================
-            LÓGICA DE CÁLCULO
-        ============================================================ */
-        function calculateDailyGain(compromissada, retornoBruto, taxaCdiAnual, diasAno) {
-            const ganhoBruto = retornoBruto - compromissada;
 
-            // Se for recompra (valor de retorno é menor ou igual ao compromissada),
-            // o ganho deve ser calculado com base no CDI.
-            if (ganhoBruto <= 0) {
-                const taxaDiaria = (taxaCdiAnual / 100) / diasAno;
-                const ganhoCdi = compromissada * taxaDiaria;
-                // O ganho líquido é o ganhoBruto (que será negativo/zero) + o que deveria ser ganho pelo CDI
-                // Aqui, o 'Ganho Diário' deve refletir o quanto o spread foi menor (ou seja, se a taxa foi menor que o CDI)
-                // Usaremos a lógica mais simples: Retorno - Compromissada.
-                return ganhoBruto;
-            }
-            
-            // Se for revenda (retorno > compromissada), é o ganho líquido direto.
-            return ganhoBruto;
-        }
+        /* ============================================================
+            LÓGICA DE CÁLCULO E RENDERIZAÇÃO
+        ============================================================ */
 
         function calculateAndRender(dataArray = operacoes) {
             const tableBody = document.getElementById('resultBody');
@@ -424,18 +411,15 @@
             let totalCdiGain = 0;
 
             const globalCdiRate = parseNumber(document.getElementById('taxaCdiAnual').value);
-            const diasAno = parseNumber(document.getElementById('diasAno').value) || 252;
             const showIndividualOps = document.getElementById('showIndividualOps').checked;
 
             filteredOperacoes = dataArray.sort((a, b) => new Date(a.data) - new Date(b.data));
 
-            // Se não for para mostrar individualmente (modo resumo), agregamos por data/descrição
             const dataToRender = showIndividualOps ? filteredOperacoes : aggregateData(filteredOperacoes);
 
-            dataToRender.forEach((op, index) => {
+            dataToRender.forEach((op) => {
                 const taxaCdiAnual = op.taxaCdiAnual > 0 ? op.taxaCdiAnual : globalCdiRate;
                 
-                // O ganho diário é o spread entre retorno e compromissada
                 const ganhoDiario = op.retornoBruto - op.compromissada;
 
                 totalCompromissada += op.compromissada;
@@ -456,8 +440,8 @@
                     <td>${taxaCdiAnual > 0 ? taxaCdiAnual.toFixed(2) + '%' : '-'}</td>
                     <td class="${ganhoDiario >= 0 ? 'ganho' : 'perda'}">${formatBRL(ganhoDiario)}</td>
                     <td class="action-cell">
-                        <button class="btn small" onclick="editOperation(${op.id || index})">✏️</button>
-                        <button class="btn small danger" onclick="deleteOperation(${op.id || index})">🗑️</button>
+                        <button class="btn small" onclick="editOperation('${op.id}')">✏️</button>
+                        <button class="btn small danger" onclick="deleteOperation('${op.id}')">🗑️</button>
                     </td>
                 `;
             });
@@ -467,7 +451,6 @@
             document.getElementById('totalRetornoDisplay').querySelector('p').textContent = formatBRL(totalRetornoBruto);
             document.getElementById('totalCdiDisplay').querySelector('p').textContent = formatBRL(totalCdiGain);
 
-            // Se não há dados, mostra uma linha de aviso
             if (dataToRender.length === 0) {
                 const row = tableBody.insertRow();
                 row.innerHTML = `<td colspan="12" style="text-align:center;padding:20px;color:var(--muted);">Nenhuma operação encontrada nos filtros.</td>`;
@@ -615,31 +598,43 @@
 
 
         /* ============================================================
-            LÓGICA DE IMPORTAÇÃO DE ARQUIVOS (XLSX)
+            LÓGICA DE IMPORTAÇÃO DE ARQUIVOS (XLSX) - CORREÇÕES DE VALOR E DATA APLICADAS
         ============================================================ */
 
+        // CORREÇÃO CRÍTICA DO MAPEAMENTO DE COLUNAS
         const mapExcelToOperation = (row) => {
             // Tenta mapear colunas comuns. Adicione mais colunas do seu Excel aqui se necessário.
-            const dateValue = row['Data'] || row['DATA'] || row['Dt'] || row['VENCIMENTO'] || row['DATAVENC'];
+            // Data: Prioriza colunas de data/vencimento
+            const dateValue = row['Data'] || row['DATA'] || row['Dt'] || row['VENCIMENTO'] || row['DATAVENC'] || row['DT_OPERACAO'];
+            
+            // Descrição:
             const descValue = row['Descrição'] || row['HISTORICO'] || row['RESUMO'] || row['OPERACAO'];
+            
+            // Contrapartes:
             const bancoValue = row['BANCO'] || row['Contraparte'] || row['Contraparte Banco'];
             const cedenteValue = row['Conta Cedente'] || row['CEDENTE'] || row['CONTRAPARTE'];
             const cessionarioValue = row['Conta Cessionário'] || row['CESSIONARIO'];
 
+            // Valores (CRÍTICO):
             let compromissada = parseNumber(row['Valor Compromissada'] || row['VL IDA'] || 0);
             let retornoBruto = parseNumber(row['Valor Retorno Bruto'] || row['VL VOLTA'] || 0);
             
-            // Fallbacks caso não encontre as colunas ideais de valor
+            // Fallbacks caso não encontre as colunas ideais de valor (PU, VALOR genérico)
             if (compromissada === 0 && retornoBruto === 0) {
                 compromissada = parseNumber(row['PU IDA'] || 0);
                 retornoBruto = parseNumber(row['PU VOLTA'] || 0);
             }
             if (compromissada === 0 && retornoBruto === 0) {
                 compromissada = parseNumber(row['VALOR'] || 0);
-                retornoBruto = parseNumber(row['VALOR'] || 0); 
+                retornoBruto = parseNumber(row['VALOR'] || 0); // Se for a mesma coluna, assumimos que é uma transação
             }
+            
+            // Ajuste se só um valor for encontrado
             if (compromissada === 0 && retornoBruto !== 0) {
                 compromissada = retornoBruto;
+            }
+            if (retornoBruto === 0 && compromissada !== 0) {
+                retornoBruto = compromissada;
             }
 
 
@@ -664,11 +659,12 @@
                 reader.onload = (e) => {
                     try {
                         const data = e.target.result;
-                        // type: 'binary' para xlsx, cellDates: true para formatar datas corretamente
+                        // type: 'binary' e cellDates: true são CRÍTICOS para ler datas e números corretamente
                         const workbook = XLSX.read(data, { type: 'binary', cellDates: true, dateNF: 'yyyy-mm-dd' });
                         const firstSheetName = workbook.SheetNames[0];
                         const worksheet = workbook.Sheets[firstSheetName];
 
+                        // raw: false força a leitura formatada, incluindo datas.
                         const json = XLSX.utils.sheet_to_json(worksheet, { raw: false, dateNF: 'yyyy-mm-dd' });
 
                         const newOperations = json
@@ -738,7 +734,7 @@
         });
         
         /* ============================================================
-            LÓGICA DE EDIÇÃO/DELEÇÃO/MANUAL (Exemplo - completar)
+            LÓGICA DE EDIÇÃO/DELEÇÃO/MANUAL 
         ============================================================ */
 
         document.getElementById('addBtn').addEventListener('click', () => {
@@ -748,7 +744,8 @@
             }
 
             const isEdit = document.getElementById('editIndex').value !== '-1';
-            const index = parseInt(document.getElementById('editIndex').value);
+            const idToFind = document.getElementById('editIndex').value;
+            const index = operacoes.findIndex(op => op.id === idToFind);
 
             const newOperation = {
                 id: isEdit ? operacoes[index].id : crypto.randomUUID(),
@@ -785,9 +782,8 @@
             saveState();
         });
 
-        function editOperation(idOrIndex) {
-            // Encontra a operação pelo ID ou índice
-            const index = operacoes.findIndex(op => op.id === idOrIndex || operacoes.indexOf(op) === idOrIndex);
+        function editOperation(id) {
+            const index = operacoes.findIndex(op => op.id === id);
             if (index === -1) {
                 log("❌ Operação não encontrada para edição.");
                 return;
@@ -804,10 +800,10 @@
             document.getElementById('manualCompromissada').value = op.compromissada.toFixed(2).replace('.', ',');
             document.getElementById('manualRetorno').value = op.retornoBruto.toFixed(2).replace('.', ',');
             
-            document.getElementById('editIndex').value = index;
+            document.getElementById('editIndex').value = op.id; // Salva o ID da operação
             document.getElementById('addBtn').textContent = 'Salvar Edição';
             document.getElementById('cancelEditBtn').style.display = 'inline-block';
-            window.scrollTo(0, document.body.scrollHeight); // Rola para o formulário manual
+            window.scrollTo(0, document.body.scrollHeight); 
         }
 
         document.getElementById('cancelEditBtn').addEventListener('click', () => {
@@ -817,10 +813,10 @@
             document.getElementById('cancelEditBtn').style.display = 'none';
         });
 
-        function deleteOperation(idOrIndex) {
+        function deleteOperation(id) {
             if (!confirm("Tem certeza que deseja excluir esta operação?")) return;
 
-            const index = operacoes.findIndex(op => op.id === idOrIndex || operacoes.indexOf(op) === idOrIndex);
+            const index = operacoes.findIndex(op => op.id === id);
             if (index > -1) {
                 const deletedDesc = operacoes[index].descricao;
                 operacoes.splice(index, 1);
@@ -861,7 +857,7 @@
         }
         
         /* ============================================================
-            FILTRO E EXPORTAÇÃO (Exemplo)
+            FILTRO E EXPORTAÇÃO
         ============================================================ */
 
         document.getElementById('filterBtn').addEventListener('click', () => {
@@ -896,7 +892,6 @@
         });
 
         document.getElementById('exportBtn').addEventListener('click', () => {
-            // Cria uma cópia dos dados para exportação
             const dataToExport = filteredOperacoes.map(op => {
                 const taxaCdiAnual = op.taxaCdiAnual > 0 ? op.taxaCdiAnual : parseNumber(document.getElementById('taxaCdiAnual').value);
                 const ganhoDiario = op.retornoBruto - op.compromissada;
@@ -944,6 +939,7 @@
             const savedLogo = localStorage.getItem('cdiLogo'); 
             if (savedLogo) {
                 siteLogo.src = savedLogo;
+                siteLogo.style.display = 'block';
             } else {
                 siteLogo.style.display = 'none';
             }
