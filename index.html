@@ -849,7 +849,8 @@
             const sheet = workbook.Sheets[workbook.Sheets[0] || workbook.SheetNames[0]]; 
 
             // Lê a planilha em formato de array de arrays, sem formatar os dados
-            const json = XLSX.utils.sheet_to_json(sheet,{header:1,raw:false});
+            const json = XLSX.utils.sheet_to_json(sheet,{header:1,raw:true});
+
 
             if(json.length < 2){
                 alert("Arquivo vazio ou com apenas o cabeçalho.");
