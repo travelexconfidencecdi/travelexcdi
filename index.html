@@ -6,7 +6,9 @@
     <meta name="viewport" content="width=device-width,initial-scale=1" />
 
     <style>
-        /* ... SEU CÓDIGO CSS (STYLE) ORIGINAL ... */
+        /* ============================================================
+            SEÇÃO CSS
+        ============================================================ */
         :root{
             --primary: #0A0A33;
             --primary-light: #1A1A55;
@@ -102,7 +104,7 @@
         }
     </style>
 
-    <script src="xlsx.mini.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.17.0/xlsx.mini.min.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-database-compat.js"></script>
@@ -312,9 +314,8 @@
             CONFIGURAÇÃO DO FIREBASE
         ============================================================ */
         const firebaseConfig = {
-            // VERIFIQUE SE ESTAS CHAVES CORRESPONDEM AO SEU PROJETO FIREBASE
-            // (Usei as chaves do código anterior que você enviou)
-            apiKey: "AIzaSyD_vxw2VcSPO_tMXgrl7quZ85ODvpqQuR8", 
+            // A CHAVE DEVE SER A SUA CHAVE CORRETA DO CONSOLE DO FIREBASE
+            apiKey: "AIzaSyD_vxw2VcSPO_tMXgrl7quZ85ODvpqQuR8",
             authDomain: "controle-cdi.firebaseapp.com",
             databaseURL: "https://controle-cdi-default-rtdb.firebaseio.com",
             projectId: "controle-cdi",
@@ -324,104 +325,159 @@
             measurementId: "G-TV1M1QWQRC"
         };
 
+        let operacoes = []; // Array principal para armazenar os dados
+        let filteredOperacoes = []; // Array para armazenar os dados após o filtro
         let database = null;
-        let currentUserUid = null; // DECLARAÇÃO ÚNICA AQUI
+        let currentUserUid = null;
         const DB_ROOT_PATH = "usuarios/";
+        let uploadedFiles = []; // Para armazenar os arquivos selecionados para importação
+
+        const log = (message) => {
+            const logElement = document.getElementById('log');
+            const timestamp = new Date().toLocaleTimeString('pt-BR');
+            logElement.textContent = `[${timestamp}] ${message}\n` + logElement.textContent;
+        };
 
         if (typeof firebase !== 'undefined' && typeof firebase.database !== 'undefined' && typeof firebase.auth !== 'undefined') {
             firebase.initializeApp(firebaseConfig);
             database = firebase.database();
         } else {
             console.error("Firebase SDKs não carregados.");
+            log("❌ Erro: Firebase SDKs não carregados. Verifique as tags <script>.");
         }
-        
-        const log = (message) => { document.getElementById('log').textContent = message; };
 
         /* ============================================================
-            LOGIN / LOGOUT / CADASTRO POR EMAIL E SENHA (CORRIGIDO)
+            FUNÇÕES DE UTILIDADE
         ============================================================ */
-        const loginBtn = document.getElementById("loginBtn");
-        const logoutBtn = document.getElementById("logoutBtn");
-        const signupBtn = document.getElementById("signupBtn");
-        const loginMessage = document.getElementById("login-message");
-        const authControls = document.getElementById("auth-controls");
-        const authEmail = document.getElementById("authEmail");
-        const authPassword = document.getElementById("authPassword");
+        const cleanCurrency = (value) => {
+            if (typeof value === 'number') return value;
+            if (typeof value !== 'string') return 0;
+            // Remove pontos (milhares), substitui vírgula (decimal) por ponto, remove R$ e espaços.
+            return parseFloat(value.replace(/\./g, '').replace(',', '.').replace(/[^\d.-]/g, '')) || 0;
+        };
 
-        // FUNÇÃO DE LOGIN
-        loginBtn.addEventListener("click", () => {
-            if (currentUserUid) {
-                // Se já estiver logado, o botão age como Logout
-                firebase.auth().signOut();
-                return;
-            }
-            const email = authEmail.value.trim();
-            const password = authPassword.value;
-            if (!email || !password) {
-                log("⚠️ Preencha email e senha para fazer login.");
-                return;
-            }
-            firebase.auth().signInWithEmailAndPassword(email, password)
-                .then(() => { log("✅ Login realizado com sucesso."); })
-                .catch(error => { 
-                    if (error.code === 'auth/user-not-found') {
-                        log("⚠️ Usuário não encontrado. Clique em 'Cadastrar'.");
-                    } else {
-                        log(`❌ Erro no Login: ${error.message}`); 
-                    }
-                });
-        });
+        const parseNumber = (value) => {
+            if (typeof value === 'number') return value;
+            if (typeof value === 'string') return cleanCurrency(value);
+            return 0;
+        };
 
-        // FUNÇÃO DE CADASTRO
-        signupBtn.addEventListener("click", () => {
-            const email = authEmail.value.trim();
-            const password = authPassword.value;
-            if (!email || !password) {
-                log("⚠️ Preencha email e senha para cadastrar.");
-                return;
-            }
-            if (password.length < 6) {
-                log("❌ A senha deve ter no mínimo 6 caracteres.");
-                return;
-            }
-            firebase.auth().createUserWithEmailAndPassword(email, password)
-                .then(() => { log("✅ Cadastro realizado com sucesso e login automático."); })
-                .catch(error => { log(`❌ Erro no Cadastro: ${error.message}`); });
-        });
+        const formatBRL = (value) => {
+            return new Intl.NumberFormat('pt-BR', {
+                style: 'currency',
+                currency: 'BRL',
+            }).format(value);
+        };
 
-        // FUNÇÃO DE LOGOUT
-        logoutBtn.addEventListener("click", () => {
-            firebase.auth().signOut()
-                .then(() => { log("👋 Desconectado."); })
-                .catch(error => { log(`❌ Erro no Logout: ${error.message}`); });
-        });
+        const normalizeDate = (date) => {
+            if (date instanceof Date && !isNaN(date)) {
+                return date.toISOString().split('T')[0]; // yyyy-mm-dd
+            }
+            if (typeof date === 'number' && date > 1000) {
+                // Excel base date (1899-12-30). Adicionar 1 para compensar.
+                const d = new Date(Date.UTC(0, 0, date - 1));
+                return d.toISOString().split('T')[0];
+            }
+            if (typeof date === 'string') {
+                // Tenta converter formatos comuns (DD/MM/YYYY)
+                const parts = date.match(/(\d{1,2})[-/](\d{1,2})[-/](\d{4})/);
+                if (parts) {
+                    const d = new Date(parts[3], parts[2] - 1, parts[1]);
+                    if (!isNaN(d)) return d.toISOString().split('T')[0];
+                }
+                // Tenta converter YYYY-MM-DD
+                let parsedDate = new Date(date);
+                if (!isNaN(parsedDate)) {
+                    return parsedDate.toISOString().split('T')[0];
+                }
+            }
+            return '';
+        };
 
-        // MONITORAMENTO DO ESTADO DE AUTENTICAÇÃO (Controla o carregamento e a UI)
-        firebase.auth().onAuthStateChanged((user) => {
-            if (user) {
-                currentUserUid = user.uid;
-                loginMessage.textContent = `Status: Conectado como ${user.email || 'Usuário Autenticado'}`; 
+        /* ============================================================
+            LÓGICA DE CÁLCULO
+        ============================================================ */
+        function calculateDailyGain(compromissada, retornoBruto, taxaCdiAnual, diasAno) {
+            const ganhoBruto = retornoBruto - compromissada;
+
+            // Se for recompra (valor de retorno é menor ou igual ao compromissada),
+            // o ganho deve ser calculado com base no CDI.
+            if (ganhoBruto <= 0) {
+                const taxaDiaria = (taxaCdiAnual / 100) / diasAno;
+                const ganhoCdi = compromissada * taxaDiaria;
+                // O ganho líquido é o ganhoBruto (que será negativo/zero) + o que deveria ser ganho pelo CDI
+                // Aqui, o 'Ganho Diário' deve refletir o quanto o spread foi menor (ou seja, se a taxa foi menor que o CDI)
+                // Usaremos a lógica mais simples: Retorno - Compromissada.
+                return ganhoBruto;
+            }
+            
+            // Se for revenda (retorno > compromissada), é o ganho líquido direto.
+            return ganhoBruto;
+        }
+
+        function calculateAndRender(dataArray = operacoes) {
+            const tableBody = document.getElementById('resultBody');
+            tableBody.innerHTML = '';
+            
+            let totalCompromissada = 0;
+            let totalRetornoBruto = 0;
+            let totalCdiGain = 0;
+
+            const globalCdiRate = parseNumber(document.getElementById('taxaCdiAnual').value);
+            const diasAno = parseNumber(document.getElementById('diasAno').value) || 252;
+            const showIndividualOps = document.getElementById('showIndividualOps').checked;
+
+            filteredOperacoes = dataArray.sort((a, b) => new Date(a.data) - new Date(b.data));
+
+            // Se não for para mostrar individualmente (modo resumo), agregamos por data/descrição
+            const dataToRender = showIndividualOps ? filteredOperacoes : aggregateData(filteredOperacoes);
+
+            dataToRender.forEach((op, index) => {
+                const taxaCdiAnual = op.taxaCdiAnual > 0 ? op.taxaCdiAnual : globalCdiRate;
                 
-                authControls.style.display = 'none';
-                logoutBtn.style.display = 'inline-block';
-                loginBtn.style.display = 'none'; // Esconde Login/Cadastro se o Logout estiver visível
-                signupBtn.style.display = 'none';
+                // O ganho diário é o spread entre retorno e compromissada
+                const ganhoDiario = op.retornoBruto - op.compromissada;
 
-                loadStateFromFirebase(); 
-            } else {
-                currentUserUid = null;
-                loginMessage.textContent = "Status: Desconectado";
-                
-                authControls.style.display = 'flex';
-                logoutBtn.style.display = 'none';
-                loginBtn.style.display = 'inline-block';
-                signupBtn.style.display = 'inline-block';
+                totalCompromissada += op.compromissada;
+                totalRetornoBruto += op.retornoBruto;
+                totalCdiGain += ganhoDiario;
 
-                operacoes = [];
-                calculateAndRender();
-                log('Aguardando Login/Cadastro para acessar os dados da nuvem.');
+                const row = tableBody.insertRow();
+                row.innerHTML = `
+                    <td>${op.data ? op.data.split('-').reverse().join('/') : 'N/A'}</td>
+                    <td class="col-left" title="${op.descricao || ''}">${op.descricao || 'N/A'}</td>
+                    <td>${op.banco || 'N/A'}</td>
+                    <td>${op.contaCedente || 'N/A'}</td>
+                    <td>${op.contaCessionario || 'N/A'}</td>
+                    <td>${formatBRL(op.compromissada)}</td>
+                    <td>${formatBRL(op.retornoBruto)}</td>
+                    <td>${op.puIda > 0 ? formatBRL(op.puIda) : '-'}</td>
+                    <td>${op.puVolta > 0 ? formatBRL(op.puVolta) : '-'}</td>
+                    <td>${taxaCdiAnual > 0 ? taxaCdiAnual.toFixed(2) + '%' : '-'}</td>
+                    <td class="${ganhoDiario >= 0 ? 'ganho' : 'perda'}">${formatBRL(ganhoDiario)}</td>
+                    <td class="action-cell">
+                        <button class="btn small" onclick="editOperation(${op.id || index})">✏️</button>
+                        <button class="btn small danger" onclick="deleteOperation(${op.id || index})">🗑️</button>
+                    </td>
+                `;
+            });
+            
+            // Atualiza totais
+            document.getElementById('totalCompromissadaDisplay').querySelector('p').textContent = formatBRL(totalCompromissada);
+            document.getElementById('totalRetornoDisplay').querySelector('p').textContent = formatBRL(totalRetornoBruto);
+            document.getElementById('totalCdiDisplay').querySelector('p').textContent = formatBRL(totalCdiGain);
+
+            // Se não há dados, mostra uma linha de aviso
+            if (dataToRender.length === 0) {
+                const row = tableBody.insertRow();
+                row.innerHTML = `<td colspan="12" style="text-align:center;padding:20px;color:var(--muted);">Nenhuma operação encontrada nos filtros.</td>`;
             }
-        });
+        }
+
+        function aggregateData(data) {
+            // Lógica simples de agregação por data, se necessário no futuro
+            return data;
+        }
 
 
         /* ============================================================
@@ -468,25 +524,454 @@
                         log('Nenhum dado salvo encontrado para este usuário.');
                     }
                     calculateAndRender(); 
-                 })
+                })
                 .catch(error => {
                     operacoes = [];
                     log(`❌ Erro ao carregar dados: ${error.message}`);
                     calculateAndRender();
                 });
         }
-        // ... (Restante das funções: cleanCurrency, parseNumber, formatBRL, normalizeDate, etc.) ...
-        
-        // ... (Coloque o restante do seu código JavaScript aqui) ...
 
-        // Lembre-se de corrigir a chamada da função loadState() na tag <body>
-        function loadLogo() {
-            const savedLogo = localStorage.getItem('cdiLogo'); // Usei cdiLogo do seu código
-            if (savedLogo) {
-                siteLogo.src = savedLogo;
+        /* ============================================================
+            LOGIN / LOGOUT / CADASTRO
+        ============================================================ */
+        const loginBtn = document.getElementById("loginBtn");
+        const logoutBtn = document.getElementById("logoutBtn");
+        const signupBtn = document.getElementById("signupBtn");
+        const loginMessage = document.getElementById("login-message");
+        const authControls = document.getElementById("auth-controls");
+        const authEmail = document.getElementById("authEmail");
+        const authPassword = document.getElementById("authPassword");
+
+        loginBtn.addEventListener("click", () => {
+            if (currentUserUid) {
+                firebase.auth().signOut();
+                return;
+            }
+            const email = authEmail.value.trim();
+            const password = authPassword.value;
+            if (!email || !password) {
+                log("⚠️ Preencha email e senha para fazer login.");
+                return;
+            }
+            firebase.auth().signInWithEmailAndPassword(email, password)
+                .then(() => { log("✅ Login realizado com sucesso."); })
+                .catch(error => { 
+                    if (error.code === 'auth/user-not-found') {
+                        log("⚠️ Usuário não encontrado. Clique em 'Cadastrar'.");
+                    } else {
+                        log(`❌ Erro no Login: ${error.message}`); 
+                    }
+                });
+        });
+
+        signupBtn.addEventListener("click", () => {
+            const email = authEmail.value.trim();
+            const password = authPassword.value;
+            if (!email || !password) {
+                log("⚠️ Preencha email e senha para cadastrar.");
+                return;
+            }
+            if (password.length < 6) {
+                log("❌ A senha deve ter no mínimo 6 caracteres.");
+                return;
+            }
+            firebase.auth().createUserWithEmailAndPassword(email, password)
+                .then(() => { log("✅ Cadastro realizado com sucesso e login automático."); })
+                .catch(error => { log(`❌ Erro no Cadastro: ${error.message}`); });
+        });
+
+        logoutBtn.addEventListener("click", () => {
+            firebase.auth().signOut()
+                .then(() => { log("👋 Desconectado."); })
+                .catch(error => { log(`❌ Erro no Logout: ${error.message}`); });
+        });
+
+        firebase.auth().onAuthStateChanged((user) => {
+            if (user) {
+                currentUserUid = user.uid;
+                loginMessage.textContent = `Status: Conectado como ${user.email || 'Usuário Autenticado'}`; 
+                
+                authControls.style.display = 'none';
+                logoutBtn.style.display = 'inline-block';
+                loginBtn.style.display = 'none';
+                signupBtn.style.display = 'none';
+
+                loadStateFromFirebase(); 
+            } else {
+                currentUserUid = null;
+                loginMessage.textContent = "Status: Desconectado";
+                
+                authControls.style.display = 'flex';
+                logoutBtn.style.display = 'none';
+                loginBtn.style.display = 'inline-block';
+                signupBtn.style.display = 'inline-block';
+
+                operacoes = [];
+                calculateAndRender();
+                log('Aguardando Login/Cadastro para acessar os dados da nuvem.');
+            }
+        });
+
+
+        /* ============================================================
+            LÓGICA DE IMPORTAÇÃO DE ARQUIVOS (XLSX)
+        ============================================================ */
+
+        const mapExcelToOperation = (row) => {
+            // Tenta mapear colunas comuns. Adicione mais colunas do seu Excel aqui se necessário.
+            const dateValue = row['Data'] || row['DATA'] || row['Dt'] || row['VENCIMENTO'] || row['DATAVENC'];
+            const descValue = row['Descrição'] || row['HISTORICO'] || row['RESUMO'] || row['OPERACAO'];
+            const bancoValue = row['BANCO'] || row['Contraparte'] || row['Contraparte Banco'];
+            const cedenteValue = row['Conta Cedente'] || row['CEDENTE'] || row['CONTRAPARTE'];
+            const cessionarioValue = row['Conta Cessionário'] || row['CESSIONARIO'];
+
+            let compromissada = parseNumber(row['Valor Compromissada'] || row['VL IDA'] || 0);
+            let retornoBruto = parseNumber(row['Valor Retorno Bruto'] || row['VL VOLTA'] || 0);
+            
+            // Fallbacks caso não encontre as colunas ideais de valor
+            if (compromissada === 0 && retornoBruto === 0) {
+                compromissada = parseNumber(row['PU IDA'] || 0);
+                retornoBruto = parseNumber(row['PU VOLTA'] || 0);
+            }
+            if (compromissada === 0 && retornoBruto === 0) {
+                compromissada = parseNumber(row['VALOR'] || 0);
+                retornoBruto = parseNumber(row['VALOR'] || 0); 
+            }
+            if (compromissada === 0 && retornoBruto !== 0) {
+                compromissada = retornoBruto;
+            }
+
+
+            return {
+                id: crypto.randomUUID(), 
+                data: normalizeDate(dateValue),
+                descricao: String(descValue || 'Importação Excel'),
+                banco: String(bancoValue || 'N/A'),
+                contaCedente: String(cedenteValue || ''),
+                contaCessionario: String(cessionarioValue || ''),
+                puIda: parseNumber(row['PU IDA'] || 0),
+                puVolta: parseNumber(row['PU VOLTA'] || 0),
+                compromissada: compromissada,
+                retornoBruto: retornoBruto,
+                taxaCdiAnual: parseNumber(row['Taxa CDI (%)'] || row['CDI'])
+            };
+        };
+
+        const handleFile = (file) => {
+            return new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    try {
+                        const data = e.target.result;
+                        // type: 'binary' para xlsx, cellDates: true para formatar datas corretamente
+                        const workbook = XLSX.read(data, { type: 'binary', cellDates: true, dateNF: 'yyyy-mm-dd' });
+                        const firstSheetName = workbook.SheetNames[0];
+                        const worksheet = workbook.Sheets[firstSheetName];
+
+                        const json = XLSX.utils.sheet_to_json(worksheet, { raw: false, dateNF: 'yyyy-mm-dd' });
+
+                        const newOperations = json
+                            .map(mapExcelToOperation)
+                            .filter(op => op.compromissada > 0 || op.retornoBruto > 0);
+
+                        log(`✅ Arquivo "${file.name}" processado: ${newOperations.length} registros encontrados.`);
+                        resolve(newOperations);
+
+                    } catch (error) {
+                        log(`❌ Erro ao processar o arquivo "${file.name}": ${error.message}`);
+                        reject([]);
+                    }
+                };
+                reader.onerror = (e) => {
+                    log(`❌ Erro de leitura do arquivo: ${e.target.error}`);
+                    reject([]);
+                };
+                reader.readAsBinaryString(file);
+            });
+        };
+
+        document.getElementById('excelFile').addEventListener('change', (e) => {
+            uploadedFiles = Array.from(e.target.files);
+            log(`Arquivos selecionados: ${uploadedFiles.length}`);
+        });
+
+        document.getElementById('loadExcelBtn').addEventListener('click', async () => {
+            if (!currentUserUid) {
+                log("⚠️ Faça login primeiro para importar e salvar dados.");
+                return;
+            }
+            if (uploadedFiles.length === 0) {
+                log("⚠️ Por favor, selecione um ou mais arquivos Excel ou CSV primeiro.");
+                return;
+            }
+
+            log(`Iniciando importação de ${uploadedFiles.length} arquivos...`);
+
+            const importedDataPromises = uploadedFiles.map(handleFile);
+
+            try {
+                const results = await Promise.all(importedDataPromises);
+                let totalNewOperations = 0;
+
+                results.forEach(newOps => {
+                    if (Array.isArray(newOps)) {
+                        operacoes.push(...newOps);
+                        totalNewOperations += newOps.length;
+                    }
+                });
+
+                if (totalNewOperations > 0) {
+                    log(`🎉 Importação concluída! Total de ${totalNewOperations} novas operações adicionadas.`);
+                    calculateAndRender();
+                    saveState();
+                } else {
+                    log("⚠️ Nenhum dado válido foi extraído dos arquivos selecionados.");
+                }
+
+                document.getElementById('excelFile').value = ''; 
+                uploadedFiles = []; 
+
+            } catch (error) {
+                log(`❌ Erro geral durante a importação: ${error.message}`);
+            }
+        });
+        
+        /* ============================================================
+            LÓGICA DE EDIÇÃO/DELEÇÃO/MANUAL (Exemplo - completar)
+        ============================================================ */
+
+        document.getElementById('addBtn').addEventListener('click', () => {
+            if (!currentUserUid) {
+                log("⚠️ Faça login primeiro para adicionar dados manualmente.");
+                return;
+            }
+
+            const isEdit = document.getElementById('editIndex').value !== '-1';
+            const index = parseInt(document.getElementById('editIndex').value);
+
+            const newOperation = {
+                id: isEdit ? operacoes[index].id : crypto.randomUUID(),
+                data: document.getElementById('manualData').value,
+                descricao: document.getElementById('manualDesc').value,
+                banco: document.getElementById('manualBanco').value,
+                contaCedente: document.getElementById('manualCedente').value,
+                contaCessionario: document.getElementById('manualCessionario').value,
+                taxaCdiAnual: parseNumber(document.getElementById('manualCdiTaxa').value),
+                compromissada: cleanCurrency(document.getElementById('manualCompromissada').value),
+                retornoBruto: cleanCurrency(document.getElementById('manualRetorno').value),
+                puIda: 0,
+                puVolta: 0
+            };
+
+            if (newOperation.compromissada === 0 && newOperation.retornoBruto === 0) {
+                log("❌ Valor Compromissada ou Retorno deve ser preenchido.");
+                return;
+            }
+            
+            if (isEdit) {
+                operacoes[index] = newOperation;
+                log(`✅ Operação editada com sucesso: ${newOperation.descricao}`);
+                document.getElementById('addBtn').textContent = 'Adicionar Lançamento';
+                document.getElementById('cancelEditBtn').style.display = 'none';
+                document.getElementById('editIndex').value = '-1';
+            } else {
+                operacoes.push(newOperation);
+                log(`✅ Operação adicionada com sucesso: ${newOperation.descricao}`);
+            }
+
+            clearManualFields();
+            calculateAndRender();
+            saveState();
+        });
+
+        function editOperation(idOrIndex) {
+            // Encontra a operação pelo ID ou índice
+            const index = operacoes.findIndex(op => op.id === idOrIndex || operacoes.indexOf(op) === idOrIndex);
+            if (index === -1) {
+                log("❌ Operação não encontrada para edição.");
+                return;
+            }
+
+            const op = operacoes[index];
+            
+            document.getElementById('manualData').value = op.data;
+            document.getElementById('manualDesc').value = op.descricao;
+            document.getElementById('manualBanco').value = op.banco;
+            document.getElementById('manualCedente').value = op.contaCedente;
+            document.getElementById('manualCessionario').value = op.contaCessionario;
+            document.getElementById('manualCdiTaxa').value = op.taxaCdiAnual > 0 ? op.taxaCdiAnual.toFixed(2).replace('.', ',') : '';
+            document.getElementById('manualCompromissada').value = op.compromissada.toFixed(2).replace('.', ',');
+            document.getElementById('manualRetorno').value = op.retornoBruto.toFixed(2).replace('.', ',');
+            
+            document.getElementById('editIndex').value = index;
+            document.getElementById('addBtn').textContent = 'Salvar Edição';
+            document.getElementById('cancelEditBtn').style.display = 'inline-block';
+            window.scrollTo(0, document.body.scrollHeight); // Rola para o formulário manual
+        }
+
+        document.getElementById('cancelEditBtn').addEventListener('click', () => {
+            clearManualFields();
+            document.getElementById('editIndex').value = '-1';
+            document.getElementById('addBtn').textContent = 'Adicionar Lançamento';
+            document.getElementById('cancelEditBtn').style.display = 'none';
+        });
+
+        function deleteOperation(idOrIndex) {
+            if (!confirm("Tem certeza que deseja excluir esta operação?")) return;
+
+            const index = operacoes.findIndex(op => op.id === idOrIndex || operacoes.indexOf(op) === idOrIndex);
+            if (index > -1) {
+                const deletedDesc = operacoes[index].descricao;
+                operacoes.splice(index, 1);
+                log(`🗑️ Operação excluída: ${deletedDesc}`);
+                calculateAndRender();
+                saveState();
+            } else {
+                log("❌ Operação não encontrada para exclusão.");
             }
         }
+
+        document.getElementById('deleteAllBtn').addEventListener('click', () => {
+            if (!currentUserUid) {
+                log("⚠️ Faça login primeiro para excluir os dados.");
+                return;
+            }
+            if (operacoes.length === 0) {
+                log("⚠️ Não há operações para excluir.");
+                return;
+            }
+            if (confirm(`Tem certeza que deseja excluir TODAS as ${operacoes.length} operações salvas? Esta ação é irreversível.`)) {
+                operacoes = [];
+                log("🗑️ Todos os dados foram excluídos.");
+                calculateAndRender();
+                saveState();
+            }
+        });
         
+        function clearManualFields() {
+            document.getElementById('manualData').value = '';
+            document.getElementById('manualDesc').value = '';
+            document.getElementById('manualBanco').value = '';
+            document.getElementById('manualCedente').value = '';
+            document.getElementById('manualCessionario').value = '';
+            document.getElementById('manualCdiTaxa').value = '';
+            document.getElementById('manualCompromissada').value = '';
+            document.getElementById('manualRetorno').value = '';
+        }
+        
+        /* ============================================================
+            FILTRO E EXPORTAÇÃO (Exemplo)
+        ============================================================ */
+
+        document.getElementById('filterBtn').addEventListener('click', () => {
+            const startDate = document.getElementById('filterStartDate').value;
+            const endDate = document.getElementById('filterEndDate').value;
+            
+            if (!startDate && !endDate) {
+                calculateAndRender(operacoes);
+                log("Filtro aplicado (Nenhum filtro de data).");
+                return;
+            }
+            
+            const start = startDate ? new Date(startDate + 'T00:00:00') : null;
+            const end = endDate ? new Date(endDate + 'T23:59:59') : null;
+
+            const tempFiltered = operacoes.filter(op => {
+                const opDate = new Date(op.data + 'T12:00:00'); 
+                const matchStart = start ? opDate >= start : true;
+                const matchEnd = end ? opDate <= end : true;
+                return matchStart && matchEnd;
+            });
+
+            calculateAndRender(tempFiltered);
+            log(`Filtro aplicado: ${tempFiltered.length} operações encontradas.`);
+        });
+
+        document.getElementById('resetFilterBtn').addEventListener('click', () => {
+            document.getElementById('filterStartDate').value = '';
+            document.getElementById('filterEndDate').value = '';
+            calculateAndRender(operacoes);
+            log("Filtros de data redefinidos.");
+        });
+
+        document.getElementById('exportBtn').addEventListener('click', () => {
+            // Cria uma cópia dos dados para exportação
+            const dataToExport = filteredOperacoes.map(op => {
+                const taxaCdiAnual = op.taxaCdiAnual > 0 ? op.taxaCdiAnual : parseNumber(document.getElementById('taxaCdiAnual').value);
+                const ganhoDiario = op.retornoBruto - op.compromissada;
+                
+                return {
+                    'Data': op.data,
+                    'Descrição': op.descricao,
+                    'Banco': op.banco,
+                    'Conta Cedente': op.contaCedente,
+                    'Conta Cessionário': op.contaCessionario,
+                    'Compromissada (R$)': op.compromissada,
+                    'Retorno Bruto (R$)': op.retornoBruto,
+                    'PU Ida': op.puIda,
+                    'PU Volta': op.puVolta,
+                    'Taxa CDI Anual (%)': taxaCdiAnual,
+                    'Ganho (R$) Diário': ganhoDiario
+                };
+            });
+
+            if (dataToExport.length === 0) {
+                log("⚠️ Não há dados filtrados para exportar.");
+                return;
+            }
+
+            const ws = XLSX.utils.json_to_sheet(dataToExport);
+            const wb = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(wb, ws, "ControleCDI");
+            XLSX.writeFile(wb, "ControleCDI_Exportacao.xlsx");
+            log(`Exportação de ${dataToExport.length} linhas concluída.`);
+        });
+
+        document.getElementById('printBtn').addEventListener('click', () => {
+            window.print();
+        });
+        
+        /* ============================================================
+            LÓGICA DO LOGO (Local Storage)
+        ============================================================ */
+        const siteLogo = document.getElementById('siteLogo');
+        const logoFile = document.getElementById('logoFile');
+        const addLogoBtn = document.getElementById('addLogoBtn');
+        const removeLogoBtn = document.getElementById('removeLogoBtn');
+
+        function loadLogo() {
+            const savedLogo = localStorage.getItem('cdiLogo'); 
+            if (savedLogo) {
+                siteLogo.src = savedLogo;
+            } else {
+                siteLogo.style.display = 'none';
+            }
+        }
+
+        addLogoBtn.addEventListener('click', () => {
+            if (logoFile.files.length > 0) {
+                const file = logoFile.files[0];
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    localStorage.setItem('cdiLogo', e.target.result);
+                    siteLogo.src = e.target.result;
+                    siteLogo.style.display = 'block';
+                    log("✅ Logo carregado e salvo.");
+                };
+                reader.readAsDataURL(file);
+            } else {
+                log("⚠️ Selecione um arquivo de imagem para o logo primeiro.");
+            }
+        });
+
+        removeLogoBtn.addEventListener('click', () => {
+            localStorage.removeItem('cdiLogo');
+            siteLogo.src = '';
+            siteLogo.style.display = 'none';
+            log("🗑️ Logo removido.");
+        });
+
     </script>
 </body>
 </html>
