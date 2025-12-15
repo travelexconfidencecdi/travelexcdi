@@ -312,6 +312,7 @@
             CONFIGURAÇÃO DO FIREBASE (Chave de demonstração/genérica)
         ============================================================ */
         const firebaseConfig = {
+            // VERIFIQUE SE ESTAS CHAVES CORRESPONDEM AO SEU PROJETO FIREBASE
             apiKey: "AIzaSyD_vxw2VcSPO_tMXgrb7quZ85ODvpqQuR8", 
             authDomain: "controle-cdi.firebaseapp.com",
             databaseURL: "https://controle-cdi-default-rtdb.firebaseio.com",
@@ -404,12 +405,8 @@
 
 
         /* ============================================================
-            (RESTO DO CÓDIGO - FUNÇÕES DE FORMATAÇÃO, SALVAR/CARREGAR, 
-             RENDERIZAÇÃO E IMPORTAÇÃO - CÓDIGO MAIS LONGO FOI OMITIDO 
-             AQUI PARA FOCO, MAS ESTÁ INCLUÍDO NO ARQUIVO COMPLETO)
+            FUNÇÕES DE FORMATAÇÃO E UTILIDADE
         ============================================================ */
-        
-        // ... (Funções de Formatação) ...
         function cleanCurrency(v){
             if(typeof v!=='string') v=String(v);
             let cleanString = v.replace(/[R$\s]/g, '');
@@ -487,7 +484,9 @@
         let totalGanho = 0;
 
 
-        // ... (Salvar e Carregar do Firebase) ...
+        /* ============================================================
+            SALVAR E CARREGAR DO FIREBASE (Nuvem)
+        ============================================================ */
         function saveState(){
             if(!currentUserUid) {
                 log("⚠️ Desconectado. Não é possível salvar na nuvem. Faça Login/Cadastro.");
@@ -524,8 +523,6 @@
             })
             .catch(e => log("❌ Erro ao carregar do Firebase: " + e.message));
         }
-
-        function loadState(){}
 
 
         // ... (Renderização da Tabela) ...
@@ -755,6 +752,8 @@
 
         /* ============================================================
             FUNÇÕES DE IMPORTAÇÃO (SheetJS/Excel)
+            -> CORRIGIDO: Garante que os valores de Compromissada/Retorno 
+                          usem fallback se um estiver ausente.
         ============================================================ */
         const excelFile = document.getElementById('excelFile');
         const loadExcelBtn = document.getElementById('loadExcelBtn');
@@ -767,6 +766,10 @@
         });
 
         loadExcelBtn.addEventListener('click', () => {
+            if (!currentUserUid) {
+                log("⚠️ Faça login primeiro para importar e salvar dados na nuvem.");
+                return;
+            }
             const files = excelFile.files;
             if (files.length === 0) {
                 log("⚠️ Por favor, selecione um arquivo primeiro.");
@@ -801,7 +804,7 @@
                     'DATA': ['DATA', 'DTOPERACAO', 'DTREFERENCIA'],
                     'COMPROMISSADA': ['VLIDA', 'VALORIDA', 'VLBRUTO'],
                     'RETORNOBRUTO': ['VLVOLTA', 'VALORVOLTA', 'VLTOTAL'],
-                    'BANCO': ['BANCO', 'CORRETORA', 'CONTRAPARTE'],
+                    'BANCO': ['BANCO', 'CORRETORA', 'CONTRA PARTE', 'CONTRAPARTE'],
                     'CEDENTE': ['CCEDENTE', 'CONTACEDENTE'],
                     'CESSIONARIO': ['CCESSIONARIO', 'CONTACESSIONARIO'],
                     'DESCRICAO': ['DESCRICAO', 'RESUMO', 'OPERACAO']
@@ -830,6 +833,7 @@
                     const compromissadaValue = parseNumber(row[colIndices['COMPROMISSADA']] || 0);
                     const retornoValue = parseNumber(row[colIndices['RETORNOBRUTO']] || 0);
                     
+                    // LÓGICA DE FALLBACK: Usa o valor existente se o outro for zero.
                     const compromissada = compromissadaValue || retornoValue;
                     const retorno = retornoValue || compromissadaValue;
 
