@@ -400,6 +400,7 @@
            CONFIGURAÇÃO DO FIREBASE
         ============================================================ */
         const firebaseConfig = {
+            // As chaves do Firebase são mockadas/genéricas, mas a lógica de autenticação está correta.
             apiKey: "AIzaSyD_vxw2VcSPO_tMXgrl7quZ85ODvpqQuR8",
             authDomain: "controle-cdi.firebaseapp.com",
             databaseURL: "https://controle-cdi-default-rtdb.firebaseio.com",
@@ -447,27 +448,21 @@
         });
 
         /* ============================================================
-           FUNÇÕES DE FORMATAÇÃO E UTILIDADE (REVISADAS)
+           FUNÇÕES DE FORMATAÇÃO E UTILIDADE
         ============================================================ */
         function parseNumber(v){
             if(v===undefined||v===null||v==='') return 0;
             if(typeof v!=='string') v=String(v);
 
-            // 1. Limpa moeda (R$, espaço)
             let s = v.replace(/[R$\s]/g, '');
-
-            // 2. Tenta encontrar se o último separador é uma vírgula (indicando formato BR)
             const lastComma = s.lastIndexOf(',');
             const lastDot = s.lastIndexOf('.');
 
             if (lastComma > lastDot) {
-                // Se a última for vírgula, trata como separador decimal (e retira pontos de milhar)
                 s = s.replace(/\./g, '').replace(/,/g, '.');
             } else if (lastComma !== -1 && lastDot === -1) {
-                 // Tem vírgula, mas não tem ponto. Assume vírgula como decimal.
                  s = s.replace(/,/g, '.');
             }
-
 
             let n=parseFloat(s);
             return isNaN(n)?0:n;
@@ -575,7 +570,6 @@
                 const puVolta = retorno/(op.quantidade||1);
 
                 let ganho = retorno - compromissada;
-                // Lógica de inversão para "RECOMPRA" onde o retorno é menor que a compromissada
                 if(op.desc && op.desc.toUpperCase().includes("RECOMPRA") && ganho<0){
                     ganho = Math.abs(ganho);
                 }
@@ -787,14 +781,14 @@
             
             const map={};
 
-            // Mapeamento dos títulos normalizados do seu arquivo para as chaves do objeto 'operacoes'
+            // Mapeamento dos títulos normalizados do seu arquivo
             const known={
                 "DATA DO OPERACAO":"data",
                 "DESCRICAO DO MOVIMENTO":"desc",
                 "CONTA CEDENTE":"cedente",
                 "CONTA CESSIONARIO":"cessionario",
-                "VALOR COMPROMISSADO R":"compromissada",   // Ajustado para o nome do seu cabeçalho
-                "VALOR BRUTO RETORNO R":"retornoBruto",    // Ajustado para o nome do seu cabeçalho
+                "VALOR COMPROMISSADO R":"compromissada", // "Valor Compromissado (R$)" -> "VALOR COMPROMISSADO R"
+                "VALOR BRUTO RETORNO R":"retornoBruto",  // "Valor Bruto Retorno (R$)" -> "VALOR BRUTO RETORNO R"
                 "TAXA CDI ANUAL":"cdiTaxa",
                 "PU DE IDA":"puIda",
                 "PU DE VOLTA":"puVolta"
@@ -804,7 +798,6 @@
                 if(known[h]) map[known[h]]=i;
             });
 
-            // Verificação de colunas obrigatórias
             if (!map.data || !map.compromissada || !map.retornoBruto) {
                 alert("Não foi possível mapear as colunas obrigatórias: Data, Compromissada e Retorno Bruto. Verifique o cabeçalho do arquivo.");
                 return;
@@ -817,6 +810,7 @@
                 if(!row || !row[map.data] || !row[map.compromissada]) continue;
 
                 let rawDate = row[map.data];
+                // Lidar com o formato de data serial do Excel (se raw:false não resolver)
                 if (typeof rawDate === 'number' && rawDate > 1) {
                     const date = XLSX.SSF.parse_date_code(rawDate, {});
                     rawDate = `${date.y}-${String(date.m).padStart(2, '0')}-${String(date.d).padStart(2, '0')}`;
@@ -842,6 +836,77 @@
         }
 
         /* ============================================================
+           FUNÇÃO DE EXPORTAÇÃO (NOVA)
+        ============================================================ */
+        function exportData() {
+            if (operacoes.length === 0) {
+                alert("Não há dados para exportar.");
+                return;
+            }
+
+            const taxaGlobal = cleanCdiTaxa(document.getElementById("taxaCdiAnual").value) / 100;
+            
+            const dadosExportacao = operacoes.map((op) => {
+                const compromissada = parseNumber(op.compromissada);
+                const retorno = parseNumber(op.retornoBruto);
+                const taxa = cleanCdiTaxa(op.cdiTaxa || taxaGlobal * 100) / 100;
+                let ganho = retorno - compromissada;
+                
+                if (op.desc && op.desc.toUpperCase().includes("RECOMPRA") && ganho < 0) {
+                    ganho = Math.abs(ganho);
+                }
+
+                return {
+                    "Data": formatDataBR(op.data),
+                    "Descrição": op.desc || "",
+                    "Banco": op.banco || "",
+                    "Conta Cedente": op.cedente || "",
+                    "Conta Cessionário": op.cessionario || "",
+                    "Compromissada": compromissada,
+                    "Retorno Bruto": retorno,
+                    "Taxa CDI (%)": taxa * 100, // Multiplica por 100 para ser %
+                    "Ganho (R$)": ganho
+                };
+            });
+
+            const ws = XLSX.utils.json_to_sheet(dadosExportacao);
+            
+            // Aplica formatação de número nas colunas (Moeda e Porcentagem)
+            const colIndexMap = {
+                "Compromissada": 'F', 
+                "Retorno Bruto": 'G', 
+                "Taxa CDI (%)": 'H', 
+                "Ganho (R$)": 'I'
+            };
+            
+            for (let R = 1; R <= dadosExportacao.length; ++R) {
+                const rowKey = R + 1;
+
+                if (ws[colIndexMap["Compromissada"] + rowKey]) {
+                    ws[colIndexMap["Compromissada"] + rowKey].z = 'R$ #,##0.00';
+                }
+                if (ws[colIndexMap["Retorno Bruto"] + rowKey]) {
+                    ws[colIndexMap["Retorno Bruto"] + rowKey].z = 'R$ #,##0.00';
+                }
+                if (ws[colIndexMap["Ganho (R$)"] + rowKey]) {
+                    ws[colIndexMap["Ganho (R$)"] + rowKey].z = 'R$ #,##0.00';
+                }
+                
+                if (ws[colIndexMap["Taxa CDI (%)"] + rowKey]) {
+                    ws[colIndexMap["Taxa CDI (%)"] + rowKey].z = '0.0000%';
+                    // Divide o valor (que está * 100) por 100 para que o Excel o trate como fração e aplique a formatação %
+                    ws[colIndexMap["Taxa CDI (%)"] + rowKey].v = ws[colIndexMap["Taxa CDI (%)"] + rowKey].v / 100; 
+                }
+            }
+
+            const wb = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(wb, ws, "OperacoesCDI");
+
+            const filename = `ControleCDI_Exportacao_${new Date().toISOString().slice(0, 10)}.xlsx`;
+            XLSX.writeFile(wb, filename);
+        }
+
+        /* ============================================================
            CARREGAMENTO INICIAL
         ============================================================ */
         window.loadState = function(){
@@ -849,10 +914,8 @@
             
             document.getElementById('printBtn').addEventListener('click', () => window.print());
             
-            document.getElementById('exportBtn').addEventListener('click', () => {
-                // Implementação da Exportação seria aqui.
-                alert("Funcionalidade de Exportação será implementada aqui.");
-            });
+            // Vínculo da nova função de exportação
+            document.getElementById('exportBtn').addEventListener('click', exportData);
 
             document.getElementById('addLogoBtn').addEventListener('click', () => {
                 alert("A funcionalidade de Carregar Logo requer código adicional.");
