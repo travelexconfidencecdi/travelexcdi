@@ -1,6 +1,402 @@
-<script>
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="utf-8" />
+    <title>Controle de Ganhos CDI — Layout Empilhado</title>
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+
+    <style>
+        :root{
+            --primary: #0A0A33;
+            --primary-light: #1A1A55;
+            --secondary: #C00000;
+            --secondary-light: #E00000;
+            --danger: #c62828;
+            --bg-start: #f4f8fb;
+            --bg-end: #eef6fb;
+            --card-bg: #ffffff;
+            --card-border: rgba(0,0,0,0.06);
+            --text-dark: #0f1724;
+            --muted: #6b7280;
+            --success: #2e7d32;
+            --gap: 12px;
+            --radius: 10px;
+            --shadow: 0 8px 20px rgba(16,24,40,0.06);
+        }
+        html,body{height:100%;margin:0;font-family:Inter, Roboto, system-ui, -apple-system, "Segoe UI", Arial;}
+        body{
+            background: linear-gradient(180deg,var(--bg-start),var(--bg-end));
+            color:var(--text-dark);
+            padding:calc(var(--gap) * 1.2);
+            -webkit-font-smoothing:antialiased;
+            font-size:14px;
+        }
+        #siteLogo{
+            display:block;
+            max-width:140px;
+            width:100%;
+            height:auto;
+            border-radius:6px;
+            box-shadow:var(--shadow);
+            margin:0 0 6px 0;
+        }
+        #logo-wrapper{ margin-bottom:8px; }
+        #header-container{
+            display:flex;
+            align-items:center;
+            gap:10px;
+            margin-bottom:8px;
+            width: fit-content;
+        }
+        #logo-placeholder{ font-size:1.4rem; color:var(--primary); }
+        h1{ margin:0; color:var(--text-dark); font-size:1.25rem; font-weight:700; }
+        #left-header-content {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        #top-actions{
+            display:flex; align-items:center; gap:10px; padding:10px;
+            background:var(--card-bg); border-radius:var(--radius); box-shadow:var(--shadow); border:1px solid var(--card-border);
+            flex-wrap:wrap;
+        }
+        #header-left{ display:flex; align-items:center; gap:10px; }
+        #header-right{ margin-left:auto; display:flex; gap:8px; align-items:center; flex-wrap:wrap; }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            padding: 8px 12px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.2s ease;
+            background: var(--primary);
+            color: white;
+            border: 1px solid white;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.08);
+        }
+        .btn.secondary {
+            background: var(--secondary);
+            color: white;
+            border: 1px solid white;
+        }
+        .btn.small {
+            padding: 6px 10px;
+            font-size: 13px;
+            border-radius: 7px;
+        }
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+            background: var(--primary-light);
+            border-color: white;
+        }
+        .btn.secondary:hover {
+            background: var(--secondary-light);
+            border-color: white;
+            box-shadow: 0 8px 20px rgba(192, 0, 0, 0.25);
+        }
+        .btn:active {
+            transform: none;
+            filter: brightness(0.96);
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+        }
+        .btn.danger {
+            background: var(--secondary);
+            color: white;
+            border: 1px solid white;
+            box-shadow: 0 4px 10px rgba(198, 40, 40, 0.25);
+        }
+        .btn.danger:hover {
+            filter: brightness(0.85);
+            border-color: white;
+        }
+
+        #main-container{
+            display:flex;
+            flex-direction:column;
+            gap:14px;
+            align-items:stretch;
+        }
+        .card{
+            background:var(--card-bg); padding:14px; border-radius:10px; box-shadow:var(--shadow); border:1px solid var(--card-border);
+            color:var(--text-dark);
+        }
+        .input-row{ display:flex; gap:10px; flex-wrap:wrap; align-items:center; margin-bottom:8px; }
+        .input-row label{ font-size:13px; color:var(--muted); font-weight:600; display:block; margin-bottom:6px; }
+        input[type="text"], input[type="date"]{
+            padding:8px 10px; border-radius:8px; border:1px solid rgba(15,23,36,0.06); background:#fff; color:var(--text-dark); min-width:120px;
+        }
+
+        .totals{ display:grid; grid-template-columns: repeat(auto-fit,minmax(160px,1fr)); gap:12px; margin-bottom:12px; }
+        .total-card{ padding:10px; border-radius:8px; border:1px solid rgba(15,23,36,0.04); background:linear-gradient(180deg,#fff,#fbfdff); }
+        .total-card h4{ margin:0; font-size:12px; color:var(--muted); }
+        .total-card p{ margin:6px 0 0 0; font-size:18px; font-weight:800; color:var(--text-dark); }
+        #totalCdiDisplay p { color: var(--success) !important; }
+
+        .table-wrap{ overflow:auto; border-radius:8px; }
+        table{ width:100%; border-collapse:collapse; margin-top:8px; font-size:13px; color:var(--text-dark); }
+        thead th{
+            position:sticky; top:0; z-index:2;
+            background: linear-gradient(180deg,var(--primary-light),var(--primary));
+            color:white; padding:10px 8px; text-align:left; font-weight:700;
+            border-bottom:1px solid rgba(0,0,0,0.06);
+        }
+        tbody td{ padding:8px 8px; border-bottom:1px solid rgba(0,0,0,0.04); text-align:right; }
+        tbody tr:nth-child(even){ background: rgba(0,0,0,0.02); }
+        td:first-child, th:first-child{ text-align:center; width:90px; }
+
+        .col-left{
+            text-align:left;
+            max-width:260px;
+            overflow:hidden;
+            text-overflow:ellipsis;
+            white-space:nowrap;
+            color: var(--primary);
+            font-weight: 600;
+        }
+        .action-cell{ text-align:center; }
+
+        .ganho, .perda {
+            font-weight: 800;
+            padding: 2px 6px;
+            border-radius: 4px;
+            display: inline-block;
+            min-width: 60px;
+            text-align: center;
+        }
+        .ganho {
+            color: var(--success) !important;
+            background: rgba(46, 125, 50, 0.1);
+            border: 1px solid rgba(46, 125, 50, 0.2);
+        }
+        .perda {
+            color: var(--danger) !important;
+            background: rgba(198, 40, 40, 0.1);
+            border: 1px solid rgba(198, 40, 40, 0.2);
+        }
+        b, strong {
+            font-weight: 800;
+            color: var(--primary);
+        }
+
+        @media (max-width:980px){
+            #siteLogo{ max-width:120px; display:block; margin:0 auto 8px; }
+            #header-container{ margin-bottom:0; width: 100%; justify-content: center; }
+            #left-header-content { justify-content: center; }
+            .filter-card { margin-bottom: 12px !important; } /* CORREÇÃO: Espaçamento em mobile */
+            .input-row{ flex-direction:column; align-items:stretch; }
+        }
+        @media print{
+            body{ background:white; padding:0; color:black; }
+            #input-panel .file-label, #input-panel .logo-label, #deleteAllBtn, #top-actions, #auth-status { display:none; } /* Oculta elementos não essenciais */
+        }
+    </style>
+
+    <script src="https://cdn.sheetjs.com/xlsx-0.20.0/package/dist/xlsx.mini.min.js"></script>
+
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-database-compat.js"></script>
+</head>
+
+<body onload="loadState()">
+     <div id="logo-wrapper">
+        <img id="siteLogo" alt="Logo do site">
+    </div>
+
+    <div id="header-container">
+        <div id="left-header-content">
+            <div id="logo-placeholder">📈</div>
+            <h1>Controle de Ganhos CDI</h1>
+        </div>
+    </div>
+
+    <div id="auth-status" class="card" style="padding: 10px; margin-bottom: 14px; display: flex; align-items: center; justify-content: space-between;">
+        <span id="login-message" style="font-weight: 600;">Status: Desconectado</span>
+        <button id="loginBtn" class="btn small">Login (Anônimo)</button>
+    </div>
+
+    <div id="top-actions" class="card" role="region" aria-label="Ações principais">
+        <div id="header-left">
+            <div style="font-weight:700;">Resumo Diário</div>
+            <div style="font-size:12px;color:var(--muted);">Filtros, importação e ações rápidas</div>
+        </div>
+
+        <div id="header-right">
+            <button id="printBtn" class="btn small" title="Imprimir">Imprimir</button>
+            <button id="exportBtn" class="btn small secondary" title="Exportar">Exportar</button>
+
+            <label class="file-label" for="excelFile" title="Selecionar arquivos">
+                <input type="file" id="excelFile" accept=".xlsx,.xls,.csv,.txt" multiple>
+                <span class="btn small">Procurar</span>
+            </label>
+
+            <button id="loadExcelBtn" class="btn small secondary" title="Importar arquivos">Importar</button>
+
+            <label class="logo-label" for="logoFile" title="Carregar logo">
+                <input type="file" id="logoFile" accept="image/*">
+                <span class="btn small">Procurar</span>
+            </label>
+
+            <button id="addLogoBtn" class="btn small secondary" title="Carregar Logo">Carregar Logo</button>
+            <button id="removeLogoBtn" class="btn small" title="Remover">Remover</button>
+
+            <button id="deleteAllBtn" class="btn small secondary danger" title="Excluir tudo">🗑️</button>
+        </div>
+    </div>
+
+    <div id="main-container">
+
+        <div id="results-panel" class="card">
+            <h2 style="margin:0 0 8px 0;">📊 Resumo Diário</h2>
+
+            <div class="card filter-card" style="margin-bottom:10px;" aria-label="Opções de Filtragem de Dados"> <div style="display:flex;justify-content:space-between;align-items:center;gap:8px;">
+                    <div style="font-weight:600;color:var(--muted);">Filtros</div>
+                    <div style="font-size:12px;color:var(--muted);">Mostrar detalhe por operação</div>
+                </div>
+
+                <div class="input-row" style="margin-top:8px;">
+                    <div>
+                        <label for="filterStartDate">Data de Início</label>
+                        <input type="date" id="filterStartDate">
+                    </div>
+
+                    <div>
+                        <label for="filterEndDate">Data de Fim</label>
+                        <input type="date" id="filterEndDate">
+                    </div>
+
+                    <div style="display:flex;align-items:flex-end;gap:8px;">
+                        <button id="filterBtn" class="btn small">Filtrar</button>
+                        <button id="resetFilterBtn" class="btn small secondary">Limpar</button>
+                    </div>
+                </div>
+                <div style="margin-top:8px;">
+                    <label style="font-weight:600;color:var(--muted)">
+                        <input type="checkbox" id="showIndividualOps" checked onchange="calculateAndRender()"> Mostrar Detalhe por Operação
+                    </label>
+                </div>
+            </div>
+            <div class="totals">
+                <div class="total-card" id="totalCompromissadaDisplay"><h4>Compromissada TOTAL</h4><p>R$ 0,00</p></div>
+                <div class="total-card" id="totalRetornoDisplay"><h4>Retorno Bruto TOTAL</h4><p>R$ 0,00</p></div>
+                <div class="total-card" id="totalCdiDisplay"><h4>Ganho (R$) TOTAL</h4><p>R$ 0,00</p></div>
+            </div>
+
+            <div class="table-wrap">
+                <table id="resultTable">
+                    <thead>
+                        <tr>
+                            <th>Data</th>
+                            <th class="col-left">Descrição/Resumo</th>
+                            <th>Banco</th>
+                            <th>Conta Cedente</th>
+                            <th>Conta Cessionário</th>
+                            <th>Compromissada</th>
+                            <th>Retorno Bruto</th>
+                            <th>PU Ida</th>
+                            <th>PU Volta</th>
+                            <th>Taxa CDI Anual (%)</th>
+                            <th>Ganho (R$) Diário</th>
+                            <th>Ações</th>
+                        </tr>
+                    </thead>
+                    <tbody id="resultBody"></tbody>
+                </table>
+            </div>
+
+            <p style="font-size:12px;color:var(--muted);margin-top:10px;">
+                ⚠️ O <strong>Ganho (R$) Diário</strong> é calculado pelo Valor Retorno Bruto - Valor Compromissada, com inversão para RECOMPRA.
+            </p>
+        </div>
+
+        <div id="input-panel" class="card">
+            <h3 style="margin:0 0 8px 0;">⭐ Configuração Global</h3>
+
+            <div class="input-row">
+                <div>
+                    <label for="taxaCdiAnual">Taxa CDI Anual Global (%)</label>
+                    <input type="text" id="taxaCdiAnual" value="14,90" onchange="calculateAndRender()">
+                </div>
+
+                <div>
+                    <label for="diasAno">Dias no Ano</label>
+                    <input type="text" id="diasAno" value="252" onchange="calculateAndRender()">
+                </div>
+            </div>
+
+            <hr>
+
+            <h3>📂 Importação</h3>
+            <p style="font-size:12px;color:var(--muted);margin:0 0 10px 0;">
+                *O sistema tenta reconhecer os cabeçalhos, priorizando 'TX. 252' para a taxa CDI.
+            </p>
+
+            <hr>
+
+            <h3>➕ Lançamento Manual</h3>
+
+            <div style="display:flex;flex-direction:column;gap:8px;">
+                <input type="hidden" id="editIndex" value="-1">
+
+                <div>
+                    <label for="manualData">Data do Lançamento</label>
+                    <input type="date" id="manualData">
+                </div>
+
+                <div>
+                    <label for="manualDesc">Descrição</label>
+                    <input type="text" id="manualDesc" placeholder="Ex: REVENDA - Aplicação Mês">
+                </div>
+
+                <div>
+                    <label for="manualBanco">Banco / Contraparte</label>
+                    <input type="text" id="manualBanco" placeholder="Ex: BTG Pactual">
+                </div>
+
+                <div style="display:flex;gap:8px;">
+                    <div style="flex:1;">
+                        <label for="manualCedente">Conta Cedente</label>
+                        <input type="text" id="manualCedente">
+                    </div>
+                    <div style="flex:1;">
+                        <label for="manualCessionario">Conta Cessionário</label>
+                        <input type="text" id="manualCessionario">
+                    </div>
+                </div>
+
+                <div>
+                    <label for="manualCdiTaxa">Taxa CDI Anual Específica (%)</label>
+                    <input type="text" id="manualCdiTaxa">
+                </div>
+
+                <div style="display:flex;gap:8px;">
+                    <div style="flex:1;">
+                        <label for="manualCompromissada">Valor Compromissada</label>
+                        <input type="text" id="manualCompromissada">
+                    </div>
+                    <div style="flex:1;">
+                        <label for="manualRetorno">Valor Retorno (Bruto)</label>
+                        <input type="text" id="manualRetorno">
+                    </div>
+                </div>
+
+                <div style="display:flex;gap:8px;">
+                    <button id="addBtn" class="btn" style="flex:1;">Adicionar Lançamento</button>
+                    <button id="cancelEditBtn" class="btn secondary" style="flex:1;display:none;">Cancelar Edição</button>
+                </div>
+            </div>
+            <pre id="log" style="height:84px;overflow:auto;margin-top:12px;color:var(--muted);">Aguardando...</pre>
+        </div>
+    </div>
+
+    <script>
         /* ============================================================
-           CONFIGURAÇÃO DO FIREBASE (MANTIDO)
+           CONFIGURAÇÃO DO FIREBASE
         ============================================================ */
         const firebaseConfig = {
             apiKey: "AIzaSyD_vxw2VcSPO_tMXgrl7quZ85ODvpqQuR8",
@@ -21,7 +417,7 @@
         database = firebase.database();
 
         /* ============================================================
-           LOGIN / LOGOUT (MANTIDO)
+           LOGIN / LOGOUT
         ============================================================ */
         const loginBtn = document.getElementById("loginBtn");
         const loginMessage = document.getElementById("login-message");
@@ -50,7 +446,7 @@
         });
 
         /* ============================================================
-           FUNÇÕES DE FORMATAÇÃO E UTILIDADE (MANTIDO)
+           FUNÇÕES DE FORMATAÇÃO E UTILIDADE (REVISADAS)
         ============================================================ */
         function parseNumber(v){
             if(v===undefined||v===null||v==='') return 0;
@@ -66,6 +462,9 @@
             if (lastComma > lastDot) {
                 // Se a última for vírgula, trata como separador decimal (e retira pontos de milhar)
                 s = s.replace(/\./g, '').replace(/,/g, '.');
+            } else if (lastDot > lastComma && lastComma !== -1) {
+                // Se o último for ponto, mas houver vírgula anterior, provavelmente é formato BR com ponto errado.
+                // Não faz nada, a vírgula de milhar é ignorada e o ponto final é o decimal.
             } else if (lastComma !== -1 && lastDot === -1) {
                  // Tem vírgula, mas não tem ponto. Assume vírgula como decimal.
                  s = s.replace(/,/g, '.');
@@ -95,19 +494,34 @@
             }
             return s;
         }
-        function normalizeDate(s){
-            if(!s) return "";
-            s=String(s).trim();
-            if(s.match(/^\d{4}-\d{2}-\d{2}$/)) return s;
-            if(s.match(/^\d{2}\/\d{2}\/\d{4}$/)){
-                const [d,m,y]=s.split("/");
-                return `${y}-${m}-${d}`;
-            }
-            return "";
+      function normalizeDate(s){
+    if(!s) return "";
+
+    // DATA NUMÉRICA DO EXCEL
+    if (typeof s === "number") {
+        const d = XLSX.SSF.parse_date_code(s);
+        if (d) {
+            return `${d.y}-${String(d.m).padStart(2,'0')}-${String(d.d).padStart(2,'0')}`;
         }
+    }
+
+    s = String(s).trim();
+
+    // yyyy-mm-dd
+    if (s.match(/^\d{4}-\d{2}-\d{2}$/)) return s;
+
+    // dd/mm/yyyy
+    if (s.match(/^\d{2}\/\d{2}\/\d{4}$/)) {
+        const [d,m,y] = s.split("/");
+        return `${y}-${m}-${d}`;
+    }
+
+    return "";
+}
+
 
         /* ============================================================
-           ESTADO PRINCIPAL (MANTIDO)
+           ESTADO PRINCIPAL
         ============================================================ */
         let operacoes = [];
         let totalCompromissada = 0;
@@ -119,7 +533,7 @@
         let dataFiltroFim = null;
 
         /* ============================================================
-           SALVAR E CARREGAR DO FIREBASE (MANTIDO)
+           SALVAR E CARREGAR DO FIREBASE
         ============================================================ */
         function saveState(){
             if(!currentUserUid) return;
@@ -148,7 +562,7 @@
         }
 
         /* ============================================================
-           RENDERIZAÇÃO DA TABELA REAL (MANTIDO)
+           RENDERIZAÇÃO DA TABELA REAL
         ============================================================ */
         function calculateAndRender(){
             const taxaGlobal = cleanCdiTaxa(document.getElementById("taxaCdiAnual").value)/100;
@@ -179,7 +593,7 @@
 
                 let ganho = retorno - compromissada;
                 // Lógica de inversão para "RECOMPRA" onde o retorno é menor que a compromissada
-                if(op.desc && op.desc.toUpperCase().includes("RECOMPRA") && ganho<0){
+                if(op.desc.toUpperCase().includes("RECOMPRA") && ganho<0){
                     ganho = Math.abs(ganho);
                 }
 
@@ -191,10 +605,10 @@
                     const tr=document.createElement("tr");
                     tr.innerHTML=`
                         <td>${formatDataBR(op.data)}</td>
-                        <td class="col-left">${op.desc || '-'}</td>
-                        <td style="text-align:left;">${op.banco || '-'}</td>
-                        <td>${op.cedente || '-'}</td>
-                        <td>${op.cessionario || '-'}</td>
+                        <td class="col-left">${op.desc}</td>
+                        <td style="text-align:left;">${op.banco}</td>
+                        <td>${op.cedente}</td>
+                        <td>${op.cessionario}</td>
                         <td>${formatBRL(compromissada)}</td>
                         <td>${formatBRL(retorno)}</td>
                         <td>${formatPU(puIda)}</td>
@@ -227,7 +641,7 @@
         }
 
         /* ============================================================
-           FILTROS (MANTIDO)
+           FILTROS
         ============================================================ */
         document.getElementById("filterBtn").addEventListener("click",()=>{
             dataFiltroInicio=document.getElementById("filterStartDate").value;
@@ -245,7 +659,7 @@
         });
 
         /* ============================================================
-           EXCLUSÃO (MANTIDO)
+           EXCLUSÃO
         ============================================================ */
         function deleteOperation(i){
             if(!confirm("Excluir esta operação?")) return;
@@ -254,6 +668,7 @@
             calculateAndRender();
         }
 
+        // LÓGICA DE EXCLUSÃO GERAL (🗑️)
         document.getElementById("deleteAllBtn").addEventListener("click", () => {
             if (!confirm("Tem certeza que deseja EXCLUIR TODAS as operações? Esta ação não pode ser desfeita e será aplicada no Firebase.")) {
                 return;
@@ -265,12 +680,13 @@
         });
 
         /* ============================================================
-           LANÇAMENTO MANUAL / EDIÇÃO (MANTIDO)
+           LANÇAMENTO MANUAL / EDIÇÃO (ADICIONADO)
         ============================================================ */
         const addBtn = document.getElementById("addBtn");
         const cancelEditBtn = document.getElementById("cancelEditBtn");
         const editIndex = document.getElementById("editIndex");
 
+        // Função para resetar os campos do formulário manual
         function resetManualForm() {
             document.getElementById("manualData").value = "";
             document.getElementById("manualDesc").value = "";
@@ -286,6 +702,7 @@
             cancelEditBtn.style.display = "none";
         }
 
+        // Lógica de Adicionar/Salvar Edição
         addBtn.addEventListener("click", () => {
             const data = document.getElementById("manualData").value;
             const desc = document.getElementById("manualDesc").value;
@@ -314,9 +731,11 @@
 
             const index = parseInt(editIndex.value);
             if (index >= 0) {
+                // Modo Edição
                 operacoes[index] = newOp;
                 alert("Operação alterada com sucesso!");
             } else {
+                // Modo Adição
                 operacoes.push(newOp);
                 alert("Operação adicionada com sucesso!");
             }
@@ -326,18 +745,21 @@
             resetManualForm();
         });
 
+        // Lógica de Cancelar Edição
         cancelEditBtn.addEventListener("click", resetManualForm);
 
+        // Lógica de Editar (chamada da tabela)
         window.editOperation = function(i) {
             const op = operacoes[i];
 
             document.getElementById("manualData").value = normalizeDate(op.data);
             document.getElementById("manualDesc").value = op.desc;
-            document.getElementById("manualBanco").value = op.banco || ''; // Banco não é essencial na importação
+            document.getElementById("manualBanco").value = op.banco;
             document.getElementById("manualCedente").value = op.cedente;
             document.getElementById("manualCessionario").value = op.cessionario;
-            document.getElementById("manualCdiTaxa").value = op.cdiTaxa || "";
+            document.getElementById("manualCdiTaxa").value = op.cdiTaxa || ""; // Taxa específica
             
+            // Exibe números com vírgula para edição (formato BR)
             document.getElementById("manualCompromissada").value = String(op.compromissada).replace('.', ',');
             document.getElementById("manualRetorno").value = String(op.retornoBruto).replace('.', ',');
             
@@ -345,31 +767,32 @@
             addBtn.textContent = "Salvar Alteração";
             cancelEditBtn.style.display = "inline-flex";
 
+            // Rola a página para o painel de entrada
             document.getElementById("input-panel").scrollIntoView({ behavior: "smooth" });
         }
         
         /* ============================================================
-           IMPORTAÇÃO EXCEL (SheetJS) - CORRIGIDA PARA SEU ARQUIVO
+           IMPORTAÇÃO EXCEL (SheetJS)
         ============================================================ */
 
+        /**
+         * Normaliza uma string de cabeçalho, removendo acentos e convertendo para maiúsculas.
+         */
         function normalizeHeader(str){
             return String(str || "")
                 .toUpperCase()
                 .normalize("NFD")
                 .replace(/[\u0300-\u036f]/g, "") // remove acentos
-                .replace(/[()\/$%,]/g, '') // remove parênteses, barras, cifrões e porcentagens
                 .trim();
         }
 
         document.getElementById("loadExcelBtn").addEventListener("click",()=>{
-            const files = document.getElementById("excelFile").files;
-            if(files.length === 0){
+            const file = document.getElementById("excelFile").files[0];
+            if(!file){
                 alert("Selecione um arquivo primeiro.");
                 return;
             }
-            // Supondo que você só quer processar o primeiro arquivo se for multiple
-            const file = files[0];
-            
+
             const reader=new FileReader();
             reader.onload=e=>{
                 processExcelData(e.target.result);
@@ -380,66 +803,51 @@
         function processExcelData(data){
             const workbook = XLSX.read(data,{type:"array"});
             const sheet = workbook.Sheets[workbook.SheetNames[0]];
-            const json = XLSX.utils.sheet_to_json(sheet,{header:1,raw:false}); // raw:false para tentar ler datas e números melhor
+            const json = XLSX.utils.sheet_to_json(sheet,{header:1,raw:true});
 
-            if(json.length < 2){ // Deve ter pelo menos o cabeçalho e 1 linha de dados
-                alert("Arquivo vazio ou com apenas o cabeçalho.");
+            if(json.length===0){
+                alert("Arquivo vazio.");
                 return;
             }
 
+            // CORREÇÃO: Normaliza os cabeçalhos para ignorar acentos e case
             const headers = json[0].map(h => normalizeHeader(h));
             
             const map={};
 
-            // Mapeamento dos títulos normalizados do seu arquivo para as chaves do objeto 'operacoes'
             const known={
-                "DATA DO OPERACAO":"data",               // CORRIGIDO: de 'DATA'
-                "DESCRICAO DO MOVIMENTO":"desc",         // CORRIGIDO: de 'DESCRICAO'
-                "CONTA CEDENTE":"cedente",               // MANTIDO, mas verificado
-                "CONTA CESSIONARIO":"cessionario",       // MANTIDO, mas verificado
-                "VALOR COMPROMISSADO":"compromissada",   // CORRIGIDO: de 'COMPROMISSADA'
-                "VALOR BRUTO RETORNO":"retornoBruto",    // CORRIGIDO: de 'RETORNO BRUTO'
-                "TAXA CDI ANUAL":"cdiTaxa",              // CORRIGIDO: de 'TX. CDI ANUAL'
-                "PU DE IDA":"puIda",                     // Adicionado para referência, mas não usado no objeto final
-                "PU DE VOLTA":"puVolta"                  // Adicionado para referência, mas não usado no objeto final
+                "DATA":"data",
+                "DESCRICAO":"desc",
+                "BANCO":"banco",
+                "CONTA CEDENTE":"cedente",
+                "CONTA CESSIONARIO":"cessionario",
+                "COMPROMISSADA":"compromissada",
+                "RETORNO BRUTO":"retornoBruto",
+                "QUANTIDADE":"quantidade",
+                "TX. 252":"cdiTaxa",
+                "TX. CDI ANUAL":"cdiTaxa"
             };
             
             headers.forEach((h,i)=>{
                 if(known[h]) map[known[h]]=i;
             });
 
-            // Verificação de colunas obrigatórias
-            if (!map.data || !map.compromissada || !map.retornoBruto) {
-                alert("Não foi possível mapear as colunas obrigatórias: Data, Compromissada e Retorno Bruto. Verifique o cabeçalho do arquivo.");
-                return;
-            }
-
             const novos=[];
             for(let i=1;i<json.length;i++){
                 const row=json[i];
-                
-                // Pular linhas incompletas
+                // Verifica a existência das colunas mapeadas e da linha
                 if(!row || !row[map.data] || !row[map.compromissada]) continue;
 
-                // Converte a data do formato do Excel se necessário (o parseNumber lida com strings/números)
-                let rawDate = row[map.data];
-                if (typeof rawDate === 'number' && rawDate > 1) {
-                    // Excel serial date, converte para objeto Date
-                    const date = XLSX.SSF.parse_date_code(rawDate, {});
-                    rawDate = `${date.y}-${String(date.m).padStart(2, '0')}-${String(date.d).padStart(2, '0')}`;
-                }
-
-
                 novos.push({
-                    data: normalizeDate(rawDate),
+                    data: normalizeDateExcel(row[map.data]),
                     desc: row[map.desc]||"",
                     banco: row[map.banco]||"",
                     cedente: row[map.cedente]||"",
                     cessionario: row[map.cessionario]||"",
                     compromissada: parseNumber(row[map.compromissada]),
                     retornoBruto: parseNumber(row[map.retornoBruto]),
-                    quantidade: 1, // Quantidade não está no seu CSV, assume 1
-                    cdiTaxa: cleanCdiTaxa(row[map.cdiTaxa] || "")
+                    quantidade: parseNumber(row[map.quantidade]||1),
+                    cdiTaxa: cleanCdiTaxa(row[map.cdiTaxa]||"")
                 });
             }
             operacoes = operacoes.concat(novos);
@@ -449,18 +857,21 @@
         }
 
         /* ============================================================
-           CARREGAMENTO INICIAL (MANTIDO)
+           CARREGAMENTO INICIAL
         ============================================================ */
         window.loadState = function(){
             calculateAndRender();
             
+            // Implementação simples dos botões de ação que faltavam
             document.getElementById('printBtn').addEventListener('click', () => window.print());
             
+            // TO-DO: Implementar Exportação e Lógica de Logo
             document.getElementById('exportBtn').addEventListener('click', () => {
                 alert("Funcionalidade de Exportação será implementada aqui.");
                 // Lógica de exportação para CSV ou JSON
             });
 
+            // Lógica do Logo (Apenas placeholders, o código real de upload precisaria de mais funções)
             document.getElementById('addLogoBtn').addEventListener('click', () => {
                 alert("A funcionalidade de Carregar Logo requer código adicional para upload de imagem e persistência.");
             });
@@ -471,3 +882,5 @@
             });
         };
     </script>
+</body>
+</html>
