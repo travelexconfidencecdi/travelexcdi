@@ -862,28 +862,37 @@
             const map={};
 
             // Mapeamento CORRIGIDO:
-            const known = {
-                "DTINICIO": "data",
-                "DTVENCTO": "dataVencimento", 
-                "TIPOOPERACAO": "desc",       
-                "PAPEL": "desc2",
-                
-                // CORREÇÃO CRUCIAL: Mapeamos VL IDA/VOLTA para os valores totais
-                "VLIDA": "compromissada",
-                "VLVOLTA": "retornoBruto",
-                
-                // Mapeamento de BANCO / CONTRAPARTE (VEÍCULO LEGAL é o Banco, CONTRAPARTE é a contraparte/cedente)
-                "VEICULEGAL": "banco",        
-                "CONTRAPARTE": "cedente",     
-                
-                // Campos de PU/Quantidade (para cálculo ou exibição)
-                "PUIDA": "puIda", 
-                "PUVOLTA": "puVolta",
-                "QUANTIDADE": "quantidade",
-                
-                // Taxa
-                "TX252": "cdiTaxa",           
-            };
+           const known = {
+    "DATA": "data",
+    "DT MOVIMENTO": "data",
+
+    "DESCRICAO": "desc",
+    "HISTORICO": "desc",
+
+    "BANCO": "banco",
+    "INSTITUICAO": "banco",
+
+    "CONTA CEDENTE": "cedente",
+    "CEDENTE": "cedente",
+    "CT CEDENTE": "cedente",
+
+    "CONTA CESSIONARIO": "cessionario",
+    "CESSIONARIO": "cessionario",
+    "CT CESSIONARIO": "cessionario",
+
+    "COMPROMISSADA": "compromissada",
+    "VL IDA": "compromissada",
+
+    "RETORNO BRUTO": "retornoBruto",
+    "VL VOLTA": "retornoBruto",
+
+    "QUANTIDADE": "quantidade",
+
+    "TX. 252": "cdiTaxa",
+    "TX CDI": "cdiTaxa",
+    "TAXA CDI": "cdiTaxa"
+};
+
 
             headers.forEach((h,i)=>{
                 if(known[h]) map[known[h]]=i;
