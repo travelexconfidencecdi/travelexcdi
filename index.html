@@ -836,7 +836,7 @@
             for(let i=1;i<json.length;i++){
                 const row=json[i];
                 // Verifica a existência das colunas mapeadas e da linha
-                if(!row || !row[map.data] || !row[map.compromissada]) continue;
+                if(!row || !row[map.data]) continue;
 
                 novos.push({
                     data: normalizeDateExcel(row[map.data]),
