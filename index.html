@@ -392,6 +392,9 @@
 
         const loginBtn = document.getElementById('loginBtn');
         const loginMessage = document.getElementById('login-message');
+         let currentUserUid = null;
+
+         loginBtn.addEventListener('click', handleLogin);
 
         // Tenta fazer login anônimo ou monitora o estado de autenticação
         function handleLogin() {
@@ -425,16 +428,7 @@
 }
 
 
-            if (currentUserUid) {
-                // Se já estiver logado, faz logout
-                firebase.auth().signOut().then(() => {
-                    log('Desconectado do Firebase.');
-                    currentUserUid = null;
-                    loginBtn.textContent = 'Login (Anônimo)';
-                    loginMessage.textContent = 'Status: Desconectado';
-                    operacoes = []; // Limpa os dados visíveis
-                    calculateAndRender();
-                });
+            
             } else {
                 // Login Anônimo: Rápido e fácil para um projeto de usuário único
                 loginMessage.textContent = 'Tentando conectar...';
@@ -470,6 +464,27 @@
 
         if (loginBtn) {
             loginBtn.addEventListener('click', handleLogin);
+            firebase.auth().onAuthStateChanged(user => {
+    if (user) {
+        currentUserUid = user.uid;
+
+        loginMessage.textContent =
+            `Conectado: ${user.email || "Usuário anônimo"}`;
+
+        loginBtn.textContent = "Sair";
+
+        loadStateFromFirebase();
+    } else {
+        currentUserUid = null;
+
+        loginMessage.textContent = "Status: Desconectado";
+        loginBtn.textContent = "Login";
+
+        operacoes = [];
+        calculateAndRender();
+    }
+});
+
         }
 
         // ====================================================================
