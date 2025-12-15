@@ -469,7 +469,6 @@
            FUNÇÕES DE FORMATAÇÃO E UTILIDADE (ADOTANDO SUA LÓGICA LOCAL)
         ============================================================ */
         
-        // ADOTADO DO SEU CÓDIGO LOCAL: Tratamento de números no formato BR
         function cleanCurrency(v){
             if(typeof v!=='string') v=String(v);
             let cleanString = v.replace(/[R$\s]/g, '');
@@ -479,13 +478,9 @@
             return isNaN(n)?0:n;
         }
 
-        // ADOTADO DO SEU CÓDIGO LOCAL: Parse de número que prioriza a limpeza do BR
         function parseNumber(v){
             if(v===undefined||v===null||v==='') return 0;
-            // Se for string e tiver vírgula ou R$, limpa usando cleanCurrency
             if(typeof v==='string' && (v.includes(',') || v.includes('R$'))) return cleanCurrency(v);
-            
-            // Caso contrário (como valores numéricos diretos de planilha ou sem pontuação complexa), faz o parse simples
             const n=parseFloat(v);
             return isNaN(n)?0:n;
         }
@@ -510,7 +505,6 @@
             return s;
         }
         
-        // ADOTADO DO SEU CÓDIGO LOCAL: Normalização de data mais robusta para seriais Excel
         function normalizeDate(s){
             if(!s) return '';
             s=String(s).trim();
@@ -535,7 +529,6 @@
             return '';
         }
 
-        // CORREÇÃO CRÍTICA MANTIDA: Função normalizeHeader mais robusta (Impede 0 imports)
         function normalizeHeader(str){
             return String(str || "")
                 .toUpperCase()
@@ -552,10 +545,6 @@
         let totalCompromissada = 0;
         let totalRetorno = 0;
         let totalGanho = 0;
-
-        let filtroAtivo = false;
-        let dataFiltroInicio = null;
-        let dataFiltroFim = null;
 
         /* ============================================================
            SALVAR E CARREGAR DO FIREBASE
@@ -596,7 +585,7 @@
         }
 
         /* ============================================================
-           RENDERIZAÇÃO DA TABELA REAL (USANDO SEU CÁLCULO DE GANHO)
+           RENDERIZAÇÃO DA TABELA
         ============================================================ */
         function calculateAndRender(){
             const taxaGlobal = cleanCdiTaxa(document.getElementById("taxaCdiAnual").value)/100;
@@ -628,18 +617,14 @@
 
             lista.forEach((op,i)=>{
                 const d = normalizeDate(op.data);
-                // Certifica-se de que os valores são lidos como números
                 const compromissada = parseNumber(op.compromissada);
                 const retorno = parseNumber(op.retornoBruto);
-                const taxa = cleanCdiTaxa(op.cdiTaxa||taxaGlobal*100); // Taxa em % (Ex: 14.90)
+                const taxa = cleanCdiTaxa(op.cdiTaxa||taxaGlobal*100); 
 
-                // PU (apenas para exibição)
                 const puIda = parseNumber(op.puIda);
                 const puVolta = parseNumber(op.puVolta);
 
-                // CÁLCULO DE GANHO (Adotando a lógica de sinal do seu código local)
                 let ganho = retorno - compromissada;
-                // Se a descrição for RECOMPRA, inverte o sinal
                 if(op.desc && op.desc.toUpperCase().includes("RECOMPRA")){
                     ganho = -ganho;
                 }
@@ -648,7 +633,6 @@
                 totalRetorno+=retorno;
                 totalGanho+=ganho;
 
-                // Resumo Diário (para a linha de soma)
                 if(!resumo[d]) resumo[d] = { data:d, totalCompromissada:0, totalRetorno:0, totalGanho:0, primeiraTaxa: taxa };
                 resumo[d].totalCompromissada += compromissada;
                 resumo[d].totalRetorno += retorno;
@@ -704,7 +688,7 @@
                     <td class="action-cell">-</td>
                 `;
                 tr.style.fontWeight = '700';
-                tr.style.background = 'rgba(10, 10, 51, 0.05)'; // Levemente cinza/azul
+                tr.style.background = 'rgba(10, 10, 51, 0.05)'; 
                 tbody.appendChild(tr);
             });
 
@@ -722,9 +706,6 @@
                 td.textContent="Nenhuma operação encontrada no filtro.";
                 tr.appendChild(td);
                 tbody.appendChild(tr);
-            } else if (!showOps && datas.length) {
-                // Apenas exibe o resumo diário se "Mostrar Detalhe" estiver desmarcado
-                tbody.querySelectorAll('.individual-operation-row').forEach(row => row.style.display = 'none');
             }
         }
 
@@ -803,8 +784,8 @@
                 banco: banco,
                 cedente: cedente,
                 cessionario: cessionario,
-                compromissada: cleanCurrency(compromissada), // Salva como número limpo
-                retornoBruto: cleanCurrency(retorno), // Salva como número limpo
+                compromissada: cleanCurrency(compromissada), 
+                retornoBruto: cleanCurrency(retorno), 
                 cdiTaxa: cdiTaxa
             };
 
@@ -834,7 +815,6 @@
             document.getElementById("manualCessionario").value = op.cessionario;
             document.getElementById("manualCdiTaxa").value = op.cdiTaxa || "";
             
-            // Exibe o valor do Firebase (que é um número) no formato BR para edição
             document.getElementById("manualCompromissada").value = (op.compromissada || 0).toLocaleString('pt-BR');
             document.getElementById("manualRetorno").value = (op.retornoBruto || 0).toLocaleString('pt-BR');
             
@@ -846,7 +826,7 @@
         }
         
         /* ============================================================
-           IMPORTAÇÃO EXCEL (SheetJS)
+           IMPORTAÇÃO EXCEL (SheetJS) - COM Mapeamento Corrigido
         ============================================================ */
 
         document.getElementById("loadExcelBtn").addEventListener("click",()=>{
@@ -866,9 +846,8 @@
 
         function processExcelData(data){
             const workbook = XLSX.read(data,{type:"array"});
-            const sheet = workbook.Sheets[workbook.Sheets[0] || workbook.SheetNames[0]]; // Tenta a primeira sheet
+            const sheet = workbook.Sheets[workbook.Sheets[0] || workbook.SheetNames[0]]; 
 
-            // sheet_to_json({header:1, raw:false}) - raw:false tenta formatar datas/números
             const json = XLSX.utils.sheet_to_json(sheet,{header:1,raw:false});
 
             if(json.length < 2){
@@ -880,37 +859,40 @@
             
             const map={};
 
-            // Mapeamento ATUALIZADO (CHAVES SEM PONTUAÇÃO OU ESPAÇOS, DEVIDO À normalizeHeader)
+            // Mapeamento REVISADO E PRIORIZADO (com base nos seus arquivos)
             const known = {
                 "DTINICIO": "data",
-                "DTVENCTO": "dataVencimento",
+                "DTVENCTO": "dataVencimento", 
+                "TIPOOPERACAO": "desc",       
+                "PAPEL": "desc2",             
+                "VEICULEGAL": "banco",        
+                "CONTRAPARTE": "cedente",     
+                
+                // Valores Totais (PRIORIDADE ALTA)
+                "VLIDA": "compromissada",
+                "VLVOLTA": "retornoBruto",
+                
+                // Campos para cálculo alternativo/exibição
                 "PUIDA": "puIda", 
                 "PUVOLTA": "puVolta",
                 "QUANTIDADE": "quantidade",
-                "TX252": "cdiTaxa", // Corresponde a TX. 252
-                "VEICULEGAL": "banco", // Corresponde a VEÍCULO LEGAL
-                "TIPOOPERACAO": "desc",
-                "PAPEL": "desc2",
-                "CONTRAPARTE": "cedente", 
-                "VLIDA": "compromissada",
-                "VLVOLTA": "retornoBruto",
+                "TX252": "cdiTaxa",           
             };
 
             headers.forEach((h,i)=>{
                 if(known[h]) map[known[h]]=i;
             });
 
-            // Verificação dos campos necessários
-            const hasDirectValueFields = map.compromissada !== undefined && map.retornoBruto !== undefined;
-            const hasPUCalculationFields = map.puIda !== undefined && map.puVolta !== undefined && map.quantidade !== undefined;
-
             if (!map.data) {
                  alert("Não foi possível mapear a coluna obrigatória: Data de Início (DT.INÍCIO). Verifique o cabeçalho do arquivo.");
                 return;
             }
 
+            const hasDirectValueFields = map.compromissada !== undefined && map.retornoBruto !== undefined;
+            const hasPUCalculationFields = map.puIda !== undefined && map.puVolta !== undefined && map.quantidade !== undefined;
+
             if (!hasDirectValueFields && !hasPUCalculationFields) {
-                alert("Não foi possível mapear as colunas de valor. O sistema precisa de (VL IDA e VL VOLTA) OU (PU IDA, PU VOLTA e QUANTIDADE).");
+                alert("Não foi possível mapear as colunas de valor (VL IDA e VL VOLTA) ou (PU IDA, PU VOLTA e QUANTIDADE).");
                 return;
             }
 
@@ -920,12 +902,7 @@
                 
                 if(!row || !row[map.data]) continue;
 
-                let rawDate = row[map.data];
-
-                // Usa a função normalizeDate (adotada do seu código local)
-                rawDate = normalizeDate(rawDate);
-                
-                // Se a data ainda for vazia, pula a linha (evita quebrar o filtro)
+                let rawDate = normalizeDate(row[map.data]);
                 if(!rawDate) continue; 
                 
                 let compromissada = 0;
@@ -934,30 +911,19 @@
                 let puIda = 0;
                 let puVolta = 0;
 
-                // Lê valores do arquivo
-                const rawCompromissada = row[map.compromissada] || 0;
-                const rawRetornoBruto = row[map.retornoBruto] || 0;
-                const rawQtd = row[map.quantidade] || 1;
-                const rawPuIda = row[map.puIda] || 0;
-                const rawPuVolta = row[map.puVolta] || 0;
-
+                // 1. Tenta ler PU e QTD para fins de registro
+                puIda = map.puIda !== undefined ? parseNumber(row[map.puIda]) : 0;
+                puVolta = map.puVolta !== undefined ? parseNumber(row[map.puVolta]) : 0;
+                qtd = map.quantidade !== undefined ? parseNumber(row[map.quantidade]) : 1;
 
                 if (hasDirectValueFields) {
                     // Prioridade 1: Leitura de Valor Total (VL IDA / VL VOLTA)
-                    compromissada = parseNumber(rawCompromissada);
-                    retornoBruto = parseNumber(rawRetornoBruto);
-                    qtd = parseNumber(rawQtd);
-                    puIda = parseNumber(rawPuIda);
-                    puVolta = parseNumber(rawPuVolta);
+                    compromissada = parseNumber(row[map.compromissada]);
+                    retornoBruto = parseNumber(row[map.retornoBruto]);
                     
                 } else if (hasPUCalculationFields) {
                     // Prioridade 2: Cálculo PU * QTD
-                    puIda = parseNumber(rawPuIda);
-                    puVolta = parseNumber(rawPuVolta);
-                    qtd = parseNumber(rawQtd);
-
                     if(puIda === 0 || puVolta === 0 || qtd === 0) continue;
-
                     compromissada = puIda * qtd; 
                     retornoBruto = puVolta * qtd;
                 } else {
@@ -969,14 +935,13 @@
                 const finalDesc = (row[map.desc] || row[map.desc2] || "Operação").trim();
 
                 novos.push({
-                    data: rawDate, // Já formatado
+                    data: rawDate, 
                     dataVencimento: map.dataVencimento ? normalizeDate(row[map.dataVencimento]) : "",
                     desc: finalDesc,
                     banco: row[map.banco] || "",
                     cedente: row[map.cedente] || "", 
-                    cessionario: row[map.cessionario] || "",
+                    cessionario: "", 
                     quantidade: qtd,
-                    // Garante que PU é salvo (para cálculo na tabela, se necessário)
                     puIda: puIda,
                     puVolta: puVolta,
                     cdiTaxa: cleanCdiTaxa(row[map.cdiTaxa] || ""),
@@ -985,6 +950,7 @@
                     retornoBruto: retornoBruto
                 });
             }
+            
             operacoes = operacoes.concat(novos);
             saveState();
             calculateAndRender();
@@ -1048,7 +1014,6 @@
                 }
                 
                 if (ws[colIndexMap["Taxa CDI (%)"] + rowKey]) {
-                    // Exporta a taxa dividida por 100 para ser formatada como percentual
                     ws[colIndexMap["Taxa CDI (%)"] + rowKey].z = '0.0000%';
                     ws[colIndexMap["Taxa CDI (%)"] + rowKey].v = ws[colIndexMap["Taxa CDI (%)"] + rowKey].v / 100; 
                 }
@@ -1062,7 +1027,7 @@
         }
 
         /* ============================================================
-           CARREGAMENTO INICIAL
+           CARREGAMENTO INICIAL E LOGO
         ============================================================ */
         window.loadState = function(){
             calculateAndRender();
