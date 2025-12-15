@@ -748,7 +748,7 @@
         }
         
         /* ============================================================
-           IMPORTAÇÃO EXCEL (SheetJS) - CORREÇÃO FINAL PARA VL IDA/VL VOLTA
+           IMPORTAÇÃO EXCEL (SheetJS) - REFORÇO NA LEITURA DE DATA
         ============================================================ */
 
         function normalizeHeader(str){
@@ -778,6 +778,7 @@
         function processExcelData(data){
             const workbook = XLSX.read(data,{type:"array"});
             const sheet = workbook.Sheets[workbook.SheetNames[0]];
+            // Tenta ler o CSV/XLSX. Usando raw:false a SheetJS tenta formatar datas
             const json = XLSX.utils.sheet_to_json(sheet,{header:1,raw:false});
 
             if(json.length < 2){
@@ -789,7 +790,7 @@
             
             const map={};
 
-            // Mapeamento: VL IDA/VL VOLTA são as prioridades
+            // Mapeamento: VL IDA/VL VOLTA são as prioridades. Usando PAPEL como descrição secundária.
             const known = {
                 "DTINICIO": "data",
                 "DTVENCTO": "dataVencimento",
@@ -799,9 +800,10 @@
                 "TX 252": "cdiTaxa", 
                 "VEICULO LEGAL": "banco",
                 "TIPO OPERACAO": "desc",
-                "CONTRAPARTE": "cedente", // Usando CONTRAPARTE como Cedente (Contraparte)
-                "VL IDA": "compromissada",   // <--- Prioridade 1
-                "VL VOLTA": "retornoBruto",  // <--- Prioridade 1
+                "PAPEL": "desc2", // Usado como descrição secundária/fallback
+                "CONTRAPARTE": "cedente", 
+                "VL IDA": "compromissada",
+                "VL VOLTA": "retornoBruto",
             };
 
             headers.forEach((h,i)=>{
@@ -829,9 +831,18 @@
                 if(!row || !row[map.data]) continue;
 
                 let rawDate = row[map.data];
+
+                // 1. Converte o número serial do Excel (se for número) para string 'YYYY-MM-DD'
                 if (typeof rawDate === 'number' && rawDate > 1) {
-                    const date = XLSX.SSF.parse_date_code(rawDate, {});
-                    rawDate = `${date.y}-${String(date.m).padStart(2, '0')}-${String(date.d).padStart(2, '0')}`;
+                    try {
+                        const date = XLSX.SSF.parse_date_code(rawDate, {});
+                        rawDate = `${date.y}-${String(date.m).padStart(2, '0')}-${String(date.d).padStart(2, '0')}`;
+                    } catch(e) {
+                        // Se falhar a conversão de serial, tenta usar o valor como string
+                        rawDate = String(rawDate);
+                    }
+                } else {
+                    rawDate = String(rawDate);
                 }
                 
                 let compromissada = 0;
@@ -841,7 +852,7 @@
                 let puVolta = 0;
 
                 if (hasDirectValueFields) {
-                    // Tenta ler VL IDA e VL VOLTA (Total)
+                    // Prioridade 1: Leitura de Valor Total (VL IDA / VL VOLTA)
                     compromissada = parseNumber(String(row[map.compromissada] || 0));
                     retornoBruto = parseNumber(String(row[map.retornoBruto] || 0));
                     qtd = parseNumber(String(row[map.quantidade] || 1));
@@ -849,7 +860,7 @@
                     puVolta = parseNumber(String(row[map.puVolta] || 0));
                     
                 } else if (hasPUCalculationFields) {
-                    // Faz o cálculo PU * QTD como fallback
+                    // Prioridade 2: Cálculo PU * QTD
                     puIda = parseNumber(String(row[map.puIda] || 0));
                     puVolta = parseNumber(String(row[map.puVolta] || 0));
                     qtd = parseNumber(String(row[map.quantidade] || 0));
@@ -864,18 +875,18 @@
 
                 if (compromissada === 0 && retornoBruto === 0) continue;
 
+                const finalDesc = (row[map.desc] || row[map.desc2] || "Operação").trim();
+
                 novos.push({
                     data: normalizeDate(rawDate),
                     dataVencimento: map.dataVencimento ? normalizeDate(row[map.dataVencimento]) : "",
-                    desc: row[map.desc] || "",
+                    desc: finalDesc,
                     banco: row[map.banco] || "",
-                    // O campo cedente/cessionário é mais ambíguo no seu arquivo, usando o que foi mapeado.
                     cedente: row[map.cedente] || "", 
                     cessionario: row[map.cessionario] || "",
                     quantidade: qtd,
                     cdiTaxa: cleanCdiTaxa(row[map.cdiTaxa] || ""),
                     
-                    // Armazena como número para facilitar cálculos futuros
                     compromissada: compromissada,
                     retornoBruto: retornoBruto
                 });
