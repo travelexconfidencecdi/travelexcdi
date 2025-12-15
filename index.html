@@ -5,7 +5,6 @@
     <title>Controle de Ganhos CDI — Layout Empilhado</title>
     <meta name="viewport" content="width=device-width,initial-scale=1" />
 
-    <!-- CSS COMPLETO (SEU LAYOUT ORIGINAL) -->
     <style>
         :root{
             --primary: #0A0A33;
@@ -188,18 +187,17 @@
             #siteLogo{ max-width:120px; display:block; margin:0 auto 8px; }
             #header-container{ margin-bottom:0; width: 100%; justify-content: center; }
             #left-header-content { justify-content: center; }
+            .filter-card { margin-bottom: 12px !important; } /* CORREÇÃO: Espaçamento em mobile */
             .input-row{ flex-direction:column; align-items:stretch; }
         }
         @media print{
             body{ background:white; padding:0; color:black; }
-            #input-panel .file-label, #input-panel .logo-label, #deleteAllBtn { display:none; }
+            #input-panel .file-label, #input-panel .logo-label, #deleteAllBtn, #top-actions, #auth-status { display:none; } /* Oculta elementos não essenciais */
         }
     </style>
 
-    <!-- SheetJS CORRIGIDO -->
     <script src="https://cdn.sheetjs.com/xlsx-0.20.0/package/dist/xlsx.mini.min.js"></script>
 
-    <!-- Firebase -->
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-database-compat.js"></script>
@@ -253,13 +251,10 @@
 
     <div id="main-container">
 
-        <!-- Painel de resultados -->
         <div id="results-panel" class="card">
             <h2 style="margin:0 0 8px 0;">📊 Resumo Diário</h2>
 
-            <!-- Filtros -->
-            <div class="card filter-card" style="margin-bottom:10px;">
-                <div style="display:flex;justify-content:space-between;align-items:center;gap:8px;">
+            <div class="card filter-card" style="margin-bottom:10px;" aria-label="Opções de Filtragem de Dados"> <div style="display:flex;justify-content:space-between;align-items:center;gap:8px;">
                     <div style="font-weight:600;color:var(--muted);">Filtros</div>
                     <div style="font-size:12px;color:var(--muted);">Mostrar detalhe por operação</div>
                 </div>
@@ -280,22 +275,18 @@
                         <button id="resetFilterBtn" class="btn small secondary">Limpar</button>
                     </div>
                 </div>
-
                 <div style="margin-top:8px;">
                     <label style="font-weight:600;color:var(--muted)">
                         <input type="checkbox" id="showIndividualOps" checked onchange="calculateAndRender()"> Mostrar Detalhe por Operação
                     </label>
                 </div>
             </div>
-
-            <!-- Totais -->
             <div class="totals">
                 <div class="total-card" id="totalCompromissadaDisplay"><h4>Compromissada TOTAL</h4><p>R$ 0,00</p></div>
                 <div class="total-card" id="totalRetornoDisplay"><h4>Retorno Bruto TOTAL</h4><p>R$ 0,00</p></div>
                 <div class="total-card" id="totalCdiDisplay"><h4>Ganho (R$) TOTAL</h4><p>R$ 0,00</p></div>
             </div>
 
-            <!-- Tabela REAL -->
             <div class="table-wrap">
                 <table id="resultTable">
                     <thead>
@@ -323,7 +314,6 @@
             </p>
         </div>
 
-        <!-- Painel de entrada -->
         <div id="input-panel" class="card">
             <h3 style="margin:0 0 8px 0;">⭐ Configuração Global</h3>
 
@@ -373,7 +363,6 @@
                         <label for="manualCedente">Conta Cedente</label>
                         <input type="text" id="manualCedente">
                     </div>
-
                     <div style="flex:1;">
                         <label for="manualCessionario">Conta Cessionário</label>
                         <input type="text" id="manualCessionario">
@@ -390,7 +379,6 @@
                         <label for="manualCompromissada">Valor Compromissada</label>
                         <input type="text" id="manualCompromissada">
                     </div>
-
                     <div style="flex:1;">
                         <label for="manualRetorno">Valor Retorno (Bruto)</label>
                         <input type="text" id="manualRetorno">
@@ -402,15 +390,11 @@
                     <button id="cancelEditBtn" class="btn secondary" style="flex:1;display:none;">Cancelar Edição</button>
                 </div>
             </div>
-
             <pre id="log" style="height:84px;overflow:auto;margin-top:12px;color:var(--muted);">Aguardando...</pre>
         </div>
-    </div>   
-        <!-- ========================= -->
-    <!--  SCRIPT FINAL COMPLETO    -->
-    <!-- ========================= -->
-    <script>
+    </div>
 
+    <script>
         /* ============================================================
            CONFIGURAÇÃO DO FIREBASE
         ============================================================ */
@@ -431,7 +415,6 @@
 
         firebase.initializeApp(firebaseConfig);
         database = firebase.database();
-
 
         /* ============================================================
            LOGIN / LOGOUT
@@ -462,22 +445,36 @@
             }
         });
 
-
         /* ============================================================
-           FUNÇÕES DE FORMATAÇÃO
+           FUNÇÕES DE FORMATAÇÃO E UTILIDADE (REVISADAS)
         ============================================================ */
-        function cleanCurrency(v){
+        function parseNumber(v){
+            if(v===undefined||v===null||v==='') return 0;
             if(typeof v!=='string') v=String(v);
-            let s=v.replace(/[R$\s]/g,'').replace(/\./g,'').replace(/,/g,'.');
+
+            // 1. Limpa moeda (R$, espaço)
+            let s = v.replace(/[R$\s]/g, '');
+
+            // 2. Tenta encontrar se o último separador é uma vírgula (indicando formato BR)
+            const lastComma = s.lastIndexOf(',');
+            const lastDot = s.lastIndexOf('.');
+
+            if (lastComma > lastDot) {
+                // Se a última for vírgula, trata como separador decimal (e retira pontos de milhar)
+                s = s.replace(/\./g, '').replace(/,/g, '.');
+            } else if (lastDot > lastComma && lastComma !== -1) {
+                // Se o último for ponto, mas houver vírgula anterior, provavelmente é formato BR com ponto errado.
+                // Não faz nada, a vírgula de milhar é ignorada e o ponto final é o decimal.
+            } else if (lastComma !== -1 && lastDot === -1) {
+                 // Tem vírgula, mas não tem ponto. Assume vírgula como decimal.
+                 s = s.replace(/,/g, '.');
+            }
+
+
             let n=parseFloat(s);
             return isNaN(n)?0:n;
         }
-        function parseNumber(v){
-            if(v===undefined||v===null||v==='') return 0;
-            if(typeof v==='string' && (v.includes(',')||v.includes('R$'))) return cleanCurrency(v);
-            let n=parseFloat(v);
-            return isNaN(n)?0:n;
-        }
+
         function cleanCdiTaxa(v){
             if(!v) return 0;
             v=String(v).replace(/[^0-9,.]/g,'').replace(/,/g,'.');
@@ -508,7 +505,6 @@
             return "";
         }
 
-
         /* ============================================================
            ESTADO PRINCIPAL
         ============================================================ */
@@ -520,7 +516,6 @@
         let filtroAtivo = false;
         let dataFiltroInicio = null;
         let dataFiltroFim = null;
-
 
         /* ============================================================
            SALVAR E CARREGAR DO FIREBASE
@@ -536,7 +531,6 @@
 
             database.ref(DB_ROOT_PATH + currentUserUid + "/operacoes").set(state);
         }
-
         function loadStateFromFirebase(){
             if(!currentUserUid) return;
 
@@ -551,7 +545,6 @@
                 calculateAndRender();
             });
         }
-
 
         /* ============================================================
            RENDERIZAÇÃO DA TABELA REAL
@@ -584,6 +577,7 @@
                 const puVolta = retorno/(op.quantidade||1);
 
                 let ganho = retorno - compromissada;
+                // Lógica de inversão para "RECOMPRA" onde o retorno é menor que a compromissada
                 if(op.desc.toUpperCase().includes("RECOMPRA") && ganho<0){
                     ganho = Math.abs(ganho);
                 }
@@ -631,7 +625,6 @@
             }
         }
 
-
         /* ============================================================
            FILTROS
         ============================================================ */
@@ -641,7 +634,6 @@
             filtroAtivo = !!dataFiltroInicio || !!dataFiltroFim;
             calculateAndRender();
         });
-
         document.getElementById("resetFilterBtn").addEventListener("click",()=>{
             filtroAtivo=false;
             dataFiltroInicio=null;
@@ -650,7 +642,6 @@
             document.getElementById("filterEndDate").value="";
             calculateAndRender();
         });
-
 
         /* ============================================================
            EXCLUSÃO
@@ -662,10 +653,124 @@
             calculateAndRender();
         }
 
+        // LÓGICA DE EXCLUSÃO GERAL (🗑️)
+        document.getElementById("deleteAllBtn").addEventListener("click", () => {
+            if (!confirm("Tem certeza que deseja EXCLUIR TODAS as operações? Esta ação não pode ser desfeita e será aplicada no Firebase.")) {
+                return;
+            }
+            operacoes = [];
+            saveState();
+            calculateAndRender();
+            alert("Todas as operações foram excluídas.");
+        });
 
+        /* ============================================================
+           LANÇAMENTO MANUAL / EDIÇÃO (ADICIONADO)
+        ============================================================ */
+        const addBtn = document.getElementById("addBtn");
+        const cancelEditBtn = document.getElementById("cancelEditBtn");
+        const editIndex = document.getElementById("editIndex");
+
+        // Função para resetar os campos do formulário manual
+        function resetManualForm() {
+            document.getElementById("manualData").value = "";
+            document.getElementById("manualDesc").value = "";
+            document.getElementById("manualBanco").value = "";
+            document.getElementById("manualCedente").value = "";
+            document.getElementById("manualCessionario").value = "";
+            document.getElementById("manualCdiTaxa").value = "";
+            document.getElementById("manualCompromissada").value = "";
+            document.getElementById("manualRetorno").value = "";
+
+            editIndex.value = "-1";
+            addBtn.textContent = "Adicionar Lançamento";
+            cancelEditBtn.style.display = "none";
+        }
+
+        // Lógica de Adicionar/Salvar Edição
+        addBtn.addEventListener("click", () => {
+            const data = document.getElementById("manualData").value;
+            const desc = document.getElementById("manualDesc").value;
+            const banco = document.getElementById("manualBanco").value;
+            const cedente = document.getElementById("manualCedente").value;
+            const cessionario = document.getElementById("manualCessionario").value;
+            const cdiTaxa = document.getElementById("manualCdiTaxa").value;
+            const compromissada = document.getElementById("manualCompromissada").value;
+            const retorno = document.getElementById("manualRetorno").value;
+
+            if (!data || !desc || !compromissada || !retorno) {
+                alert("Preencha Data, Descrição, Valor Compromissada e Valor Retorno.");
+                return;
+            }
+
+            const newOp = {
+                data: normalizeDate(data),
+                desc: desc,
+                banco: banco,
+                cedente: cedente,
+                cessionario: cessionario,
+                compromissada: compromissada,
+                retornoBruto: retorno,
+                cdiTaxa: cdiTaxa
+            };
+
+            const index = parseInt(editIndex.value);
+            if (index >= 0) {
+                // Modo Edição
+                operacoes[index] = newOp;
+                alert("Operação alterada com sucesso!");
+            } else {
+                // Modo Adição
+                operacoes.push(newOp);
+                alert("Operação adicionada com sucesso!");
+            }
+
+            saveState();
+            calculateAndRender();
+            resetManualForm();
+        });
+
+        // Lógica de Cancelar Edição
+        cancelEditBtn.addEventListener("click", resetManualForm);
+
+        // Lógica de Editar (chamada da tabela)
+        window.editOperation = function(i) {
+            const op = operacoes[i];
+
+            document.getElementById("manualData").value = normalizeDate(op.data);
+            document.getElementById("manualDesc").value = op.desc;
+            document.getElementById("manualBanco").value = op.banco;
+            document.getElementById("manualCedente").value = op.cedente;
+            document.getElementById("manualCessionario").value = op.cessionario;
+            document.getElementById("manualCdiTaxa").value = op.cdiTaxa || ""; // Taxa específica
+            
+            // Exibe números com vírgula para edição (formato BR)
+            document.getElementById("manualCompromissada").value = String(op.compromissada).replace('.', ',');
+            document.getElementById("manualRetorno").value = String(op.retornoBruto).replace('.', ',');
+            
+            editIndex.value = i;
+            addBtn.textContent = "Salvar Alteração";
+            cancelEditBtn.style.display = "inline-flex";
+
+            // Rola a página para o painel de entrada
+            document.getElementById("input-panel").scrollIntoView({ behavior: "smooth" });
+        }
+        
         /* ============================================================
            IMPORTAÇÃO EXCEL (SheetJS)
         ============================================================ */
+
+        /**
+         * Normaliza uma string de cabeçalho, removendo acentos e convertendo para maiúsculas.
+         */
+        function normalizeHeader(str){
+            return String(str || "")
+                .toUpperCase()
+                .normalize("NFD")
+                .replace(/[\u0300-\u036f]/g, "") // remove acentos
+                .trim();
+        }
+
         document.getElementById("loadExcelBtn").addEventListener("click",()=>{
             const file = document.getElementById("excelFile").files[0];
             if(!file){
@@ -690,7 +795,9 @@
                 return;
             }
 
-            const headers=json[0].map(h=>String(h||"").trim().toUpperCase());
+            // CORREÇÃO: Normaliza os cabeçalhos para ignorar acentos e case
+            const headers = json[0].map(h => normalizeHeader(h));
+            
             const map={};
 
             const known={
@@ -705,7 +812,7 @@
                 "TX. 252":"cdiTaxa",
                 "TX. CDI ANUAL":"cdiTaxa"
             };
-
+            
             headers.forEach((h,i)=>{
                 if(known[h]) map[known[h]]=i;
             });
@@ -713,6 +820,7 @@
             const novos=[];
             for(let i=1;i<json.length;i++){
                 const row=json[i];
+                // Verifica a existência das colunas mapeadas e da linha
                 if(!row || !row[map.data] || !row[map.compromissada]) continue;
 
                 novos.push({
@@ -727,22 +835,37 @@
                     cdiTaxa: cleanCdiTaxa(row[map.cdiTaxa]||"")
                 });
             }
-
             operacoes = operacoes.concat(novos);
             saveState();
             calculateAndRender();
             alert(`${novos.length} operações importadas com sucesso!`);
         }
 
-
         /* ============================================================
            CARREGAMENTO INICIAL
         ============================================================ */
         window.loadState = function(){
             calculateAndRender();
+            
+            // Implementação simples dos botões de ação que faltavam
+            document.getElementById('printBtn').addEventListener('click', () => window.print());
+            
+            // TO-DO: Implementar Exportação e Lógica de Logo
+            document.getElementById('exportBtn').addEventListener('click', () => {
+                alert("Funcionalidade de Exportação será implementada aqui.");
+                // Lógica de exportação para CSV ou JSON
+            });
+
+            // Lógica do Logo (Apenas placeholders, o código real de upload precisaria de mais funções)
+            document.getElementById('addLogoBtn').addEventListener('click', () => {
+                alert("A funcionalidade de Carregar Logo requer código adicional para upload de imagem e persistência.");
+            });
+            document.getElementById('removeLogoBtn').addEventListener('click', () => {
+                document.getElementById('siteLogo').src = '';
+                document.getElementById('siteLogo').style.display = 'none';
+                alert("Logo removido. A persistência do logo dependeria de código Firebase Storage.");
+            });
         };
-
     </script>
-
 </body>
 </html>
