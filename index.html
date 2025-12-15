@@ -450,27 +450,27 @@
         /* ============================================================
            FUNÇÕES DE FORMATAÇÃO E UTILIDADE
         ============================================================ */
+        
+        // 2️⃣ SUBSTITUIÇÃO COMPLETA DE parseNumber
         function parseNumber(v){
-            if(v===undefined||v===null||v==='') return 0;
-            if(typeof v!=='string') v=String(v);
+            if(v === undefined || v === null || v === "") return 0;
 
-            let s = v.replace(/[R$\s]/g, '');
-            
-            // Lógica para lidar com formatos de número BR (vírgula decimal) e US (ponto decimal)
-            const commaCount = (s.match(/,/g) || []).length;
-            const dotCount = (s.match(/\./g) || []).length;
+            if(typeof v === "number") return v;
 
-            if (commaCount > 0 && dotCount > 0 && s.lastIndexOf(',') > s.lastIndexOf('.')) {
-                 // Ex: 1.000,50 (vírgula como decimal) -> 1000.50
-                s = s.replace(/\./g, '').replace(/,/g, '.');
-            } else if (commaCount > 0 && dotCount === 0) {
-                // Ex: 1000,50 (vírgula como decimal) -> 1000.50
-                 s = s.replace(/,/g, '.');
+            let s = String(v).replace(/[R$\s]/g,'');
+
+            if(s.includes('.') && s.includes(',')){
+                if(s.lastIndexOf(',') > s.lastIndexOf('.')){
+                    s = s.replace(/\./g,'').replace(',','.');
+                } else {
+                    s = s.replace(/,/g,'');
+                }
+            } else if(s.includes(',')){
+                s = s.replace(',','.');
             }
-            // Se tiver apenas ponto, assume que o ponto é o separador decimal (US, ou já formatado)
 
-            let n=parseFloat(s);
-            return isNaN(n)?0:n;
+            const n = parseFloat(s);
+            return isNaN(n) ? 0 : n;
         }
 
         function cleanCdiTaxa(v){
@@ -492,16 +492,29 @@
             }
             return s;
         }
+
+        // 1️⃣ SUBSTITUIÇÃO COMPLETA DE normalizeDate
         function normalizeDate(s){
             if(!s) return "";
-            s=String(s).trim();
-            if(s.match(/^\d{4}-\d{2}-\d{2}$/)) return s;
-            if(s.match(/^\d{2}\/\d{2}\/\d{4}$/)){
-                const [d,m,y]=s.split("/");
-                return `${y}-${m}-${d}`;
+
+            // Excel serial
+            if(typeof s === "number" && s > 1){
+                const d = XLSX.SSF.parse_date_code(s);
+                if(d && d.y){
+                    return `${d.y}-${String(d.m).padStart(2,"0")}-${String(d.d).padStart(2,"0")}`;
+                }
             }
+
+            s = String(s).trim();
+
+            if(/^\d{4}-\d{2}-\d{2}$/.test(s)) return s;
+
+            const br = s.match(/^(\d{2})\/(\d{2})\/(\d{4})/);
+            if(br) return `${br[3]}-${br[2]}-${br[1]}`;
+
             return "";
         }
+
 
         /* ============================================================
            ESTADO PRINCIPAL
@@ -748,7 +761,7 @@
         }
         
         /* ============================================================
-           IMPORTAÇÃO EXCEL (SheetJS) - REFORÇO NA LEITURA DE DATA
+           IMPORTAÇÃO EXCEL (SheetJS)
         ============================================================ */
 
         function normalizeHeader(str){
@@ -778,7 +791,7 @@
         function processExcelData(data){
             const workbook = XLSX.read(data,{type:"array"});
             const sheet = workbook.Sheets[workbook.SheetNames[0]];
-            // Tenta ler o CSV/XLSX. Usando raw:false a SheetJS tenta formatar datas
+            // Tenta ler o CSV/XLSX. Usando raw:false a SheetJS tenta formatar datas/números
             const json = XLSX.utils.sheet_to_json(sheet,{header:1,raw:false});
 
             if(json.length < 2){
@@ -815,7 +828,7 @@
             const hasPUCalculationFields = map.puIda !== undefined && map.puVolta !== undefined && map.quantidade !== undefined;
 
             if (!map.data) {
-                 alert("Não foi possível mapear a coluna obrigatória: Data de Início. Verifique o cabeçalho do arquivo.");
+                 alert("Não foi possível mapear a coluna obrigatória: Data de Início (DT.INÍCIO). Verifique o cabeçalho do arquivo.");
                 return;
             }
 
@@ -832,18 +845,11 @@
 
                 let rawDate = row[map.data];
 
-                // 1. Converte o número serial do Excel (se for número) para string 'YYYY-MM-DD'
-                if (typeof rawDate === 'number' && rawDate > 1) {
-                    try {
-                        const date = XLSX.SSF.parse_date_code(rawDate, {});
-                        rawDate = `${date.y}-${String(date.m).padStart(2, '0')}-${String(date.d).padStart(2, '0')}`;
-                    } catch(e) {
-                        // Se falhar a conversão de serial, tenta usar o valor como string
-                        rawDate = String(rawDate);
-                    }
-                } else {
-                    rawDate = String(rawDate);
-                }
+                // 3️⃣ AJUSTE DENTRO do processExcelData
+                rawDate = normalizeDate(rawDate);
+                
+                // Se a data ainda for vazia, pula a linha (evita quebrar o filtro)
+                if(!rawDate) continue; 
                 
                 let compromissada = 0;
                 let retornoBruto = 0;
@@ -878,7 +884,7 @@
                 const finalDesc = (row[map.desc] || row[map.desc2] || "Operação").trim();
 
                 novos.push({
-                    data: normalizeDate(rawDate),
+                    data: rawDate, // Já formatado por normalizeDate
                     dataVencimento: map.dataVencimento ? normalizeDate(row[map.dataVencimento]) : "",
                     desc: finalDesc,
                     banco: row[map.banco] || "",
