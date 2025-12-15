@@ -334,7 +334,7 @@
 
             <h3>📂 Importação</h3>
             <p style="font-size:12px;color:var(--muted);margin:0 0 10px 0;">
-                *O sistema tenta reconhecer os cabeçalhos, priorizando 'TX. 252' para a taxa CDI.
+                *O sistema tenta reconhecer os cabeçalhos. Se as colunas "Compromissada" e "Retorno Bruto" não existirem, ele usará **PU IDA x QUANTIDADE** para o cálculo.
             </p>
 
             <hr>
@@ -400,7 +400,7 @@
            CONFIGURAÇÃO DO FIREBASE
         ============================================================ */
         const firebaseConfig = {
-            // As chaves do Firebase são mockadas/genéricas, mas a lógica de autenticação está correta.
+            // Configurações genéricas de Firebase
             apiKey: "AIzaSyD_vxw2VcSPO_tMXgrl7quZ85ODvpqQuR8",
             authDomain: "controle-cdi.firebaseapp.com",
             databaseURL: "https://controle-cdi-default-rtdb.firebaseio.com",
@@ -566,6 +566,7 @@
                 const retorno=parseNumber(op.retornoBruto);
                 const taxa=cleanCdiTaxa(op.cdiTaxa||taxaGlobal*100)/100;
 
+                // Para a renderização, o PU é recalculado (pode ser aproximado se a quantidade for 1)
                 const puIda = compromissada/(op.quantidade||1);
                 const puVolta = retorno/(op.quantidade||1);
 
@@ -740,7 +741,7 @@
         }
         
         /* ============================================================
-           IMPORTAÇÃO EXCEL (SheetJS) - CORRIGIDA PARA SEU ARQUIVO
+           IMPORTAÇÃO EXCEL (SheetJS) - CORRIGIDA (PU x QTD)
         ============================================================ */
 
         function normalizeHeader(str){
@@ -781,25 +782,39 @@
             
             const map={};
 
-            // Mapeamento dos títulos normalizados do seu arquivo
-            const known={
-                "DATA DO OPERACAO":"data",
-                "DESCRICAO DO MOVIMENTO":"desc",
-                "CONTA CEDENTE":"cedente",
-                "CONTA CESSIONARIO":"cessionario",
-                "VALOR COMPROMISSADO R":"compromissada", // "Valor Compromissado (R$)" -> "VALOR COMPROMISSADO R"
-                "VALOR BRUTO RETORNO R":"retornoBruto",  // "Valor Bruto Retorno (R$)" -> "VALOR BRUTO RETORNO R"
-                "TAXA CDI ANUAL":"cdiTaxa",
-                "PU DE IDA":"puIda",
-                "PU DE VOLTA":"puVolta"
+            // NOVO MAPEAMENTO SOLICITADO (com correção de acento/pontuação no normalizeHeader)
+            const known = {
+                "DTINICIO": "data",
+                "DTVENCTO": "dataVencimento",
+                "PU IDA": "puIda",
+                "PU VOLTA": "puVolta",
+                "QUANTIDADE": "quantidade",
+                "TX 252": "cdiTaxa", // Mapeado de "TX. 252"
+                "VEICULO LEGAL": "banco",
+                "DESCRICAO DO MOVIMENTO": "desc",
+                "TIPO OPERACAO": "desc", // Fallback para Descrição
+                "CONTA CEDENTE": "cedente",
+                "CONTA CESSIONARIO": "cessionario",
+                // Mapeamentos antigos, caso o usuário volte a usar um formato antigo
+                "VALOR COMPROMISSADO R":"compromissada",   
+                "VALOR BRUTO RETORNO R":"retornoBruto",
             };
-            
+
             headers.forEach((h,i)=>{
                 if(known[h]) map[known[h]]=i;
             });
 
-            if (!map.data || !map.compromissada || !map.retornoBruto) {
-                alert("Não foi possível mapear as colunas obrigatórias: Data, Compromissada e Retorno Bruto. Verifique o cabeçalho do arquivo.");
+            // Prioriza o cálculo por PU/Qtd, mas verifica se as colunas estão presentes
+            const hasPUCalculationFields = map.puIda !== undefined && map.puVolta !== undefined && map.quantidade !== undefined;
+            const hasDirectValueFields = map.compromissada !== undefined && map.retornoBruto !== undefined;
+
+            if (!map.data) {
+                 alert("Não foi possível mapear a coluna obrigatória: Data de Início. Verifique o cabeçalho do arquivo.");
+                return;
+            }
+
+            if (!hasPUCalculationFields && !hasDirectValueFields) {
+                alert("Não foi possível mapear as colunas de valor. O sistema precisa de (PU IDA, PU VOLTA e QUANTIDADE) OU (Compromissada e Retorno Bruto).");
                 return;
             }
 
@@ -807,26 +822,47 @@
             for(let i=1;i<json.length;i++){
                 const row=json[i];
                 
-                if(!row || !row[map.data] || !row[map.compromissada]) continue;
+                if(!row || !row[map.data]) continue;
 
                 let rawDate = row[map.data];
-                // Lidar com o formato de data serial do Excel (se raw:false não resolver)
                 if (typeof rawDate === 'number' && rawDate > 1) {
                     const date = XLSX.SSF.parse_date_code(rawDate, {});
                     rawDate = `${date.y}-${String(date.m).padStart(2, '0')}-${String(date.d).padStart(2, '0')}`;
+                }
+                
+                let compromissada = 0;
+                let retornoBruto = 0;
+                let qtd = 1;
+
+                if (hasPUCalculationFields) {
+                    const puIda = parseNumber(row[map.puIda]);
+                    const puVolta = parseNumber(row[map.puVolta]);
+                    qtd = parseNumber(row[map.quantidade]);
+
+                    if(puIda === 0 || puVolta === 0 || qtd === 0) continue;
+
+                    compromissada = puIda * qtd; 
+                    retornoBruto = puVolta * qtd;
+                } else if (hasDirectValueFields) {
+                    compromissada = parseNumber(row[map.compromissada]);
+                    retornoBruto = parseNumber(row[map.retornoBruto]);
+                } else {
+                    continue; // Deve ser pego pelo alerta acima, mas redundância é boa.
                 }
 
 
                 novos.push({
                     data: normalizeDate(rawDate),
-                    desc: row[map.desc]||"",
-                    banco: row[map.banco]||"",
-                    cedente: row[map.cedente]||"",
-                    cessionario: row[map.cessionario]||"",
-                    compromissada: parseNumber(row[map.compromissada]),
-                    retornoBruto: parseNumber(row[map.retornoBruto]),
-                    quantidade: 1, 
-                    cdiTaxa: cleanCdiTaxa(row[map.cdiTaxa] || "")
+                    dataVencimento: map.dataVencimento ? normalizeDate(row[map.dataVencimento]) : "",
+                    desc: row[map.desc] || "",
+                    banco: row[map.banco] || "",
+                    cedente: row[map.cedente] || "",
+                    cessionario: row[map.cessionario] || "",
+                    quantidade: qtd,
+                    cdiTaxa: cleanCdiTaxa(row[map.cdiTaxa] || ""),
+                    
+                    compromissada: compromissada,
+                    retornoBruto: retornoBruto
                 });
             }
             operacoes = operacoes.concat(novos);
@@ -836,7 +872,7 @@
         }
 
         /* ============================================================
-           FUNÇÃO DE EXPORTAÇÃO (NOVA)
+           FUNÇÃO DE EXPORTAÇÃO
         ============================================================ */
         function exportData() {
             if (operacoes.length === 0) {
@@ -864,14 +900,13 @@
                     "Conta Cessionário": op.cessionario || "",
                     "Compromissada": compromissada,
                     "Retorno Bruto": retorno,
-                    "Taxa CDI (%)": taxa * 100, // Multiplica por 100 para ser %
+                    "Taxa CDI (%)": taxa * 100,
                     "Ganho (R$)": ganho
                 };
             });
 
             const ws = XLSX.utils.json_to_sheet(dadosExportacao);
             
-            // Aplica formatação de número nas colunas (Moeda e Porcentagem)
             const colIndexMap = {
                 "Compromissada": 'F', 
                 "Retorno Bruto": 'G', 
@@ -894,7 +929,6 @@
                 
                 if (ws[colIndexMap["Taxa CDI (%)"] + rowKey]) {
                     ws[colIndexMap["Taxa CDI (%)"] + rowKey].z = '0.0000%';
-                    // Divide o valor (que está * 100) por 100 para que o Excel o trate como fração e aplique a formatação %
                     ws[colIndexMap["Taxa CDI (%)"] + rowKey].v = ws[colIndexMap["Taxa CDI (%)"] + rowKey].v / 100; 
                 }
             }
@@ -914,7 +948,6 @@
             
             document.getElementById('printBtn').addEventListener('click', () => window.print());
             
-            // Vínculo da nova função de exportação
             document.getElementById('exportBtn').addEventListener('click', exportData);
 
             document.getElementById('addLogoBtn').addEventListener('click', () => {
