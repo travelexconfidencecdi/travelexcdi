@@ -7,11 +7,12 @@
 
     <style>
         :root{
-            --primary: #0A0A33;
-            --primary-light: #1A1A55;
-            --secondary: #C00000;
-            --secondary-light: #E00000;
-            --danger: #c62828;
+            /* CORES PRINCIPAIS: AZUL MARINHO ESCURO PRIMÁRIO, VERMELHO SECUNDÁRIO */
+            --primary: #0A0A33;  /* Azul Marinho Escuro */
+            --primary-light: #1A1A55; /* Versão mais clara para gradiente/hover */                        
+            --secondary: #C00000; /* Vermelho Forte (Secundário/Destaque) */
+            --secondary-light: #E00000; /* Vermelho Claro para gradiente/hover */                        
+            --danger: #c62828;  /* Mantido para ações de exclusão */
             --bg-start: #f4f8fb;
             --bg-end: #eef6fb;
             --card-bg: #ffffff;
@@ -23,6 +24,7 @@
             --radius: 10px;
             --shadow: 0 8px 20px rgba(16,24,40,0.06);
         }
+        /* Base */
         html,body{height:100%;margin:0;font-family:Inter, Roboto, system-ui, -apple-system, "Segoe UI", Arial;}
         body{
             background: linear-gradient(180deg,var(--bg-start),var(--bg-end));
@@ -31,30 +33,34 @@
             -webkit-font-smoothing:antialiased;
             font-size:14px;
         }
-        #siteLogo{
-            display:block;
-            max-width:140px;
-            width:100%;
-            height:auto;
-            border-radius:6px;
-            box-shadow:var(--shadow);
+        /* Ajuste do Logo e Título para ficarem à esquerda e alinhados */
+        #siteLogo{ 
+            display:block; 
+            max-width:140px; 
+            width:100%; 
+            height:auto; 
+            border-radius:6px; 
+            box-shadow:var(--shadow); 
             margin:0 0 6px 0;
         }
         #logo-wrapper{ margin-bottom:8px; }
-        #header-container{
-            display:flex;
-            align-items:center;
-            gap:10px;
-            margin-bottom:8px;
-            width: fit-content;
+        /* Header */
+        #header-container{ 
+            display:flex; 
+            align-items:center; 
+            gap:10px; 
+            margin-bottom:8px; 
+            width: fit-content; 
         }
-        #logo-placeholder{ font-size:1.4rem; color:var(--primary); }
+        #logo-placeholder{ font-size:1.4rem; color:var(--primary); } 
         h1{ margin:0; color:var(--text-dark); font-size:1.25rem; font-weight:700; }
+        /* Contêiner para logo e título juntos */
         #left-header-content {
             display: flex;
             align-items: center;
             gap: 10px;
         }
+        /* Top actions compacto */
         #top-actions{
             display:flex; align-items:center; gap:10px; padding:10px;
             background:var(--card-bg); border-radius:var(--radius); box-shadow:var(--shadow); border:1px solid var(--card-border);
@@ -62,7 +68,7 @@
         }
         #header-left{ display:flex; align-items:center; gap:10px; }
         #header-right{ margin-left:auto; display:flex; gap:8px; align-items:center; flex-wrap:wrap; }
-
+        /* --------------- BOTÕES SÓLIDOS COM CONTORNO BRANCO (ESTILO TRAVELEX) --------------- */
         .btn {
             display: inline-flex;
             align-items: center;
@@ -74,69 +80,74 @@
             font-weight: 600;
             transition: all 0.2s ease;
             background: var(--primary);
-            color: white;
-            border: 1px solid white;
-            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.08);
+            color: white; 
+            border: 1px solid white; 
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.08); 
         }
+        /* Estilo Secundário (VERMELHO) */
         .btn.secondary {
             background: var(--secondary);
-            color: white;
-            border: 1px solid white;
+            color: white; 
+            border: 1px solid white; 
         }
-        .btn.small {
-            padding: 6px 10px;
-            font-size: 13px;
-            border-radius: 7px;
+        .btn.small { 
+            padding: 6px 10px; 
+            font-size: 13px; 
+            border-radius: 7px; 
         }
-        .btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
-            background: var(--primary-light);
-            border-color: white;
+        .btn:hover { 
+            transform: translateY(-2px); 
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15); 
+            background: var(--primary-light); 
+            border-color: white; 
         }
         .btn.secondary:hover {
-            background: var(--secondary-light);
+            background: var(--secondary-light); 
             border-color: white;
             box-shadow: 0 8px 20px rgba(192, 0, 0, 0.25);
         }
-        .btn:active {
-            transform: none;
-            filter: brightness(0.96);
+        .btn:active { 
+            transform: none; 
+            filter: brightness(0.96); 
             box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
         }
-        .btn.danger {
-            background: var(--secondary);
-            color: white;
-            border: 1px solid white;
+        .btn.danger { 
+            background: var(--secondary); 
+            color: white; 
+            border: 1px solid white; 
             box-shadow: 0 4px 10px rgba(198, 40, 40, 0.25);
         }
-        .btn.danger:hover {
-            filter: brightness(0.85);
-            border-color: white;
+        .btn.danger:hover { 
+            filter: brightness(0.85); 
+            border-color: white; 
         }
-
+        /* ----------------------------------------------------------- */
+        /* Layout empilhado: resultados em cima, painel embaixo */
         #main-container{
             display:flex;
             flex-direction:column;
             gap:14px;
             align-items:stretch;
         }
+        /* Cards */
         .card{
             background:var(--card-bg); padding:14px; border-radius:10px; box-shadow:var(--shadow); border:1px solid var(--card-border);
             color:var(--text-dark);
         }
+        /* Inputs */
         .input-row{ display:flex; gap:10px; flex-wrap:wrap; align-items:center; margin-bottom:8px; }
         .input-row label{ font-size:13px; color:var(--muted); font-weight:600; display:block; margin-bottom:6px; }
         input[type="text"], input[type="date"]{
             padding:8px 10px; border-radius:8px; border:1px solid rgba(15,23,36,0.06); background:#fff; color:var(--text-dark); min-width:120px;
         }
-
+        /* Totals */
         .totals{ display:grid; grid-template-columns: repeat(auto-fit,minmax(160px,1fr)); gap:12px; margin-bottom:12px; }
         .total-card{ padding:10px; border-radius:8px; border:1px solid rgba(15,23,36,0.04); background:linear-gradient(180deg,#fff,#fbfdff); }
         .total-card h4{ margin:0; font-size:12px; color:var(--muted); }
         .total-card p{ margin:6px 0 0 0; font-size:18px; font-weight:800; color:var(--text-dark); }
+        /* Ganho total em verde */
         #totalCdiDisplay p { color: var(--success) !important; }
-
+        /* Tabela */
         .table-wrap{ overflow:auto; border-radius:8px; }
         table{ width:100%; border-collapse:collapse; margin-top:8px; font-size:13px; color:var(--text-dark); }
         thead th{
@@ -148,48 +159,54 @@
         tbody td{ padding:8px 8px; border-bottom:1px solid rgba(0,0,0,0.04); text-align:right; }
         tbody tr:nth-child(even){ background: rgba(0,0,0,0.02); }
         td:first-child, th:first-child{ text-align:center; width:90px; }
-
-        .col-left{
-            text-align:left;
-            max-width:260px;
-            overflow:hidden;
-            text-overflow:ellipsis;
-            white-space:nowrap;
-            color: var(--primary);
+        /* Descrição/Resumo usa o novo primary (Azul Marinho) */
+        .col-left{ 
+            text-align:left; 
+            max-width:260px; 
+            overflow:hidden; 
+            text-overflow:ellipsis; 
+            white-space:nowrap; 
+            color: var(--primary); 
             font-weight: 600;
         }
+        /* Ações compactas */
         .action-cell{ text-align:center; }
-
-        .ganho, .perda {
-            font-weight: 800;
-            padding: 2px 6px;
-            border-radius: 4px;
-            display: inline-block;
-            min-width: 60px;
+        /* --------------- GANHO/PERDA (BADGE) E NEGRITO GERAL --------------- */
+        /* Estilo de Badge aplicado ao conteúdo da TD */
+        .ganho, .perda { 
+            font-weight: 800; 
+            padding: 2px 6px; 
+            border-radius: 4px; 
+            display: inline-block; 
+            min-width: 60px; 
             text-align: center;
         }
-        .ganho {
+        .ganho { 
             color: var(--success) !important;
-            background: rgba(46, 125, 50, 0.1);
+            background: rgba(46, 125, 50, 0.1); 
             border: 1px solid rgba(46, 125, 50, 0.2);
         }
-        .perda {
-            color: var(--danger) !important;
-            background: rgba(198, 40, 40, 0.1);
+        .perda { 
+            color: var(--danger) !important; 
+            background: rgba(198, 40, 40, 0.1); 
             border: 1px solid rgba(198, 40, 40, 0.2);
         }
+        /* Estilo para b/strong em geral */
         b, strong {
-            font-weight: 800;
-            color: var(--primary);
+            font-weight: 800; 
+            color: var(--primary); /* Negrito no Azul Marinho do tema */
         }
-
+        /* ------------------------------------------------------------------- */
+        /* Responsive */
         @media (max-width:980px){
+            /* Centraliza em telas pequenas */
             #siteLogo{ max-width:120px; display:block; margin:0 auto 8px; }
             #header-container{ margin-bottom:0; width: 100%; justify-content: center; }
             #left-header-content { justify-content: center; }
             .filter-card { margin-bottom: 12px !important; }
             .input-row{ flex-direction:column; align-items:stretch; }
         }
+        /* Print */
         @media print{
             body{ background:white; padding:0; color:black; }
             #input-panel .file-label, #input-panel .logo-label, #deleteAllBtn, #top-actions, #auth-status { display:none; }
@@ -311,7 +328,7 @@
             </div>
 
             <p style="font-size:12px;color:var(--muted);margin-top:10px;">
-                ⚠️ O <strong>Ganho (R$) Diário</strong> é calculado pelo Valor Retorno Bruto - Valor Compromissada, com inversão para RECOMPRA.
+                ⚠️ O <strong>Ganho (R$) Diário</strong> é calculado pelo Valor Retorno Bruto - Valor Compromissada. O sinal é invertido automaticamente para operações de **RECOMPRA**.
             </p>
         </div>
 
@@ -330,14 +347,14 @@
                 </div>
             </div>
 
-            <hr>
+            <hr style="border:none;border-top:1px solid rgba(15,23,36,0.04);margin:12px 0;">
 
             <h3>📂 Importação</h3>
             <p style="font-size:12px;color:var(--muted);margin:0 0 10px 0;">
                 *O sistema tenta reconhecer os cabeçalhos. Ele prioriza **VL IDA** e **VL VOLTA** para o cálculo.
             </p>
 
-            <hr>
+            <hr style="border:none;border-top:1px solid rgba(15,23,36,0.04);margin:12px 0;">
 
             <h3>➕ Lançamento Manual</h3>
 
@@ -423,6 +440,7 @@
         ============================================================ */
         const loginBtn = document.getElementById("loginBtn");
         const loginMessage = document.getElementById("login-message");
+        const log = (message) => { document.getElementById('log').textContent = message; };
 
         loginBtn.addEventListener("click", () => {
             if (currentUserUid) {
@@ -448,29 +466,28 @@
         });
 
         /* ============================================================
-           FUNÇÕES DE FORMATAÇÃO E UTILIDADE
+           FUNÇÕES DE FORMATAÇÃO E UTILIDADE (ADOTANDO SUA LÓGICA LOCAL)
         ============================================================ */
         
-        // 2️⃣ SUBSTITUIÇÃO COMPLETA DE parseNumber
+        // ADOTADO DO SEU CÓDIGO LOCAL: Tratamento de números no formato BR
+        function cleanCurrency(v){
+            if(typeof v!=='string') v=String(v);
+            let cleanString = v.replace(/[R$\s]/g, '');
+            cleanString = cleanString.replace(/\./g, '');
+            cleanString = cleanString.replace(/,/g, '.');
+            const n=parseFloat(cleanString);
+            return isNaN(n)?0:n;
+        }
+
+        // ADOTADO DO SEU CÓDIGO LOCAL: Parse de número que prioriza a limpeza do BR
         function parseNumber(v){
-            if(v === undefined || v === null || v === "") return 0;
-
-            if(typeof v === "number") return v;
-
-            let s = String(v).replace(/[R$\s]/g,'');
-
-            if(s.includes('.') && s.includes(',')){
-                if(s.lastIndexOf(',') > s.lastIndexOf('.')){
-                    s = s.replace(/\./g,'').replace(',','.');
-                } else {
-                    s = s.replace(/,/g,'');
-                }
-            } else if(s.includes(',')){
-                s = s.replace(',','.');
-            }
-
-            const n = parseFloat(s);
-            return isNaN(n) ? 0 : n;
+            if(v===undefined||v===null||v==='') return 0;
+            // Se for string e tiver vírgula ou R$, limpa usando cleanCurrency
+            if(typeof v==='string' && (v.includes(',') || v.includes('R$'))) return cleanCurrency(v);
+            
+            // Caso contrário (como valores numéricos diretos de planilha ou sem pontuação complexa), faz o parse simples
+            const n=parseFloat(v);
+            return isNaN(n)?0:n;
         }
 
         function cleanCdiTaxa(v){
@@ -492,29 +509,41 @@
             }
             return s;
         }
-
-        // 1️⃣ SUBSTITUIÇÃO COMPLETA DE normalizeDate
+        
+        // ADOTADO DO SEU CÓDIGO LOCAL: Normalização de data mais robusta para seriais Excel
         function normalizeDate(s){
-            if(!s) return "";
-
-            // Excel serial
-            if(typeof s === "number" && s > 1){
-                const d = XLSX.SSF.parse_date_code(s);
-                if(d && d.y){
-                    return `${d.y}-${String(d.m).padStart(2,"0")}-${String(d.d).padStart(2,"0")}`;
+            if(!s) return '';
+            s=String(s).trim();
+            if(s.match(/^\d{4}-\d{2}-\d{2}$/)) return s;
+            if(s.match(/^\d{2}\/\d{2}\/\d{4}$/)){
+                const [d,m,y]=s.split('/');
+                return `${y}-${m}-${d}`;
+            }
+            const num=parseFloat(s);
+            if(!isNaN(num) && num>25569 && num<70000){ // Excel serial date
+               const base=new Date('1899-12-30'); 
+                const date=new Date(base.getTime() + num*24*60*60*1000);
+                if(!isNaN(date)){
+                    const y=date.getUTCFullYear();
+                    const m=date.getUTCMonth()+1;
+                    const d=date.getUTCDate();
+                    const pad=n=>n<10?'0'+n:n;
+                    return `${y}-${pad(m)}-${pad(d)}`;
                 }
             }
-
-            s = String(s).trim();
-
-            if(/^\d{4}-\d{2}-\d{2}$/.test(s)) return s;
-
-            const br = s.match(/^(\d{2})\/(\d{2})\/(\d{4})/);
-            if(br) return `${br[3]}-${br[2]}-${br[1]}`;
-
-            return "";
+            try{ const d=new Date(s); if(!isNaN(d)) return d.toISOString().split('T')[0]; }catch(e){}
+            return '';
         }
 
+        // CORREÇÃO CRÍTICA MANTIDA: Função normalizeHeader mais robusta (Impede 0 imports)
+        function normalizeHeader(str){
+            return String(str || "")
+                .toUpperCase()
+                .normalize("NFD")
+                .replace(/[\u0300-\u036f]/g, "") // remove acentos
+                .replace(/[^A-Z0-9]/g, "") // remove TUDO que não for letra ou número (incluindo . / - espaços)
+                .trim();
+        }
 
         /* ============================================================
            ESTADO PRINCIPAL
@@ -532,7 +561,10 @@
            SALVAR E CARREGAR DO FIREBASE
         ============================================================ */
         function saveState(){
-            if(!currentUserUid) return;
+            if(!currentUserUid) {
+                log("⚠️ Desconectado. Não é possível salvar no Firebase.");
+                return;
+            }
 
             const state = {
                 operacoes,
@@ -540,7 +572,9 @@
                 diasAno: document.getElementById("diasAno").value
             };
 
-            database.ref(DB_ROOT_PATH + currentUserUid + "/operacoes").set(state);
+            database.ref(DB_ROOT_PATH + currentUserUid + "/operacoes").set(state)
+                .then(() => log("💾 Dados salvos no Firebase."))
+                .catch(e => log("❌ Erro ao salvar no Firebase: " + e.message));
         }
         function loadStateFromFirebase(){
             if(!currentUserUid) return;
@@ -552,13 +586,17 @@
                     operacoes = data.operacoes || [];
                     document.getElementById("taxaCdiAnual").value = data.taxaCdiAnual || "14,90";
                     document.getElementById("diasAno").value = data.diasAno || "252";
+                    log(`💾 ${operacoes.length} operações carregadas do Firebase.`);
+                } else {
+                    log('Aguardando... Não há dados salvos no Firebase.');
                 }
                 calculateAndRender();
-            });
+            })
+            .catch(e => log("❌ Erro ao carregar do Firebase: " + e.message));
         }
 
         /* ============================================================
-           RENDERIZAÇÃO DA TABELA REAL
+           RENDERIZAÇÃO DA TABELA REAL (USANDO SEU CÁLCULO DE GANHO)
         ============================================================ */
         function calculateAndRender(){
             const taxaGlobal = cleanCdiTaxa(document.getElementById("taxaCdiAnual").value)/100;
@@ -571,35 +609,56 @@
             const tbody=document.getElementById("resultBody");
             tbody.innerHTML="";
 
+            const filterStartDateStr = document.getElementById('filterStartDate').value;
+            const filterEndDateStr = document.getElementById('filterEndDate').value;
+            const filterStart = filterStartDateStr ? normalizeDate(filterStartDateStr) : '';
+            const filterEnd = filterEndDateStr ? normalizeDate(filterEndDateStr) : '';
+
             let lista = operacoes.filter(op=>{
-                if(!filtroAtivo) return true;
                 const d = normalizeDate(op.data);
-                if(dataFiltroInicio && d < dataFiltroInicio) return false;
-                if(dataFiltroFim && d > dataFiltroFim) return false;
+                if(!d) return false;
+                if(filterStart && d < filterStart) return false;
+                if(filterEnd && d > filterEnd) return false;
                 return true;
             });
 
+            lista.sort((a,b)=> normalizeDate(a.data).localeCompare(normalizeDate(b.data)));
+            
+            const resumo = {};
+
             lista.forEach((op,i)=>{
-                // Certifica-se de que os valores são lidos como números antes de calcular
+                const d = normalizeDate(op.data);
+                // Certifica-se de que os valores são lidos como números
                 const compromissada = parseNumber(op.compromissada);
                 const retorno = parseNumber(op.retornoBruto);
-                const taxa=cleanCdiTaxa(op.cdiTaxa||taxaGlobal*100)/100;
+                const taxa = cleanCdiTaxa(op.cdiTaxa||taxaGlobal*100); // Taxa em % (Ex: 14.90)
 
-                // Para a renderização, o PU é recalculado (pode ser aproximado se a quantidade for 1)
-                const puIda = compromissada/(op.quantidade||1);
-                const puVolta = retorno/(op.quantidade||1);
+                // PU (apenas para exibição)
+                const puIda = parseNumber(op.puIda);
+                const puVolta = parseNumber(op.puVolta);
 
+                // CÁLCULO DE GANHO (Adotando a lógica de sinal do seu código local)
                 let ganho = retorno - compromissada;
-                if(op.desc && op.desc.toUpperCase().includes("RECOMPRA") && ganho<0){
-                    ganho = Math.abs(ganho);
+                // Se a descrição for RECOMPRA, inverte o sinal
+                if(op.desc && op.desc.toUpperCase().includes("RECOMPRA")){
+                    ganho = -ganho;
                 }
-
+                
                 totalCompromissada+=compromissada;
                 totalRetorno+=retorno;
                 totalGanho+=ganho;
 
+                // Resumo Diário (para a linha de soma)
+                if(!resumo[d]) resumo[d] = { data:d, totalCompromissada:0, totalRetorno:0, totalGanho:0, primeiraTaxa: taxa };
+                resumo[d].totalCompromissada += compromissada;
+                resumo[d].totalRetorno += retorno;
+                resumo[d].totalGanho += ganho;
+                
+
                 if(showOps){
                     const tr=document.createElement("tr");
+                    const ganhoClass = ganho>=0?'ganho':'perda';
+
                     tr.innerHTML=`
                         <td>${formatDataBR(op.data)}</td>
                         <td class="col-left">${op.desc || '-'}</td>
@@ -610,30 +669,62 @@
                         <td>${formatBRL(retorno)}</td>
                         <td>${formatPU(puIda)}</td>
                         <td>${formatPU(puVolta)}</td>
-                        <td>${formatPercent(taxa*100)}</td>
-                        <td><span class="${ganho>=0?'ganho':'perda'}">${formatBRL(ganho)}</span></td>
+                        <td>${formatPercent(taxa)}</td>
+                        <td><span class="${ganhoClass}">${formatBRL(ganho)}</span></td>
                         <td class="action-cell">
-                            <button class="btn small" onclick="editOperation(${i})">Alterar</button>
-                            <button class="btn small danger" onclick="deleteOperation(${i})">Excluir</button>
+                            <button class="btn small" onclick="editOperation(${operacoes.indexOf(op)})">Alterar</button>
+                            <button class="btn small danger" onclick="deleteOperation(${operacoes.indexOf(op)})">Excluir</button>
                         </td>
                     `;
                     tbody.appendChild(tr);
                 }
             });
 
+            // Adiciona Linhas de Resumo Diário
+            const datas = Object.keys(resumo).sort();
+            if(showOps && datas.length) {
+                const trHeader=document.createElement("tr");
+                trHeader.innerHTML=`<td colspan="12" style="text-align:left;background:var(--primary);color:white;font-weight:700;">RESUMO DIÁRIO (Consolidação por dia)</td>`;
+                tbody.appendChild(trHeader);
+            }
+
+            datas.forEach(k=>{
+                const r = resumo[k];
+                const ganhoClass = r.totalGanho>=0?'ganho':'perda';
+                const tr=document.createElement("tr");
+                
+                tr.innerHTML=`
+                    <td class="col-data">${formatDataBR(r.data)}</td>
+                    <td class="col-left">Soma Diária</td>
+                    <td class="col-left">-</td><td>-</td><td>-</td>
+                    <td>${formatBRL(r.totalCompromissada)}</td>
+                    <td>${formatBRL(r.totalRetorno)}</td>
+                    <td>-</td><td>-</td><td style="text-align:center;">${formatPercent(r.primeiraTaxa)}</td>
+                    <td class="${ganhoClass}">${formatBRL(r.totalGanho)}</td>
+                    <td class="action-cell">-</td>
+                `;
+                tr.style.fontWeight = '700';
+                tr.style.background = 'rgba(10, 10, 51, 0.05)'; // Levemente cinza/azul
+                tbody.appendChild(tr);
+            });
+
+
             document.querySelector("#totalCompromissadaDisplay p").textContent = formatBRL(totalCompromissada);
             document.querySelector("#totalRetornoDisplay p").textContent = formatBRL(totalRetorno);
             document.querySelector("#totalCdiDisplay p").textContent = formatBRL(totalGanho);
 
-            if(!showOps){
+            if(!showOps && !datas.length){
                 const tr=document.createElement("tr");
                 const td=document.createElement("td");
                 td.colSpan=12;
                 td.style.textAlign="center";
                 td.style.color="var(--muted)";
-                td.textContent="Detalhes ocultos. Marque a opção acima para ver a tabela.";
+                td.textContent="Nenhuma operação encontrada no filtro.";
                 tr.appendChild(td);
                 tbody.appendChild(tr);
+            } else if (!showOps && datas.length) {
+                // Apenas exibe o resumo diário se "Mostrar Detalhe" estiver desmarcado
+                tbody.querySelectorAll('.individual-operation-row').forEach(row => row.style.display = 'none');
             }
         }
 
@@ -641,15 +732,9 @@
            FILTROS
         ============================================================ */
         document.getElementById("filterBtn").addEventListener("click",()=>{
-            dataFiltroInicio=document.getElementById("filterStartDate").value;
-            dataFiltroFim=document.getElementById("filterEndDate").value;
-            filtroAtivo = !!dataFiltroInicio || !!dataFiltroFim;
             calculateAndRender();
         });
         document.getElementById("resetFilterBtn").addEventListener("click",()=>{
-            filtroAtivo=false;
-            dataFiltroInicio=null;
-            dataFiltroFim=null;
             document.getElementById("filterStartDate").value="";
             document.getElementById("filterEndDate").value="";
             calculateAndRender();
@@ -718,18 +803,18 @@
                 banco: banco,
                 cedente: cedente,
                 cessionario: cessionario,
-                compromissada: compromissada,
-                retornoBruto: retorno,
+                compromissada: cleanCurrency(compromissada), // Salva como número limpo
+                retornoBruto: cleanCurrency(retorno), // Salva como número limpo
                 cdiTaxa: cdiTaxa
             };
 
             const index = parseInt(editIndex.value);
             if (index >= 0) {
                 operacoes[index] = newOp;
-                alert("Operação alterada com sucesso!");
+                log("Operação alterada com sucesso!");
             } else {
                 operacoes.push(newOp);
-                alert("Operação adicionada com sucesso!");
+                log("Operação adicionada com sucesso!");
             }
 
             saveState();
@@ -749,9 +834,9 @@
             document.getElementById("manualCessionario").value = op.cessionario;
             document.getElementById("manualCdiTaxa").value = op.cdiTaxa || "";
             
-            // Substitui ponto por vírgula para exibir no formato BR
-            document.getElementById("manualCompromissada").value = String(op.compromissada).replace('.', ',');
-            document.getElementById("manualRetorno").value = String(op.retornoBruto).replace('.', ',');
+            // Exibe o valor do Firebase (que é um número) no formato BR para edição
+            document.getElementById("manualCompromissada").value = (op.compromissada || 0).toLocaleString('pt-BR');
+            document.getElementById("manualRetorno").value = (op.retornoBruto || 0).toLocaleString('pt-BR');
             
             editIndex.value = i;
             addBtn.textContent = "Salvar Alteração";
@@ -763,15 +848,6 @@
         /* ============================================================
            IMPORTAÇÃO EXCEL (SheetJS)
         ============================================================ */
-
-        function normalizeHeader(str){
-            return String(str || "")
-                .toUpperCase()
-                .normalize("NFD")
-                .replace(/[\u0300-\u036f]/g, "") // remove acentos
-                .replace(/[()\/$%,.]/g, "") // remove caracteres especiais (incluindo o ponto)
-                .trim();
-        }
 
         document.getElementById("loadExcelBtn").addEventListener("click",()=>{
             const files = document.getElementById("excelFile").files;
@@ -790,8 +866,9 @@
 
         function processExcelData(data){
             const workbook = XLSX.read(data,{type:"array"});
-            const sheet = workbook.Sheets[workbook.SheetNames[0]];
-            // Tenta ler o CSV/XLSX. Usando raw:false a SheetJS tenta formatar datas/números
+            const sheet = workbook.Sheets[workbook.Sheets[0] || workbook.SheetNames[0]]; // Tenta a primeira sheet
+
+            // sheet_to_json({header:1, raw:false}) - raw:false tenta formatar datas/números
             const json = XLSX.utils.sheet_to_json(sheet,{header:1,raw:false});
 
             if(json.length < 2){
@@ -803,20 +880,20 @@
             
             const map={};
 
-            // Mapeamento: VL IDA/VL VOLTA são as prioridades. Usando PAPEL como descrição secundária.
+            // Mapeamento ATUALIZADO (CHAVES SEM PONTUAÇÃO OU ESPAÇOS, DEVIDO À normalizeHeader)
             const known = {
                 "DTINICIO": "data",
                 "DTVENCTO": "dataVencimento",
-                "PU IDA": "puIda",
-                "PU VOLTA": "puVolta",
+                "PUIDA": "puIda", 
+                "PUVOLTA": "puVolta",
                 "QUANTIDADE": "quantidade",
-                "TX 252": "cdiTaxa", 
-                "VEICULO LEGAL": "banco",
-                "TIPO OPERACAO": "desc",
-                "PAPEL": "desc2", // Usado como descrição secundária/fallback
+                "TX252": "cdiTaxa", // Corresponde a TX. 252
+                "VEICULEGAL": "banco", // Corresponde a VEÍCULO LEGAL
+                "TIPOOPERACAO": "desc",
+                "PAPEL": "desc2",
                 "CONTRAPARTE": "cedente", 
-                "VL IDA": "compromissada",
-                "VL VOLTA": "retornoBruto",
+                "VLIDA": "compromissada",
+                "VLVOLTA": "retornoBruto",
             };
 
             headers.forEach((h,i)=>{
@@ -845,7 +922,7 @@
 
                 let rawDate = row[map.data];
 
-                // 3️⃣ AJUSTE DENTRO do processExcelData
+                // Usa a função normalizeDate (adotada do seu código local)
                 rawDate = normalizeDate(rawDate);
                 
                 // Se a data ainda for vazia, pula a linha (evita quebrar o filtro)
@@ -857,19 +934,27 @@
                 let puIda = 0;
                 let puVolta = 0;
 
+                // Lê valores do arquivo
+                const rawCompromissada = row[map.compromissada] || 0;
+                const rawRetornoBruto = row[map.retornoBruto] || 0;
+                const rawQtd = row[map.quantidade] || 1;
+                const rawPuIda = row[map.puIda] || 0;
+                const rawPuVolta = row[map.puVolta] || 0;
+
+
                 if (hasDirectValueFields) {
                     // Prioridade 1: Leitura de Valor Total (VL IDA / VL VOLTA)
-                    compromissada = parseNumber(String(row[map.compromissada] || 0));
-                    retornoBruto = parseNumber(String(row[map.retornoBruto] || 0));
-                    qtd = parseNumber(String(row[map.quantidade] || 1));
-                    puIda = parseNumber(String(row[map.puIda] || 0));
-                    puVolta = parseNumber(String(row[map.puVolta] || 0));
+                    compromissada = parseNumber(rawCompromissada);
+                    retornoBruto = parseNumber(rawRetornoBruto);
+                    qtd = parseNumber(rawQtd);
+                    puIda = parseNumber(rawPuIda);
+                    puVolta = parseNumber(rawPuVolta);
                     
                 } else if (hasPUCalculationFields) {
                     // Prioridade 2: Cálculo PU * QTD
-                    puIda = parseNumber(String(row[map.puIda] || 0));
-                    puVolta = parseNumber(String(row[map.puVolta] || 0));
-                    qtd = parseNumber(String(row[map.quantidade] || 0));
+                    puIda = parseNumber(rawPuIda);
+                    puVolta = parseNumber(rawPuVolta);
+                    qtd = parseNumber(rawQtd);
 
                     if(puIda === 0 || puVolta === 0 || qtd === 0) continue;
 
@@ -884,13 +969,16 @@
                 const finalDesc = (row[map.desc] || row[map.desc2] || "Operação").trim();
 
                 novos.push({
-                    data: rawDate, // Já formatado por normalizeDate
+                    data: rawDate, // Já formatado
                     dataVencimento: map.dataVencimento ? normalizeDate(row[map.dataVencimento]) : "",
                     desc: finalDesc,
                     banco: row[map.banco] || "",
                     cedente: row[map.cedente] || "", 
                     cessionario: row[map.cessionario] || "",
                     quantidade: qtd,
+                    // Garante que PU é salvo (para cálculo na tabela, se necessário)
+                    puIda: puIda,
+                    puVolta: puVolta,
                     cdiTaxa: cleanCdiTaxa(row[map.cdiTaxa] || ""),
                     
                     compromissada: compromissada,
@@ -912,16 +1000,16 @@
                 return;
             }
 
-            const taxaGlobal = cleanCdiTaxa(document.getElementById("taxaCdiAnual").value) / 100;
+            const taxaGlobal = cleanCdiTaxa(document.getElementById("taxaCdiAnual").value);
             
             const dadosExportacao = operacoes.map((op) => {
                 const compromissada = parseNumber(op.compromissada);
                 const retorno = parseNumber(op.retornoBruto);
-                const taxa = cleanCdiTaxa(op.cdiTaxa || taxaGlobal * 100) / 100;
+                const taxa = cleanCdiTaxa(op.cdiTaxa || taxaGlobal);
                 let ganho = retorno - compromissada;
                 
-                if (op.desc && op.desc.toUpperCase().includes("RECOMPRA") && ganho < 0) {
-                    ganho = Math.abs(ganho);
+                if (op.desc && op.desc.toUpperCase().includes("RECOMPRA")) {
+                    ganho = -ganho;
                 }
 
                 return {
@@ -932,7 +1020,7 @@
                     "Conta Cessionário": op.cessionario || "",
                     "Compromissada": compromissada,
                     "Retorno Bruto": retorno,
-                    "Taxa CDI (%)": taxa * 100,
+                    "Taxa CDI (%)": taxa,
                     "Ganho (R$)": ganho
                 };
             });
@@ -960,6 +1048,7 @@
                 }
                 
                 if (ws[colIndexMap["Taxa CDI (%)"] + rowKey]) {
+                    // Exporta a taxa dividida por 100 para ser formatada como percentual
                     ws[colIndexMap["Taxa CDI (%)"] + rowKey].z = '0.0000%';
                     ws[colIndexMap["Taxa CDI (%)"] + rowKey].v = ws[colIndexMap["Taxa CDI (%)"] + rowKey].v / 100; 
                 }
@@ -981,14 +1070,46 @@
             document.getElementById('printBtn').addEventListener('click', () => window.print());
             
             document.getElementById('exportBtn').addEventListener('click', exportData);
+            
+            // Lógica simples de logo (sem persistência no Firebase)
+            const siteLogo = document.getElementById('siteLogo');
+            const logoInput = document.getElementById('logoFile');
+            
+            // Carrega logo salvo localmente (se houver)
+            const savedLogo = localStorage.getItem('cdiLogo');
+            if (savedLogo) {
+                siteLogo.src = savedLogo;
+                siteLogo.style.display = 'block';
+            } else {
+                siteLogo.style.display = 'none';
+            }
 
+            // Ação de Carregar Logo
             document.getElementById('addLogoBtn').addEventListener('click', () => {
-                alert("A funcionalidade de Carregar Logo requer código adicional.");
+                logoInput.click();
             });
+            
+            logoInput.addEventListener('change', (e) => {
+                const file = e.target.files && e.target.files[0];
+                if (file) {
+                    const reader = new FileReader();
+                    reader.onload = (e) => {
+                        siteLogo.src = e.target.result;
+                        siteLogo.style.display = 'block';
+                        localStorage.setItem('cdiLogo', e.target.result);
+                        log('✅ Logo salvo localmente.');
+                    };
+                    reader.readAsDataURL(file);
+                }
+            });
+            
+            // Ação de Remover Logo
             document.getElementById('removeLogoBtn').addEventListener('click', () => {
-                document.getElementById('siteLogo').src = '';
-                document.getElementById('siteLogo').style.display = 'none';
-                alert("Logo removido.");
+                if(!confirm('Tem certeza que deseja remover logo salvo?')) return;
+                localStorage.removeItem('cdiLogo');
+                siteLogo.src = '';
+                siteLogo.style.display = 'none';
+                log('🗑️ Logo removido.');
             });
         };
     </script>
