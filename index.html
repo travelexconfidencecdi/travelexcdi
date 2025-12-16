@@ -6,9 +6,7 @@
     <meta name="viewport" content="width=device-width,initial-scale=1" />
 
     <style>
-        /* ============================================================
-            SEÇÃO CSS (MANTIDO ORIGINAL)
-        ============================================================ */
+        /* CSS OMITIDO POR BREVIDADE */
         :root{
             --primary: #0A0A33;
             --primary-light: #1A1A55;
@@ -317,7 +315,8 @@
         ============================================================ */
         const firebaseConfig = {
             // VERIFIQUE SE ESTA É A CHAVE CORRETA NO CONSOLE DO FIREBASE
-            apiKey: "AIzaSyD_vxw2VcSPO_tMXgrl7quZ85ODvpVpQuR8", // Chave de exemplo
+            // A CHAVE FOI INVALIDADA NA ÚLTIMA RESPOSTA. COLOQUE A CHAVE ORIGINAL AQUI!
+            apiKey: "SUA_CHAVE_DE_API_CORRETA_AQUI", // <-- CORRIJA ESTA LINHA!
             authDomain: "controle-cdi.firebaseapp.com",
             databaseURL: "https://controle-cdi-default-rtdb.firebaseio.com",
             projectId: "controle-cdi",
@@ -645,7 +644,7 @@
 
 
         /* ============================================================
-            LÓGICA DE IMPORTAÇÃO DE ARQUIVOS (XLSX) - CORREÇÃO NA DESCRIÇÃO
+            LÓGICA DE IMPORTAÇÃO DE ARQUIVOS (XLSX) 
         ============================================================ */
         
         function findDateColumn(row) {
@@ -672,7 +671,6 @@
             return null;
         }
 
-        // NOVO PARÂMETRO: fileOriginName para usar como fallback
         const mapExcelToOperation = (row, fileOriginName = 'Importação Desconhecida') => {
             const rawDate = findDateColumn(row);
             const dateValue = normalizeDate(rawDate);
@@ -687,14 +685,14 @@
             const compromissadaValue = findValue(['VL IDA', 'VL_IDA', 'VALOR IDA', 'Compromissada', 'COMPROMISSADA', 'Valor']);
             const retornoValue = findValue(['VL VOLTA', 'VL_VOLTA', 'VALOR VOLTA', 'Retorno Bruto', 'RETORNO BRUTO', 'Valor']);
             
-            // CORREÇÃO: Usar o nome do arquivo se a descrição for vazia
+            // CORREÇÃO APLICADA AQUI: prioriza colunas de descrição, e usa o nome do arquivo se for vazio.
             const desc = row['DESCRICAO'] || row['Resumo'] || row['HISTORICO'] || row['NOME'] || fileOriginName; 
             const contraparte = row['CONTRAPARTE'] || row['Contraparte'] || row['BANCO'] || '';
 
             return {
                 id: Date.now() + Math.random(), 
                 data: dateValue,
-                descricao: desc.toString().trim(), // Garante que a descrição seja uma string e limpa
+                descricao: desc.toString().trim(), 
                 banco: contraparte,
                 contaCedente: contraparte, 
                 contaCessionario: row['Conta Cessionário'] || row['CONTA CESSIONARIO'] || '',
@@ -791,6 +789,88 @@
                 saveState();
             } else {
                  log("Nenhuma nova operação válida encontrada para importação.");
+            }
+        });
+
+
+        /* ============================================================
+            LÓGICA DE LOGIN / LOGOUT / CADASTRO (MANTIDO ORIGINAL)
+        ============================================================ */
+        const loginBtn = document.getElementById("loginBtn");
+        const logoutBtn = document.getElementById("logoutBtn");
+        const signupBtn = document.getElementById("signupBtn");
+        const loginMessage = document.getElementById("login-message");
+        const authControls = document.getElementById("auth-controls");
+        const authEmail = document.getElementById("authEmail");
+        const authPassword = document.getElementById("authPassword");
+
+        loginBtn.addEventListener("click", () => {
+            if (currentUserUid) {
+                firebase.auth().signOut();
+                return;
+            }
+            const email = authEmail.value.trim();
+            const password = authPassword.value;
+            if (!email || !password) {
+                log("⚠️ Preencha email e senha para fazer login.");
+                return;
+            }
+            firebase.auth().signInWithEmailAndPassword(email, password)
+                .then(() => { log("✅ Login realizado com sucesso."); })
+                .catch(error => { 
+                    if (error.code === 'auth/user-not-found') {
+                        log("⚠️ Usuário não encontrado. Clique em 'Cadastrar'.");
+                    } else {
+                        log(`❌ Erro no Login: ${error.message}`); 
+                    }
+                });
+        });
+
+        signupBtn.addEventListener("click", () => {
+            const email = authEmail.value.trim();
+            const password = authPassword.value;
+            if (!email || !password) {
+                log("⚠️ Preencha email e senha para cadastrar.");
+                return;
+            }
+            if (password.length < 6) {
+                log("❌ A senha deve ter no mínimo 6 caracteres.");
+                return;
+            }
+            firebase.auth().createUserWithEmailAndPassword(email, password)
+                .then(() => { log("✅ Cadastro realizado com sucesso e login automático."); })
+                .catch(error => { log(`❌ Erro no Cadastro: ${error.message}`); });
+        });
+
+        logoutBtn.addEventListener("click", () => {
+            firebase.auth().signOut()
+                .then(() => { log("👋 Desconectado."); })
+                .catch(error => { log(`❌ Erro no Logout: ${error.message}`); });
+        });
+
+        firebase.auth().onAuthStateChanged((user) => {
+            if (user) {
+                currentUserUid = user.uid;
+                loginMessage.textContent = `Status: Conectado como ${user.email || 'Usuário Autenticado'}`; 
+                
+                authControls.style.display = 'none';
+                logoutBtn.style.display = 'inline-block';
+                loginBtn.style.display = 'none';
+                signupBtn.style.display = 'none';
+
+                loadStateFromFirebase(); 
+            } else {
+                currentUserUid = null;
+                loginMessage.textContent = "Status: Desconectado";
+                
+                authControls.style.display = 'flex';
+                logoutBtn.style.display = 'none';
+                loginBtn.style.display = 'inline-block';
+                signupBtn.style.display = 'inline-block';
+
+                operacoes = [];
+                calculateAndRender();
+                log('Aguardando Login/Cadastro para acessar os dados da nuvem.');
             }
         });
 
