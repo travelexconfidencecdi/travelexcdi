@@ -375,6 +375,23 @@
         const normalizeDate = (date) => {
             if (date instanceof Date && !isNaN(date)) {
                 return date.toISOString().split('T')[0]; // yyyy-mm-dd
+                function findDateColumn(row) {
+    for (const key in row) {
+        const value = row[key];
+
+        // Data Excel (número serial)
+        if (typeof value === 'number' && value > 40000 && value < 50000) {
+            return value;
+        }
+
+        // Data texto (dd/mm/yyyy)
+        if (typeof value === 'string' && /^\d{2}\/\d{2}\/\d{4}$/.test(value)) {
+            return value;
+        }
+    }
+    return null;
+}
+
             }
             // Tenta converter formatos comuns de Excel (número de dias desde 1899)
             if (typeof date === 'number' && date > 1000) {
@@ -607,13 +624,9 @@
         const mapExcelToOperation = (row) => {
             // Tenta mapear colunas comuns. Adicione mais colunas do seu Excel aqui se necessário.
             // Data: Prioriza colunas de data/vencimento
-            const dateValue =
-            row['Data'] ??
-            row['DATA'] ??
-            row['Dt'] ??
-            row['VENCIMENTO'] ??
-            row['DATAVENC'] ??
-            row['DT_OPERACAO'];
+            // Data: busca dinâmica (funciona com Excel bancário)
+            const rawDate = findDateColumn(row);
+            const dateValue = normalizeDate(rawDate);
 
             
             // Descrição:
@@ -669,7 +682,11 @@
                     try {
                         const data = e.target.result;
                         // type: 'binary' e cellDates: true são CRÍTICOS para ler datas e números corretamente
-                        const workbook = XLSX.read(data, { type: 'binary', cellDates: true, dateNF: 'yyyy-mm-dd' });
+                       const workbook = XLSX.read(data, {
+                       type: 'binary',
+                       cellDates: true
+                  });
+
                         const firstSheetName = workbook.SheetNames[0];
                         const worksheet = workbook.Sheets[firstSheetName];
 
