@@ -607,7 +607,14 @@
         const mapExcelToOperation = (row) => {
             // Tenta mapear colunas comuns. Adicione mais colunas do seu Excel aqui se necessário.
             // Data: Prioriza colunas de data/vencimento
-            const dateValue = row['Data'] || row['DATA'] || row['Dt'] || row['VENCIMENTO'] || row['DATAVENC'] || row['DT_OPERACAO'];
+            const dateValue =
+            row['Data'] ??
+            row['DATA'] ??
+            row['Dt'] ??
+            row['VENCIMENTO'] ??
+            row['DATAVENC'] ??
+            row['DT_OPERACAO'];
+
             
             // Descrição:
             const descValue = row['Descrição'] || row['HISTORICO'] || row['RESUMO'] || row['OPERACAO'];
@@ -667,7 +674,8 @@
                         const worksheet = workbook.Sheets[firstSheetName];
 
                         // raw: false força a leitura formatada, incluindo datas.
-                        const json = XLSX.utils.sheet_to_json(worksheet, { raw: false, dateNF: 'yyyy-mm-dd' });
+                        const json = XLSX.utils.sheet_to_json(worksheet, { raw: true });
+
 
                         const newOperations = json
                             .map(mapExcelToOperation)
