@@ -619,6 +619,47 @@
         /* ============================================================
             LÓGICA DE IMPORTAÇÃO DE ARQUIVOS (XLSX) - CORREÇÕES DE VALOR E DATA APLICADAS
         ============================================================ */
+        // 🔎 Procura automaticamente a coluna de data em arquivos bancários
+function findDateColumn(row) {
+    if (!row || typeof row !== 'object') return null;
+
+    const possibleKeys = [
+        'Data',
+        'DATA',
+        'Dt',
+        'DT',
+        'Data Operação',
+        'DATA OPERACAO',
+        'DT_OPERACAO',
+        'DT OPERAÇÃO',
+        'Vencimento',
+        'VENCIMENTO',
+        'Data Vencimento',
+        'DATA VENCIMENTO'
+    ];
+
+    // 1️⃣ Primeiro tenta pelos nomes clássicos
+    for (const key of possibleKeys) {
+        if (row[key] !== undefined && row[key] !== null && row[key] !== '') {
+            return row[key];
+        }
+    }
+
+    // 2️⃣ Se não achou, procura QUALQUER campo que pareça data
+    for (const value of Object.values(row)) {
+        // Excel numérico (ex: 45292)
+        if (typeof value === 'number' && value > 40000 && value < 60000) {
+            return value;
+        }
+
+        // String tipo 01/01/2025 ou 2025-01-01
+        if (typeof value === 'string' && /\d{1,2}[\/\-]\d{1,2}[\/\-]\d{4}/.test(value)) {
+            return value;
+        }
+    }
+
+    return null;
+}
 
         // CORREÇÃO CRÍTICA DO MAPEAMENTO DE COLUNAS
         const mapExcelToOperation = (row) => {
