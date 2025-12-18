@@ -2,16 +2,15 @@
 <html lang="pt-BR">
 <head>
     <meta charset="utf-8" />
-    <title>Controle de Ganhos CDI — Layout Empilhado</title>
+    <title>Controle de Ganhos CDI — Cloud Sync</title>
     <meta name="viewport" content="width=device-width,initial-scale=1" />
     <style>
         :root{
-            /* CORES PRINCIPAIS: AZUL MARINHO ESCURO PRIMÁRIO, VERMELHO SECUNDÁRIO */
             --primary: #0A0A33;  /* Azul Marinho Escuro */
-            --primary-light: #1A1A55; /* Versão mais clara para gradiente/hover */
-            --secondary: #C00000; /* Vermelho Forte (Secundário/Destaque) */
-            --secondary-light: #E00000; /* Vermelho Claro para gradiente/hover */
-            --danger: #c62828;  /* Mantido para ações de exclusão */
+            --primary-light: #1A1A55; 
+            --secondary: #C00000; /* Vermelho Forte */
+            --secondary-light: #E00000; 
+            --danger: #c62828;  
             --bg-start: #f4f8fb;
             --bg-end: #eef6fb;
             --card-bg: #ffffff;
@@ -23,7 +22,6 @@
             --radius: 10px;
             --shadow: 0 8px 20px rgba(16,24,40,0.06);
         }
-        /* Base */
         html,body{height:100%;margin:0;font-family:Inter, Roboto, system-ui, -apple-system, "Segoe UI", Arial;}
         body{
             background: linear-gradient(180deg,var(--bg-start),var(--bg-end));
@@ -32,70 +30,59 @@
             -webkit-font-smoothing:antialiased;
             font-size:14px;
         }
-        /* Ajuste do Logo e Título para ficarem à esquerda e alinhados */
         #siteLogo{ display:none; max-width:140px; width:100%; height:auto; border-radius:6px; box-shadow:var(--shadow); margin:0 0 6px 0; }
-        #logo-wrapper{ margin-bottom:8px; }
-        /* Header */
         #header-container{ display:flex; align-items:center; gap:10px; margin-bottom:8px; width: fit-content; }
         #logo-placeholder{ font-size:1.4rem; color:var(--primary); } 
         h1{ margin:0; color:var(--text-dark); font-size:1.25rem; font-weight:700; }
-        #left-header-content { display: flex; align-items: center; gap: 10px; }
-        /* Top actions compacto */
         #top-actions{ display:flex; align-items:center; gap:10px; padding:10px; background:var(--card-bg); border-radius:var(--radius); box-shadow:var(--shadow); border:1px solid var(--card-border); flex-wrap:wrap; }
-        #header-left{ display:flex; align-items:center; gap:10px; }
         #header-right{ margin-left:auto; display:flex; gap:8px; align-items:center; flex-wrap:wrap; }
         .btn { display: inline-flex; align-items: center; justify-content: center; gap: 8px; padding: 8px 12px; border-radius: 8px; cursor: pointer; font-weight: 600; transition: all 0.2s ease; background: var(--primary); color: white; border: 1px solid white; box-shadow: 0 4px 10px rgba(0, 0, 0, 0.08); }
-        .btn.secondary { background: var(--secondary); color: white; border: 1px solid white; }
-        .btn.small { padding: 6px 10px; font-size: 13px; border-radius: 7px; }
-        .btn:hover { transform: translateY(-2px); box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15); background: var(--primary-light); border-color: white; }
-        .btn.secondary:hover { background: var(--secondary-light); border-color: white; box-shadow: 0 8px 20px rgba(192, 0, 0, 0.25); }
-        .btn.danger { background: var(--secondary); color: white; border: 1px solid white; box-shadow: 0 4px 10px rgba(198, 40, 40, 0.25); }
+        .btn.secondary { background: var(--secondary); border: 1px solid white; }
+        .btn.small { padding: 6px 10px; font-size: 13px; }
+        .btn:hover { transform: translateY(-2px); background: var(--primary-light); }
+        .btn.secondary:hover { background: var(--secondary-light); }
+        .btn.danger { background: var(--secondary); }
         #main-container{ display:flex; flex-direction:column; gap:14px; align-items:stretch; }
-        .card{ background:var(--card-bg); padding:14px; border-radius:10px; box-shadow:var(--shadow); border:1px solid var(--card-border); color:var(--text-dark); }
+        .card{ background:var(--card-bg); padding:14px; border-radius:10px; box-shadow:var(--shadow); border:1px solid var(--card-border); }
         .input-row{ display:flex; gap:10px; flex-wrap:wrap; align-items:center; margin-bottom:8px; }
         .input-row label{ font-size:13px; color:var(--muted); font-weight:600; display:block; margin-bottom:6px; }
-        input[type="text"], input[type="date"]{ padding:8px 10px; border-radius:8px; border:1px solid rgba(15,23,36,0.06); background:#fff; color:var(--text-dark); min-width:120px; }
+        input[type="text"], input[type="date"]{ padding:8px 10px; border-radius:8px; border:1px solid rgba(15,23,36,0.06); background:#fff; color:var(--text-dark); }
         .totals{ display:grid; grid-template-columns: repeat(auto-fit,minmax(160px,1fr)); gap:12px; margin-bottom:12px; }
         .total-card{ padding:10px; border-radius:8px; border:1px solid rgba(15,23,36,0.04); background:linear-gradient(180deg,#fff,#fbfdff); }
         .total-card h4{ margin:0; font-size:12px; color:var(--muted); }
-        .total-card p{ margin:6px 0 0 0; font-size:18px; font-weight:800; color:var(--text-dark); }
+        .total-card p{ margin:6px 0 0 0; font-size:18px; font-weight:800; }
         #totalCdiDisplay p { color: var(--success) !important; }
         .table-wrap{ overflow:auto; border-radius:8px; }
-        table{ width:100%; border-collapse:collapse; margin-top:8px; font-size:13px; color:var(--text-dark); }
-        thead th{ position:sticky; top:0; z-index:2; background: linear-gradient(180deg,var(--primary-light),var(--primary)); color:white; padding:10px 8px; text-align:left; font-weight:700; border-bottom:1px solid rgba(0,0,0,0.06); }
+        table{ width:100%; border-collapse:collapse; margin-top:8px; font-size:12px; }
+        thead th{ position:sticky; top:0; background: linear-gradient(180deg,var(--primary-light),var(--primary)); color:white; padding:10px 8px; text-align:left; }
         tbody td{ padding:8px 8px; border-bottom:1px solid rgba(0,0,0,0.04); text-align:right; }
-        tbody tr:nth-child(even){ background: rgba(0,0,0,0.02); }
-        td:first-child, th:first-child{ text-align:center; width:90px; }
-        .col-left{ text-align:left; max-width:260px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; color: var(--primary); font-weight: 600; }
-        .ganho, .perda { font-weight: 800; padding: 2px 6px; border-radius: 4px; display: inline-block; min-width: 60px; text-align: center; }
-        .ganho { color: var(--success) !important; background: rgba(46, 125, 50, 0.1); border: 1px solid rgba(46, 125, 50, 0.2); }
-        .perda { color: var(--danger) !important; background: rgba(198, 40, 40, 0.1); border: 1px solid rgba(198, 40, 40, 0.2); }
-        b, strong { font-weight: 800; color: var(--primary); }
+        .col-left{ text-align:left; color: var(--primary); font-weight: 600; }
+        .ganho, .perda { font-weight: 800; padding: 2px 6px; border-radius: 4px; display: inline-block; }
+        .ganho { color: var(--success); background: rgba(46,125,50,0.1); }
+        .perda { color: var(--danger); background: rgba(198,40,40,0.1); }
         .file-label input, .logo-label input { display: none; }
     </style>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+    
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
     <script src="https://cdn.sheetjs.com/xlsx-latest/package/dist/xlsx.full.min.js"></script>
-
+    
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
 </head>
 
 <body onload="loadStateCloud()">
     <div id="logo-wrapper">
-        <img id="siteLogo" alt="Logo do site">
+        <img id="siteLogo" alt="Logo">
     </div>
+    
     <div id="header-container">
-        <div id="left-header-content">
-            <div id="logo-placeholder">📈</div>
-            <h1>Controle de Ganhos CDI</h1>
-        </div>
+        <h1>📈 Controle de Ganhos CDI (Cloud)</h1>
     </div>
 
     <div id="top-actions" class="card">
         <div id="header-left">
             <div style="font-weight:700;">Resumo Diário</div>
-            <div id="cloud-status" style="font-size:12px;color:var(--muted);">Sincronizado com Nuvem</div>
+            <div id="status-log" style="font-size:11px; color:var(--muted);">Sincronizando...</div>
         </div>
         <div id="header-right">
             <button onclick="window.print()" class="btn small">Imprimir</button>
@@ -110,19 +97,26 @@
 
     <div id="main-container">
         <div id="results-panel" class="card">
-            <h2 style="margin:0 0 8px 0;">📊 Resumo Diário</h2>
             <div class="totals">
                 <div class="total-card" id="totalCompromissadaDisplay"><h4>Compromissada TOTAL</h4><p>R$ 0,00</p></div>
                 <div class="total-card" id="totalRetornoDisplay"><h4>Retorno Bruto TOTAL</h4><p>R$ 0,00</p></div>
                 <div class="total-card" id="totalCdiDisplay"><h4>Ganho (R$) TOTAL</h4><p>R$ 0,00</p></div>
             </div>
-            <div class="table-wrap">
-                <div id="resultTable"></div>
+            
+            <div class="card filter-card" style="margin-bottom:10px;">
+                <div class="input-row">
+                    <div><label>Início</label><input type="date" id="filterStartDate"></div>
+                    <div><label>Fim</label><input type="date" id="filterEndDate"></div>
+                    <button id="filterBtn" class="btn small" onclick="calculateAndRender()">Filtrar</button>
+                    <label style="font-size:12px;"><input type="checkbox" id="showIndividualOps" checked onchange="calculateAndRender()"> Detalhar Operações</label>
+                </div>
             </div>
+
+            <div class="table-wrap" id="resultTable"></div>
         </div>
 
         <div id="input-panel" class="card">
-            <h3 style="margin:0 0 8px 0;">➕ Lançamento Manual</h3>
+            <h3>➕ Lançamento Manual</h3>
             <div class="input-row">
                 <input type="date" id="manualData">
                 <input type="text" id="manualDesc" placeholder="Descrição">
@@ -132,21 +126,15 @@
                 <button id="addBtn" class="btn">Adicionar</button>
             </div>
             <div class="input-row">
-                <div>
-                    <label>Taxa CDI Anual Global (%)</label>
-                    <input type="text" id="taxaCdiAnual" value="14,90" onchange="calculateAndRender(); saveState();">
-                </div>
-                <div>
-                    <label>Dias no Ano</label>
-                    <input type="text" id="diasAno" value="252" onchange="calculateAndRender(); saveState();">
-                </div>
+                <div><label>Taxa CDI Anual (%)</label><input type="text" id="taxaCdiAnual" value="14,90" onchange="calculateAndRender(); saveState();"></div>
+                <div><label>Dias Ano</label><input type="text" id="diasAno" value="252" onchange="calculateAndRender(); saveState();"></div>
             </div>
-            <pre id="log" style="font-size:11px; color:gray; margin-top:10px;">Aguardando...</pre>
+            <pre id="log" style="font-size:11px; color:gray;"></pre>
         </div>
     </div>
 
     <script>
-        // CONFIGURAÇÃO FIREBASE
+        // CONFIGURAÇÃO FIREBASE (SUAS CREDENCIAIS)
         const firebaseConfig = {
             apiKey: "AIzaSyD_vxw2VcSPO_tMXgrl7quZ85ODvpqQuR8",
             authDomain: "controle-cdi.firebaseapp.com",
@@ -169,25 +157,24 @@
                     taxaCdiAnual: document.getElementById('taxaCdiAnual').value,
                     diasAno: document.getElementById('diasAno').value
                 };
-                await db.collection("dados").doc("configuracao").set(state);
-                log("✅ Salvo na Nuvem");
+                await db.collection("dados").doc("config").set(state);
+                log("✅ Nuvem Sincronizada");
             } catch (e) { log("❌ Erro ao salvar"); }
         }
 
         async function loadStateCloud() {
-            resetThemeToFixed();
-            log("🔄 Carregando...");
+            log("🔄 Carregando dados da nuvem...");
             try {
-                const doc = await db.collection("dados").doc("configuracao").get();
+                const doc = await db.collection("dados").doc("config").get();
                 if (doc.exists) {
-                    const d = doc.data();
-                    operacoes = d.operacoes || [];
-                    document.getElementById('taxaCdiAnual').value = d.taxaCdiAnual || "14,90";
-                    document.getElementById('diasAno').value = d.diasAno || "252";
+                    const st = doc.data();
+                    operacoes = st.operacoes || [];
+                    document.getElementById('taxaCdiAnual').value = st.taxaCdiAnual || '14,90';
+                    document.getElementById('diasAno').value = st.diasAno || '252';
+                    log(`💾 ${operacoes.length} registros carregados.`);
                 }
-                calculateAndRender();
-                log("✅ Dados sincronizados");
-            } catch (e) { log("❌ Erro de conexão"); }
+            } catch (e) { log("❌ Erro ao carregar."); }
+            calculateAndRender();
         }
 
         function cleanCurrency(v){ 
@@ -199,15 +186,14 @@
         function formatBRL(n){ return n.toLocaleString('pt-BR',{style:'currency',currency:'BRL'}); }
 
         document.getElementById('addBtn').addEventListener('click', async () => {
-            const nova = {
+            const op = {
                 data: document.getElementById('manualData').value,
                 descricao: document.getElementById('manualDesc').value,
                 banco: document.getElementById('manualBanco').value,
                 compromissada: document.getElementById('manualCompromissada').value,
                 retorno: document.getElementById('manualRetorno').value
             };
-            if(!nova.data || !nova.compromissada) return alert("Preencha os campos!");
-            operacoes.push(nova);
+            operacoes.push(op);
             calculateAndRender();
             await saveState();
         });
@@ -219,23 +205,15 @@
             await saveState();
         };
 
-        document.getElementById('deleteAllBtn').addEventListener('click', async () => {
-            if(!confirm("Limpar TUDO na Nuvem?")) return;
-            operacoes = [];
-            calculateAndRender();
-            await saveState();
-        });
-
         function calculateAndRender() {
             let tc = 0, tr = 0, tg = 0;
-            let html = `<table><thead><tr><th>Data</th><th>Descrição</th><th>Banco</th><th>Compromissada</th><th>Retorno</th><th>Ganho (R$)</th><th style="text-align:center">Ações</th></tr></thead><tbody>`;
+            let html = `<table><thead><tr><th>Data</th><th>Descrição</th><th>Banco</th><th>Compromissada</th><th>Retorno</th><th>Ganho</th><th>Ação</th></tr></thead><tbody>`;
             
             operacoes.forEach((op, i) => {
                 const c = cleanCurrency(op.compromissada);
                 const r = cleanCurrency(op.retorno);
                 const g = r - c;
                 tc += c; tr += r; tg += g;
-
                 html += `<tr>
                     <td>${op.data}</td>
                     <td class="col-left">${op.descricao}</td>
@@ -243,20 +221,23 @@
                     <td>${formatBRL(c)}</td>
                     <td>${formatBRL(r)}</td>
                     <td><span class="${g>=0?'ganho':'perda'}">${formatBRL(g)}</span></td>
-                    <td style="text-align:center"><button class="btn small secondary" onclick="deleteOperation(${i})">Excluir</button></td>
+                    <td><button class="btn small secondary" onclick="deleteOperation(${i})">X</button></td>
                 </tr>`;
             });
-            html += `</tbody></table>`;
-            document.getElementById('resultTable').innerHTML = html;
+
+            document.getElementById('resultTable').innerHTML = html + "</tbody></table>";
             document.querySelector('#totalCompromissadaDisplay p').textContent = formatBRL(tc);
             document.querySelector('#totalRetornoDisplay p').textContent = formatBRL(tr);
             document.querySelector('#totalCdiDisplay p').textContent = formatBRL(tg);
         }
 
-        function resetThemeToFixed() {
-            document.documentElement.style.setProperty('--primary', '#0A0A33');
-            document.documentElement.style.setProperty('--secondary', '#C00000');
-        }
+        document.getElementById('deleteAllBtn').addEventListener('click', async () => {
+            if(!confirm("Limpar Tudo?")) return;
+            operacoes = [];
+            calculateAndRender();
+            await saveState();
+        });
+
     </script>
 </body>
 </html>
