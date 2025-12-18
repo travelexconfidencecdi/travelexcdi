@@ -2,15 +2,19 @@
 <html lang="pt-BR">
 <head>
     <meta charset="utf-8" />
-    <title>Controle de Ganhos CDI — Cloud Sync</title>
+    <title>Controle de Ganhos CDI — Layout Empilhado</title>
     <meta name="viewport" content="width=device-width,initial-scale=1" />
+
     <style>
+        /* ============================================================
+            SEÇÃO CSS
+        ============================================================ */
         :root{
-            --primary: #0A0A33;  /* Azul Marinho Escuro */
-            --primary-light: #1A1A55; 
-            --secondary: #C00000; /* Vermelho Forte */
-            --secondary-light: #E00000; 
-            --danger: #c62828;  
+            --primary: #0A0A33;
+            --primary-light: #1A1A55;
+            --secondary: #C00000;
+            --secondary-light: #E00000;
+            --danger: #c62828;
             --bg-start: #f4f8fb;
             --bg-end: #eef6fb;
             --card-bg: #ffffff;
@@ -30,212 +34,938 @@
             -webkit-font-smoothing:antialiased;
             font-size:14px;
         }
-        #siteLogo{ display:none; max-width:140px; width:100%; height:auto; border-radius:6px; box-shadow:var(--shadow); margin:0 0 6px 0; }
+        #siteLogo{ display:block; max-width:140px; width:100%; height:auto; border-radius:6px; box-shadow:var(--shadow); margin:0 0 6px 0;}
+        #logo-wrapper{ margin-bottom:8px; }
         #header-container{ display:flex; align-items:center; gap:10px; margin-bottom:8px; width: fit-content; }
-        #logo-placeholder{ font-size:1.4rem; color:var(--primary); } 
+        #logo-placeholder{ font-size:1.4rem; color:var(--primary); }
         h1{ margin:0; color:var(--text-dark); font-size:1.25rem; font-weight:700; }
-        #top-actions{ display:flex; align-items:center; gap:10px; padding:10px; background:var(--card-bg); border-radius:var(--radius); box-shadow:var(--shadow); border:1px solid var(--card-border); flex-wrap:wrap; }
+        #left-header-content { display: flex; align-items: center; gap: 10px; }
+        #top-actions{
+            display:flex; align-items:center; gap:10px; padding:10px;
+            background:var(--card-bg); border-radius:var(--radius); box-shadow:var(--shadow); border:1px solid var(--card-border);
+            flex-wrap:wrap;
+        }
+        #header-left{ display:flex; align-items:center; gap:10px; }
         #header-right{ margin-left:auto; display:flex; gap:8px; align-items:center; flex-wrap:wrap; }
-        .btn { display: inline-flex; align-items: center; justify-content: center; gap: 8px; padding: 8px 12px; border-radius: 8px; cursor: pointer; font-weight: 600; transition: all 0.2s ease; background: var(--primary); color: white; border: 1px solid white; box-shadow: 0 4px 10px rgba(0, 0, 0, 0.08); }
-        .btn.secondary { background: var(--secondary); border: 1px solid white; }
-        .btn.small { padding: 6px 10px; font-size: 13px; }
-        .btn:hover { transform: translateY(-2px); background: var(--primary-light); }
-        .btn.secondary:hover { background: var(--secondary-light); }
-        .btn.danger { background: var(--secondary); }
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            padding: 8px 12px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.2s ease;
+            background: var(--primary);
+            color: white;
+            border: 1px solid white;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.08);
+        }
+        .btn.secondary { background: var(--secondary); color: white; border: 1px solid white; }
+        .btn.small { padding: 6px 10px; font-size: 13px; border-radius: 7px; }
+        .btn:hover { transform: translateY(-2px); box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15); background: var(--primary-light); border-color: white; }
+        .btn.secondary:hover { background: var(--secondary-light); border-color: white; box-shadow: 0 8px 20px rgba(192, 0, 0, 0.25); }
+        .btn:active { transform: none; filter: brightness(0.96); box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);}
+        .btn.danger { background: var(--secondary); color: white; border: 1px solid white; box-shadow: 0 4px 10px rgba(198, 40, 40, 0.25);}
+        .btn.danger:hover { filter: brightness(0.85); border-color: white; }
         #main-container{ display:flex; flex-direction:column; gap:14px; align-items:stretch; }
-        .card{ background:var(--card-bg); padding:14px; border-radius:10px; box-shadow:var(--shadow); border:1px solid var(--card-border); }
+        .card{ background:var(--card-bg); padding:14px; border-radius:10px; box-shadow:var(--shadow); border:1px solid var(--card-border); color:var(--text-dark); }
         .input-row{ display:flex; gap:10px; flex-wrap:wrap; align-items:center; margin-bottom:8px; }
         .input-row label{ font-size:13px; color:var(--muted); font-weight:600; display:block; margin-bottom:6px; }
-        input[type="text"], input[type="date"]{ padding:8px 10px; border-radius:8px; border:1px solid rgba(15,23,36,0.06); background:#fff; color:var(--text-dark); }
+        input[type="text"], input[type="date"], input[type="email"], input[type="password"]{ padding:8px 10px; border-radius:8px; border:1px solid rgba(15,23,36,0.06); background:#fff; color:var(--text-dark); min-width:120px; }
         .totals{ display:grid; grid-template-columns: repeat(auto-fit,minmax(160px,1fr)); gap:12px; margin-bottom:12px; }
         .total-card{ padding:10px; border-radius:8px; border:1px solid rgba(15,23,36,0.04); background:linear-gradient(180deg,#fff,#fbfdff); }
         .total-card h4{ margin:0; font-size:12px; color:var(--muted); }
-        .total-card p{ margin:6px 0 0 0; font-size:18px; font-weight:800; }
+        .total-card p{ margin:6px 0 0 0; font-size:18px; font-weight:800; color:var(--text-dark); }
         #totalCdiDisplay p { color: var(--success) !important; }
         .table-wrap{ overflow:auto; border-radius:8px; }
-        table{ width:100%; border-collapse:collapse; margin-top:8px; font-size:12px; }
-        thead th{ position:sticky; top:0; background: linear-gradient(180deg,var(--primary-light),var(--primary)); color:white; padding:10px 8px; text-align:left; }
+        table{ width:100%; border-collapse:collapse; margin-top:8px; font-size:13px; color:var(--text-dark); }
+        thead th{ position:sticky; top:0; z-index:2; background: linear-gradient(180deg,var(--primary-light),var(--primary)); color:white; padding:10px 8px; text-align:left; font-weight:700; border-bottom:1px solid rgba(0,0,0,0.06); }
         tbody td{ padding:8px 8px; border-bottom:1px solid rgba(0,0,0,0.04); text-align:right; }
-        .col-left{ text-align:left; color: var(--primary); font-weight: 600; }
-        .ganho, .perda { font-weight: 800; padding: 2px 6px; border-radius: 4px; display: inline-block; }
-        .ganho { color: var(--success); background: rgba(46,125,50,0.1); }
-        .perda { color: var(--danger); background: rgba(198,40,40,0.1); }
-        .file-label input, .logo-label input { display: none; }
+        tbody tr:nth-child(even){ background: rgba(0,0,0,0.02); }
+        td:first-child, th:first-child{ text-align:center; width:90px; }
+        .col-left{ text-align:left; max-width:260px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; color: var(--primary); font-weight: 600; }
+        .action-cell{ text-align:center; }
+        .ganho, .perda { font-weight: 800; padding: 2px 6px; border-radius: 4px; display: inline-block; min-width: 60px; text-align: center;}
+        .ganho { color: var(--success) !important; background: rgba(46, 125, 50, 0.1); border: 1px solid rgba(46, 125, 50, 0.2);}
+        .perda { color: var(--danger) !important; background: rgba(198, 40, 40, 0.1); border: 1px solid rgba(198, 40, 40, 0.2);}
+        b, strong { font-weight: 800; color: var(--primary); }
+        @media (max-width:980px){
+            #siteLogo{ max-width:120px; display:block; margin:0 auto 8px; }
+            #header-container{ margin-bottom:0; width: 100%; justify-content: center; }
+            #left-header-content { justify-content: center; }
+            .filter-card { margin-bottom: 12px !important; }
+            .input-row{ flex-direction:column; align-items:stretch; }
+        }
+        @media print{
+            body{ background:white; padding:0; color:black; }
+            #input-panel .file-label, #input-panel .logo-label, #deleteAllBtn, #auth-status { display:none; }
+        }
     </style>
-    
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
-    <script src="https://cdn.sheetjs.com/xlsx-latest/package/dist/xlsx.full.min.js"></script>
-    
-    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.17.0/xlsx.mini.min.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-database-compat.js"></script>
 </head>
 
-<body onload="loadStateCloud()">
+<body onload="loadLogo()">
     <div id="logo-wrapper">
-        <img id="siteLogo" alt="Logo">
-    </div>
-    
-    <div id="header-container">
-        <h1>📈 Controle de Ganhos CDI (Cloud)</h1>
+        <img id="siteLogo" alt="Logo do site">
     </div>
 
-    <div id="top-actions" class="card">
+    <div id="header-container">
+        <div id="left-header-content">
+            <div id="logo-placeholder">📈</div>
+            <h1>Controle de Ganhos CDI</h1>
+        </div>
+    </div>
+
+    <div id="auth-status" class="card" style="padding: 10px; margin-bottom: 14px; display: flex; align-items: center; flex-wrap: wrap; gap: 10px; justify-content: space-between;">
+        <span id="login-message" style="font-weight: 600;">Status: Desconectado</span>
+        
+        <div id="auth-controls" style="display: flex; gap: 8px; flex-wrap: wrap; width: 100%; max-width: 400px; margin-left: auto;">
+            <input type="email" id="authEmail" placeholder="Email" class="small" style="flex: 1; min-width: 100px;">
+            <input type="password" id="authPassword" placeholder="Senha" class="small" style="flex: 1; min-width: 100px;">
+            <button id="loginBtn" class="btn small" style="flex: 1; min-width: 80px;">Login</button>
+            <button id="signupBtn" class="btn small secondary" style="flex: 1; min-width: 80px;">Cadastrar</button>
+        </div>
+        <button id="logoutBtn" class="btn small danger" style="display:none;">Logout</button>
+    </div>
+
+    <div id="top-actions" class="card" role="region" aria-label="Ações principais">
         <div id="header-left">
             <div style="font-weight:700;">Resumo Diário</div>
-            <div id="status-log" style="font-size:11px; color:var(--muted);">Sincronizando...</div>
+            <div style="font-size:12px;color:var(--muted);">Filtros, importação e ações rápidas</div>
         </div>
+
         <div id="header-right">
-            <button onclick="window.print()" class="btn small">Imprimir</button>
-            <label class="file-label">
-                <input type="file" id="excelFile" accept=".xlsx,.xls,.csv" multiple>
-                <span class="btn small">Procurar Arquivos</span>
+            <button id="printBtn" class="btn small" title="Imprimir">Imprimir</button>
+            <button id="exportBtn" class="btn small secondary" title="Exportar">Exportar</button>
+
+            <label class="file-label" for="excelFile" title="Selecionar arquivos">
+                <input type="file" id="excelFile" accept=".xlsx,.xls,.csv,.txt" multiple>
+                <span class="btn small">Procurar</span>
             </label>
-            <button id="loadExcelBtn" class="btn small secondary">Importar</button>
-            <button id="deleteAllBtn" class="btn small secondary danger">🗑️</button>
+
+            <button id="loadExcelBtn" class="btn small secondary" title="Importar arquivos">Importar</button>
+
+            <label class="logo-label" for="logoFile" title="Carregar logo">
+                <input type="file" id="logoFile" accept="image/*">
+                <span class="btn small">Procurar</span>
+            </label>
+
+            <button id="addLogoBtn" class="btn small secondary" title="Carregar Logo">Carregar Logo</button>
+            <button id="removeLogoBtn" class="btn small" title="Remover">Remover</button>
+
+            <button id="deleteAllBtn" class="btn small secondary danger" title="Excluir tudo">🗑️</button>
         </div>
     </div>
 
     <div id="main-container">
+
         <div id="results-panel" class="card">
+            <h2 style="margin:0 0 8px 0;">📊 Resumo Diário</h2>
+
+            <div class="card filter-card" style="margin-bottom:10px;" aria-label="Opções de Filtragem de Dados">
+                <div style="display:flex;justify-content:space-between;align-items:center;gap:8px;">
+                    <div style="font-weight:600;color:var(--muted);">Filtros</div>
+                    <div style="font-size:12px;color:var(--muted);">Mostrar detalhe por operação</div>
+                </div>
+
+                <div class="input-row" style="margin-top:8px;">
+                    <div>
+                        <label for="filterStartDate">Data de Início</label>
+                        <input type="date" id="filterStartDate">
+                    </div>
+
+                    <div>
+                        <label for="filterEndDate">Data de Fim</label>
+                        <input type="date" id="filterEndDate">
+                    </div>
+
+                    <div style="display:flex;align-items:flex-end;gap:8px;">
+                        <button id="filterBtn" class="btn small">Filtrar</button>
+                        <button id="resetFilterBtn" class="btn small secondary">Limpar</button>
+                    </div>
+                </div>
+                <div style="margin-top:8px;">
+                    <label style="font-weight:600;color:var(--muted)">
+                        <input type="checkbox" id="showIndividualOps" checked onchange="calculateAndRender()"> Mostrar Detalhe por Operação
+                    </label>
+                </div>
+            </div>
             <div class="totals">
                 <div class="total-card" id="totalCompromissadaDisplay"><h4>Compromissada TOTAL</h4><p>R$ 0,00</p></div>
                 <div class="total-card" id="totalRetornoDisplay"><h4>Retorno Bruto TOTAL</h4><p>R$ 0,00</p></div>
                 <div class="total-card" id="totalCdiDisplay"><h4>Ganho (R$) TOTAL</h4><p>R$ 0,00</p></div>
             </div>
-            
-            <div class="card filter-card" style="margin-bottom:10px;">
-                <div class="input-row">
-                    <div><label>Início</label><input type="date" id="filterStartDate"></div>
-                    <div><label>Fim</label><input type="date" id="filterEndDate"></div>
-                    <button id="filterBtn" class="btn small" onclick="calculateAndRender()">Filtrar</button>
-                    <label style="font-size:12px;"><input type="checkbox" id="showIndividualOps" checked onchange="calculateAndRender()"> Detalhar Operações</label>
-                </div>
+
+            <div class="table-wrap">
+                <table id="resultTable">
+                    <thead>
+                        <tr>
+                            <th>Data</th>
+                            <th class="col-left">Descrição/Resumo</th>
+                            <th>Banco</th>
+                            <th>Conta Cedente</th>
+                            <th>Conta Cessionário</th>
+                            <th>Compromissada</th>
+                            <th>Retorno Bruto</th>
+                            <th>PU Ida</th>
+                            <th>PU Volta</th>
+                            <th>Taxa CDI Anual (%)</th>
+                            <th>Ganho (R$) Diário</th>
+                            <th>Ações</th>
+                        </tr>
+                    </thead>
+                    <tbody id="resultBody"></tbody>
+                </table>
             </div>
 
-            <div class="table-wrap" id="resultTable"></div>
+            <p style="font-size:12px;color:var(--muted);margin-top:10px;">
+                ⚠️ O <strong>Ganho (R$) Diário</strong> é calculado pelo Valor Retorno Bruto - Valor Compromissada, com inversão para RECOMPRA.
+            </p>
         </div>
 
         <div id="input-panel" class="card">
+            <h3 style="margin:0 0 8px 0;">⭐ Configuração Global</h3>
+
+            <div class="input-row">
+                <div>
+                    <label for="taxaCdiAnual">Taxa CDI Anual Global (%)</label>
+                    <input type="text" id="taxaCdiAnual" value="14,90" onchange="calculateAndRender()">
+                </div>
+
+                <div>
+                    <label for="diasAno">Dias no Ano</label>
+                    <input type="text" id="diasAno" value="252" onchange="calculateAndRender()">
+                </div>
+            </div>
+
+            <hr style="border:none;border-top:1px solid rgba(15,23,36,0.04);margin:12px 0;">
+
+            <h3>📂 Importação</h3>
+            <p style="font-size:12px;color:var(--muted);margin:0 0 10px 0;">
+                *O sistema prioriza as colunas **VL IDA** e **VL VOLTA** para os valores totais. **CONTRAPARTE** é mapeado como Conta Cedente.
+            </p>
+
+            <hr style="border:none;border-top:1px solid rgba(15,23,36,0.04);margin:12px 0;">
+
             <h3>➕ Lançamento Manual</h3>
-            <div class="input-row">
-                <input type="date" id="manualData">
-                <input type="text" id="manualDesc" placeholder="Descrição">
-                <input type="text" id="manualBanco" placeholder="Banco">
-                <input type="text" id="manualCompromissada" placeholder="Valor Comp.">
-                <input type="text" id="manualRetorno" placeholder="Valor Retorno">
-                <button id="addBtn" class="btn">Adicionar</button>
+
+            <div style="display:flex;flex-direction:column;gap:8px;">
+                <input type="hidden" id="editIndex" value="-1">
+
+                <div>
+                    <label for="manualData">Data do Lançamento</label>
+                    <input type="date" id="manualData">
+                </div>
+
+                <div>
+                    <label for="manualDesc">Descrição</label>
+                    <input type="text" id="manualDesc" placeholder="Ex: REVENDA - Aplicação Mês">
+                </div>
+
+                <div>
+                    <label for="manualBanco">Banco / Contraparte</label>
+                    <input type="text" id="manualBanco" placeholder="Ex: BTG Pactual">
+                </div>
+
+                <div style="display:flex;gap:8px;">
+                    <div style="flex:1;">
+                        <label for="manualCedente">Conta Cedente</label>
+                        <input type="text" id="manualCedente">
+                    </div>
+                    <div style="flex:1;">
+                        <label for="manualCessionario">Conta Cessionário</label>
+                        <input type="text" id="manualCessionario">
+                    </div>
+                </div>
+
+                <div>
+                    <label for="manualCdiTaxa">Taxa CDI Anual Específica (%)</label>
+                    <input type="text" id="manualCdiTaxa">
+                </div>
+
+                <div style="display:flex;gap:8px;">
+                    <div style="flex:1;">
+                        <label for="manualCompromissada">Valor Compromissada</label>
+                        <input type="text" id="manualCompromissada">
+                    </div>
+                    <div style="flex:1;">
+                        <label for="manualRetorno">Valor Retorno (Bruto)</label>
+                        <input type="text" id="manualRetorno">
+                    </div>
+                </div>
+
+                <div style="display:flex;gap:8px;">
+                    <button id="addBtn" class="btn" style="flex:1;">Adicionar Lançamento</button>
+                    <button id="cancelEditBtn" class="btn secondary" style="flex:1;display:none;">Cancelar Edição</button>
+                </div>
             </div>
-            <div class="input-row">
-                <div><label>Taxa CDI Anual (%)</label><input type="text" id="taxaCdiAnual" value="14,90" onchange="calculateAndRender(); saveState();"></div>
-                <div><label>Dias Ano</label><input type="text" id="diasAno" value="252" onchange="calculateAndRender(); saveState();"></div>
-            </div>
-            <pre id="log" style="font-size:11px; color:gray;"></pre>
+            <pre id="log" style="height:84px;overflow:auto;margin-top:12px;color:var(--muted);">Aguardando...</pre>
         </div>
     </div>
 
     <script>
-        // CONFIGURAÇÃO FIREBASE (SUAS CREDENCIAIS)
+        /* ============================================================
+            CONFIGURAÇÃO DO FIREBASE (ATENÇÃO: Sua API Key deve estar aqui)
+        ============================================================ */
         const firebaseConfig = {
+            // VERIFIQUE SE ESTA É A CHAVE CORRETA NO CONSOLE DO FIREBASE
             apiKey: "AIzaSyD_vxw2VcSPO_tMXgrl7quZ85ODvpqQuR8",
             authDomain: "controle-cdi.firebaseapp.com",
+            databaseURL: "https://controle-cdi-default-rtdb.firebaseio.com",
             projectId: "controle-cdi",
             storageBucket: "controle-cdi.firebasestorage.app",
             messagingSenderId: "215359645646",
-            appId: "1:215359645646:web:cd61ae2f72e100d522ad9f"
+            appId: "1:215359645646:web:cd61ae2f72e100d522ad9f",
+            measurementId: "G-TV1M1QWQRC"
         };
-        firebase.initializeApp(firebaseConfig);
-        const db = firebase.firestore();
 
-        let operacoes = [];
+        let operacoes = []; // Array principal para armazenar os dados
+        let filteredOperacoes = []; // Array para armazenar os dados após o filtro
+        let database = null;
+        let currentUserUid = null;
+        const DB_ROOT_PATH = "usuarios/";
+        let uploadedFiles = []; // Para armazenar os arquivos selecionados para importação
 
-        function log(m) { document.getElementById('log').textContent = m; }
+        const log = (message) => {
+            const logElement = document.getElementById('log');
+            const timestamp = new Date().toLocaleTimeString('pt-BR');
+            logElement.textContent = `[${timestamp}] ${message}\n` + logElement.textContent;
+        };
 
-        async function saveState() {
-            try {
-                const state = {
-                    operacoes,
-                    taxaCdiAnual: document.getElementById('taxaCdiAnual').value,
-                    diasAno: document.getElementById('diasAno').value
-                };
-                await db.collection("dados").doc("config").set(state);
-                log("✅ Nuvem Sincronizada");
-            } catch (e) { log("❌ Erro ao salvar"); }
+        if (typeof firebase !== 'undefined' && typeof firebase.database !== 'undefined' && typeof firebase.auth !== 'undefined') {
+            firebase.initializeApp(firebaseConfig);
+            database = firebase.database();
+        } else {
+            console.error("Firebase SDKs não carregados.");
+            log("❌ Erro: Firebase SDKs não carregados. Verifique as tags <script>.");
         }
 
-        async function loadStateCloud() {
-            log("🔄 Carregando dados da nuvem...");
-            try {
-                const doc = await db.collection("dados").doc("config").get();
-                if (doc.exists) {
-                    const st = doc.data();
-                    operacoes = st.operacoes || [];
-                    document.getElementById('taxaCdiAnual').value = st.taxaCdiAnual || '14,90';
-                    document.getElementById('diasAno').value = st.diasAno || '252';
-                    log(`💾 ${operacoes.length} registros carregados.`);
+        /* ============================================================
+            FUNÇÕES DE UTILIDADE
+        ============================================================ */
+        const cleanCurrency = (value) => {
+            if (typeof value === 'number') return value;
+            if (typeof value !== 'string') return 0;
+            // Remove pontos (milhares), substitui vírgula (decimal) por ponto, remove R$ e espaços.
+            return parseFloat(value.replace(/\./g, '').replace(',', '.').replace(/[^\d.-]/g, '')) || 0;
+        };
+
+        const parseNumber = (value) => {
+            if (typeof value === 'number') return value;
+            if (typeof value === 'string') return cleanCurrency(value);
+            return 0;
+        };
+
+        const formatBRL = (value) => {
+            return new Intl.NumberFormat('pt-BR', {
+                style: 'currency',
+                currency: 'BRL',
+            }).format(value);
+        };
+
+        // CORREÇÃO CRÍTICA DA DATA
+        const normalizeDate = (date) => {
+            if (date instanceof Date && !isNaN(date)) {
+                return date.toISOString().split('T')[0]; // yyyy-mm-dd
+            }
+            // Tenta converter formatos comuns de Excel (número de dias desde 1899)
+            if (typeof date === 'number' && date > 1000) {
+                // Excel base date (1899-12-30). Subtrair 1 (Excel bug) e ajustar o fuso.
+                const d = new Date(Date.UTC(0, 0, date - 1));
+                return d.toISOString().split('T')[0];
+            }
+            if (typeof date === 'string') {
+                // Tenta converter DD/MM/YYYY
+                const parts = date.match(/(\d{1,2})[-/](\d{1,2})[-/](\d{4})/);
+                if (parts) {
+                    // Cria a data no formato YYYY-MM-DD
+                    const d = new Date(parts[3], parts[2] - 1, parts[1]);
+                    if (!isNaN(d)) return d.toISOString().split('T')[0];
                 }
-            } catch (e) { log("❌ Erro ao carregar."); }
-            calculateAndRender();
+                // Tenta converter YYYY-MM-DD ou formato ISO
+                let parsedDate = new Date(date);
+                if (!isNaN(parsedDate)) {
+                    return parsedDate.toISOString().split('T')[0];
+                }
+            }
+            return ''; // Retorna string vazia se falhar
+        };
+
+
+        /* ============================================================
+            LÓGICA DE CÁLCULO E RENDERIZAÇÃO
+        ============================================================ */
+
+        function calculateAndRender(dataArray = operacoes) {
+            const tableBody = document.getElementById('resultBody');
+            tableBody.innerHTML = '';
+            
+            let totalCompromissada = 0;
+            let totalRetornoBruto = 0;
+            let totalCdiGain = 0;
+
+            const globalCdiRate = parseNumber(document.getElementById('taxaCdiAnual').value);
+            const showIndividualOps = document.getElementById('showIndividualOps').checked;
+
+            filteredOperacoes = dataArray.sort((a, b) => new Date(a.data) - new Date(b.data));
+
+            const dataToRender = showIndividualOps ? filteredOperacoes : aggregateData(filteredOperacoes);
+
+            dataToRender.forEach((op) => {
+                const taxaCdiAnual = op.taxaCdiAnual > 0 ? op.taxaCdiAnual : globalCdiRate;
+                
+                const ganhoDiario = op.retornoBruto - op.compromissada;
+
+                totalCompromissada += op.compromissada;
+                totalRetornoBruto += op.retornoBruto;
+                totalCdiGain += ganhoDiario;
+
+                const row = tableBody.insertRow();
+                row.innerHTML = `
+                    <td>${op.data ? op.data.split('-').reverse().join('/') : 'N/A'}</td>
+                    <td class="col-left" title="${op.descricao || ''}">${op.descricao || 'N/A'}</td>
+                    <td>${op.banco || 'N/A'}</td>
+                    <td>${op.contaCedente || 'N/A'}</td>
+                    <td>${op.contaCessionario || 'N/A'}</td>
+                    <td>${formatBRL(op.compromissada)}</td>
+                    <td>${formatBRL(op.retornoBruto)}</td>
+                    <td>${op.puIda > 0 ? formatBRL(op.puIda) : '-'}</td>
+                    <td>${op.puVolta > 0 ? formatBRL(op.puVolta) : '-'}</td>
+                    <td>${taxaCdiAnual > 0 ? taxaCdiAnual.toFixed(2) + '%' : '-'}</td>
+                    <td class="${ganhoDiario >= 0 ? 'ganho' : 'perda'}">${formatBRL(ganhoDiario)}</td>
+                    <td class="action-cell">
+                        <button class="btn small" onclick="editOperation('${op.id}')">✏️</button>
+                        <button class="btn small danger" onclick="deleteOperation('${op.id}')">🗑️</button>
+                    </td>
+                `;
+            });
+            
+            // Atualiza totais
+            document.getElementById('totalCompromissadaDisplay').querySelector('p').textContent = formatBRL(totalCompromissada);
+            document.getElementById('totalRetornoDisplay').querySelector('p').textContent = formatBRL(totalRetornoBruto);
+            document.getElementById('totalCdiDisplay').querySelector('p').textContent = formatBRL(totalCdiGain);
+
+            if (dataToRender.length === 0) {
+                const row = tableBody.insertRow();
+                row.innerHTML = `<td colspan="12" style="text-align:center;padding:20px;color:var(--muted);">Nenhuma operação encontrada nos filtros.</td>`;
+            }
         }
 
-        function cleanCurrency(v){ 
-            if(!v) return 0;
-            let n = String(v).replace(/[R$\s.]/g, '').replace(',', '.');
-            return parseFloat(n) || 0;
+        function aggregateData(data) {
+            // Lógica simples de agregação por data, se necessário no futuro
+            return data;
         }
 
-        function formatBRL(n){ return n.toLocaleString('pt-BR',{style:'currency',currency:'BRL'}); }
 
-        document.getElementById('addBtn').addEventListener('click', async () => {
-            const op = {
+        /* ============================================================
+            FUNÇÕES DE PERSISTÊNCIA (LOAD/SAVE)
+        ============================================================ */
+        function saveState(){
+            if (!database || !currentUserUid) {
+                log("❌ É necessário fazer login para salvar os dados.");
+                return;
+            }
+
+            const stateToSave = {
+                operacoes: operacoes,
+                taxaCdiAnual: document.getElementById('taxaCdiAnual').value,
+                diasAno: document.getElementById('diasAno').value
+            };
+            
+            database.ref(`${DB_ROOT_PATH}${currentUserUid}/operacoes`).set(stateToSave)
+                .then(() => {
+                    log(`✅ ${operacoes.length} operações e configurações salvas de forma segura!`);
+                })
+                .catch((error) => {
+                    log(`❌ Erro ao salvar: ${error.message}.`);
+                });
+        }
+        
+        function loadStateFromFirebase(){
+            if (!database || !currentUserUid) { 
+                 operacoes = []; 
+                 calculateAndRender(); 
+                 return;
+            }
+
+            database.ref(`${DB_ROOT_PATH}${currentUserUid}/operacoes`).once('value')
+                .then((snapshot) => {
+                    const savedState = snapshot.val();
+                    if (savedState && savedState.operacoes) {
+                        operacoes = savedState.operacoes || [];
+                        document.getElementById('taxaCdiAnual').value = savedState.taxaCdiAnual || '14,90';
+                        document.getElementById('diasAno').value = savedState.diasAno || '252';
+                        log(`💾 ${operacoes.length} operações carregadas com sucesso!`);
+                    } else {
+                        operacoes = [];
+                        log('Nenhum dado salvo encontrado para este usuário.');
+                    }
+                    calculateAndRender(); 
+                })
+                .catch(error => {
+                    operacoes = [];
+                    log(`❌ Erro ao carregar dados: ${error.message}`);
+                    calculateAndRender();
+                });
+        }
+
+        /* ============================================================
+            LOGIN / LOGOUT / CADASTRO
+        ============================================================ */
+        const loginBtn = document.getElementById("loginBtn");
+        const logoutBtn = document.getElementById("logoutBtn");
+        const signupBtn = document.getElementById("signupBtn");
+        const loginMessage = document.getElementById("login-message");
+        const authControls = document.getElementById("auth-controls");
+        const authEmail = document.getElementById("authEmail");
+        const authPassword = document.getElementById("authPassword");
+
+        loginBtn.addEventListener("click", () => {
+            if (currentUserUid) {
+                firebase.auth().signOut();
+                return;
+            }
+            const email = authEmail.value.trim();
+            const password = authPassword.value;
+            if (!email || !password) {
+                log("⚠️ Preencha email e senha para fazer login.");
+                return;
+            }
+            firebase.auth().signInWithEmailAndPassword(email, password)
+                .then(() => { log("✅ Login realizado com sucesso."); })
+                .catch(error => { 
+                    if (error.code === 'auth/user-not-found') {
+                        log("⚠️ Usuário não encontrado. Clique em 'Cadastrar'.");
+                    } else {
+                        log(`❌ Erro no Login: ${error.message}`); 
+                    }
+                });
+        });
+
+        signupBtn.addEventListener("click", () => {
+            const email = authEmail.value.trim();
+            const password = authPassword.value;
+            if (!email || !password) {
+                log("⚠️ Preencha email e senha para cadastrar.");
+                return;
+            }
+            if (password.length < 6) {
+                log("❌ A senha deve ter no mínimo 6 caracteres.");
+                return;
+            }
+            firebase.auth().createUserWithEmailAndPassword(email, password)
+                .then(() => { log("✅ Cadastro realizado com sucesso e login automático."); })
+                .catch(error => { log(`❌ Erro no Cadastro: ${error.message}`); });
+        });
+
+        logoutBtn.addEventListener("click", () => {
+            firebase.auth().signOut()
+                .then(() => { log("👋 Desconectado."); })
+                .catch(error => { log(`❌ Erro no Logout: ${error.message}`); });
+        });
+
+        firebase.auth().onAuthStateChanged((user) => {
+            if (user) {
+                currentUserUid = user.uid;
+                loginMessage.textContent = `Status: Conectado como ${user.email || 'Usuário Autenticado'}`; 
+                
+                authControls.style.display = 'none';
+                logoutBtn.style.display = 'inline-block';
+                loginBtn.style.display = 'none';
+                signupBtn.style.display = 'none';
+
+                loadStateFromFirebase(); 
+            } else {
+                currentUserUid = null;
+                loginMessage.textContent = "Status: Desconectado";
+                
+                authControls.style.display = 'flex';
+                logoutBtn.style.display = 'none';
+                loginBtn.style.display = 'inline-block';
+                signupBtn.style.display = 'inline-block';
+
+                operacoes = [];
+                calculateAndRender();
+                log('Aguardando Login/Cadastro para acessar os dados da nuvem.');
+            }
+        });
+
+
+        /* ============================================================
+            LÓGICA DE IMPORTAÇÃO DE ARQUIVOS (XLSX) - CORREÇÕES DE VALOR E DATA APLICADAS
+        ============================================================ */
+
+        // CORREÇÃO CRÍTICA DO MAPEAMENTO DE COLUNAS
+        const mapExcelToOperation = (row) => {
+            // Tenta mapear colunas comuns. Adicione mais colunas do seu Excel aqui se necessário.
+            // Data: Prioriza colunas de data/vencimento
+            const dateValue = row['Data'] || row['DATA'] || row['Dt'] || row['VENCIMENTO'] || row['DATAVENC'] || row['DT_OPERACAO'];
+            
+            // Descrição:
+            const descValue = row['Descrição'] || row['HISTORICO'] || row['RESUMO'] || row['OPERACAO'];
+            
+            // Contrapartes:
+            const bancoValue = row['BANCO'] || row['Contraparte'] || row['Contraparte Banco'];
+            const cedenteValue = row['Conta Cedente'] || row['CEDENTE'] || row['CONTRAPARTE'];
+            const cessionarioValue = row['Conta Cessionário'] || row['CESSIONARIO'];
+
+            // Valores (CRÍTICO):
+            let compromissada = parseNumber(row['Valor Compromissada'] || row['VL IDA'] || 0);
+            let retornoBruto = parseNumber(row['Valor Retorno Bruto'] || row['VL VOLTA'] || 0);
+            
+            // Fallbacks caso não encontre as colunas ideais de valor (PU, VALOR genérico)
+            if (compromissada === 0 && retornoBruto === 0) {
+                compromissada = parseNumber(row['PU IDA'] || 0);
+                retornoBruto = parseNumber(row['PU VOLTA'] || 0);
+            }
+            if (compromissada === 0 && retornoBruto === 0) {
+                compromissada = parseNumber(row['VALOR'] || 0);
+                retornoBruto = parseNumber(row['VALOR'] || 0); // Se for a mesma coluna, assumimos que é uma transação
+            }
+            
+            // Ajuste se só um valor for encontrado
+            if (compromissada === 0 && retornoBruto !== 0) {
+                compromissada = retornoBruto;
+            }
+            if (retornoBruto === 0 && compromissada !== 0) {
+                retornoBruto = compromissada;
+            }
+
+
+            return {
+                id: crypto.randomUUID(), 
+                data: normalizeDate(dateValue),
+                descricao: String(descValue || 'Importação Excel'),
+                banco: String(bancoValue || 'N/A'),
+                contaCedente: String(cedenteValue || ''),
+                contaCessionario: String(cessionarioValue || ''),
+                puIda: parseNumber(row['PU IDA'] || 0),
+                puVolta: parseNumber(row['PU VOLTA'] || 0),
+                compromissada: compromissada,
+                retornoBruto: retornoBruto,
+                taxaCdiAnual: parseNumber(row['Taxa CDI (%)'] || row['CDI'])
+            };
+        };
+
+        const handleFile = (file) => {
+            return new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    try {
+                        const data = e.target.result;
+                        // type: 'binary' e cellDates: true são CRÍTICOS para ler datas e números corretamente
+                        const workbook = XLSX.read(data, { type: 'binary', cellDates: true, dateNF: 'yyyy-mm-dd' });
+                        const firstSheetName = workbook.SheetNames[0];
+                        const worksheet = workbook.Sheets[firstSheetName];
+
+                        // raw: false força a leitura formatada, incluindo datas.
+                        const json = XLSX.utils.sheet_to_json(worksheet, { raw: false, dateNF: 'yyyy-mm-dd' });
+
+                        const newOperations = json
+                            .map(mapExcelToOperation)
+                            .filter(op => op.compromissada > 0 || op.retornoBruto > 0);
+
+                        log(`✅ Arquivo "${file.name}" processado: ${newOperations.length} registros encontrados.`);
+                        resolve(newOperations);
+
+                    } catch (error) {
+                        log(`❌ Erro ao processar o arquivo "${file.name}": ${error.message}`);
+                        reject([]);
+                    }
+                };
+                reader.onerror = (e) => {
+                    log(`❌ Erro de leitura do arquivo: ${e.target.error}`);
+                    reject([]);
+                };
+                reader.readAsBinaryString(file);
+            });
+        };
+
+        document.getElementById('excelFile').addEventListener('change', (e) => {
+            uploadedFiles = Array.from(e.target.files);
+            log(`Arquivos selecionados: ${uploadedFiles.length}`);
+        });
+
+        document.getElementById('loadExcelBtn').addEventListener('click', async () => {
+            if (!currentUserUid) {
+                log("⚠️ Faça login primeiro para importar e salvar dados.");
+                return;
+            }
+            if (uploadedFiles.length === 0) {
+                log("⚠️ Por favor, selecione um ou mais arquivos Excel ou CSV primeiro.");
+                return;
+            }
+
+            log(`Iniciando importação de ${uploadedFiles.length} arquivos...`);
+
+            const importedDataPromises = uploadedFiles.map(handleFile);
+
+            try {
+                const results = await Promise.all(importedDataPromises);
+                let totalNewOperations = 0;
+
+                results.forEach(newOps => {
+                    if (Array.isArray(newOps)) {
+                        operacoes.push(...newOps);
+                        totalNewOperations += newOps.length;
+                    }
+                });
+
+                if (totalNewOperations > 0) {
+                    log(`🎉 Importação concluída! Total de ${totalNewOperations} novas operações adicionadas.`);
+                    calculateAndRender();
+                    saveState();
+                } else {
+                    log("⚠️ Nenhum dado válido foi extraído dos arquivos selecionados.");
+                }
+
+                document.getElementById('excelFile').value = ''; 
+                uploadedFiles = []; 
+
+            } catch (error) {
+                log(`❌ Erro geral durante a importação: ${error.message}`);
+            }
+        });
+        
+        /* ============================================================
+            LÓGICA DE EDIÇÃO/DELEÇÃO/MANUAL 
+        ============================================================ */
+
+        document.getElementById('addBtn').addEventListener('click', () => {
+            if (!currentUserUid) {
+                log("⚠️ Faça login primeiro para adicionar dados manualmente.");
+                return;
+            }
+
+            const isEdit = document.getElementById('editIndex').value !== '-1';
+            const idToFind = document.getElementById('editIndex').value;
+            const index = operacoes.findIndex(op => op.id === idToFind);
+
+            const newOperation = {
+                id: isEdit ? operacoes[index].id : crypto.randomUUID(),
                 data: document.getElementById('manualData').value,
                 descricao: document.getElementById('manualDesc').value,
                 banco: document.getElementById('manualBanco').value,
-                compromissada: document.getElementById('manualCompromissada').value,
-                retorno: document.getElementById('manualRetorno').value
+                contaCedente: document.getElementById('manualCedente').value,
+                contaCessionario: document.getElementById('manualCessionario').value,
+                taxaCdiAnual: parseNumber(document.getElementById('manualCdiTaxa').value),
+                compromissada: cleanCurrency(document.getElementById('manualCompromissada').value),
+                retornoBruto: cleanCurrency(document.getElementById('manualRetorno').value),
+                puIda: 0,
+                puVolta: 0
             };
-            operacoes.push(op);
+
+            if (newOperation.compromissada === 0 && newOperation.retornoBruto === 0) {
+                log("❌ Valor Compromissada ou Retorno deve ser preenchido.");
+                return;
+            }
+            
+            if (isEdit) {
+                operacoes[index] = newOperation;
+                log(`✅ Operação editada com sucesso: ${newOperation.descricao}`);
+                document.getElementById('addBtn').textContent = 'Adicionar Lançamento';
+                document.getElementById('cancelEditBtn').style.display = 'none';
+                document.getElementById('editIndex').value = '-1';
+            } else {
+                operacoes.push(newOperation);
+                log(`✅ Operação adicionada com sucesso: ${newOperation.descricao}`);
+            }
+
+            clearManualFields();
             calculateAndRender();
-            await saveState();
+            saveState();
         });
 
-        window.deleteOperation = async (i) => {
-            if(!confirm("Excluir?")) return;
-            operacoes.splice(i, 1);
-            calculateAndRender();
-            await saveState();
-        };
+        function editOperation(id) {
+            const index = operacoes.findIndex(op => op.id === id);
+            if (index === -1) {
+                log("❌ Operação não encontrada para edição.");
+                return;
+            }
 
-        function calculateAndRender() {
-            let tc = 0, tr = 0, tg = 0;
-            let html = `<table><thead><tr><th>Data</th><th>Descrição</th><th>Banco</th><th>Compromissada</th><th>Retorno</th><th>Ganho</th><th>Ação</th></tr></thead><tbody>`;
+            const op = operacoes[index];
             
-            operacoes.forEach((op, i) => {
-                const c = cleanCurrency(op.compromissada);
-                const r = cleanCurrency(op.retorno);
-                const g = r - c;
-                tc += c; tr += r; tg += g;
-                html += `<tr>
-                    <td>${op.data}</td>
-                    <td class="col-left">${op.descricao}</td>
-                    <td class="col-left">${op.banco}</td>
-                    <td>${formatBRL(c)}</td>
-                    <td>${formatBRL(r)}</td>
-                    <td><span class="${g>=0?'ganho':'perda'}">${formatBRL(g)}</span></td>
-                    <td><button class="btn small secondary" onclick="deleteOperation(${i})">X</button></td>
-                </tr>`;
-            });
-
-            document.getElementById('resultTable').innerHTML = html + "</tbody></table>";
-            document.querySelector('#totalCompromissadaDisplay p').textContent = formatBRL(tc);
-            document.querySelector('#totalRetornoDisplay p').textContent = formatBRL(tr);
-            document.querySelector('#totalCdiDisplay p').textContent = formatBRL(tg);
+            document.getElementById('manualData').value = op.data;
+            document.getElementById('manualDesc').value = op.descricao;
+            document.getElementById('manualBanco').value = op.banco;
+            document.getElementById('manualCedente').value = op.contaCedente;
+            document.getElementById('manualCessionario').value = op.contaCessionario;
+            document.getElementById('manualCdiTaxa').value = op.taxaCdiAnual > 0 ? op.taxaCdiAnual.toFixed(2).replace('.', ',') : '';
+            document.getElementById('manualCompromissada').value = op.compromissada.toFixed(2).replace('.', ',');
+            document.getElementById('manualRetorno').value = op.retornoBruto.toFixed(2).replace('.', ',');
+            
+            document.getElementById('editIndex').value = op.id; // Salva o ID da operação
+            document.getElementById('addBtn').textContent = 'Salvar Edição';
+            document.getElementById('cancelEditBtn').style.display = 'inline-block';
+            window.scrollTo(0, document.body.scrollHeight); 
         }
 
-        document.getElementById('deleteAllBtn').addEventListener('click', async () => {
-            if(!confirm("Limpar Tudo?")) return;
-            operacoes = [];
-            calculateAndRender();
-            await saveState();
+        document.getElementById('cancelEditBtn').addEventListener('click', () => {
+            clearManualFields();
+            document.getElementById('editIndex').value = '-1';
+            document.getElementById('addBtn').textContent = 'Adicionar Lançamento';
+            document.getElementById('cancelEditBtn').style.display = 'none';
+        });
+
+        function deleteOperation(id) {
+            if (!confirm("Tem certeza que deseja excluir esta operação?")) return;
+
+            const index = operacoes.findIndex(op => op.id === id);
+            if (index > -1) {
+                const deletedDesc = operacoes[index].descricao;
+                operacoes.splice(index, 1);
+                log(`🗑️ Operação excluída: ${deletedDesc}`);
+                calculateAndRender();
+                saveState();
+            } else {
+                log("❌ Operação não encontrada para exclusão.");
+            }
+        }
+
+        document.getElementById('deleteAllBtn').addEventListener('click', () => {
+            if (!currentUserUid) {
+                log("⚠️ Faça login primeiro para excluir os dados.");
+                return;
+            }
+            if (operacoes.length === 0) {
+                log("⚠️ Não há operações para excluir.");
+                return;
+            }
+            if (confirm(`Tem certeza que deseja excluir TODAS as ${operacoes.length} operações salvas? Esta ação é irreversível.`)) {
+                operacoes = [];
+                log("🗑️ Todos os dados foram excluídos.");
+                calculateAndRender();
+                saveState();
+            }
+        });
+        
+        function clearManualFields() {
+            document.getElementById('manualData').value = '';
+            document.getElementById('manualDesc').value = '';
+            document.getElementById('manualBanco').value = '';
+            document.getElementById('manualCedente').value = '';
+            document.getElementById('manualCessionario').value = '';
+            document.getElementById('manualCdiTaxa').value = '';
+            document.getElementById('manualCompromissada').value = '';
+            document.getElementById('manualRetorno').value = '';
+        }
+        
+        /* ============================================================
+            FILTRO E EXPORTAÇÃO
+        ============================================================ */
+
+        document.getElementById('filterBtn').addEventListener('click', () => {
+            const startDate = document.getElementById('filterStartDate').value;
+            const endDate = document.getElementById('filterEndDate').value;
+            
+            if (!startDate && !endDate) {
+                calculateAndRender(operacoes);
+                log("Filtro aplicado (Nenhum filtro de data).");
+                return;
+            }
+            
+            const start = startDate ? new Date(startDate + 'T00:00:00') : null;
+            const end = endDate ? new Date(endDate + 'T23:59:59') : null;
+
+            const tempFiltered = operacoes.filter(op => {
+                const opDate = new Date(op.data + 'T12:00:00'); 
+                const matchStart = start ? opDate >= start : true;
+                const matchEnd = end ? opDate <= end : true;
+                return matchStart && matchEnd;
+            });
+
+            calculateAndRender(tempFiltered);
+            log(`Filtro aplicado: ${tempFiltered.length} operações encontradas.`);
+        });
+
+        document.getElementById('resetFilterBtn').addEventListener('click', () => {
+            document.getElementById('filterStartDate').value = '';
+            document.getElementById('filterEndDate').value = '';
+            calculateAndRender(operacoes);
+            log("Filtros de data redefinidos.");
+        });
+
+        document.getElementById('exportBtn').addEventListener('click', () => {
+            const dataToExport = filteredOperacoes.map(op => {
+                const taxaCdiAnual = op.taxaCdiAnual > 0 ? op.taxaCdiAnual : parseNumber(document.getElementById('taxaCdiAnual').value);
+                const ganhoDiario = op.retornoBruto - op.compromissada;
+                
+                return {
+                    'Data': op.data,
+                    'Descrição': op.descricao,
+                    'Banco': op.banco,
+                    'Conta Cedente': op.contaCedente,
+                    'Conta Cessionário': op.contaCessionario,
+                    'Compromissada (R$)': op.compromissada,
+                    'Retorno Bruto (R$)': op.retornoBruto,
+                    'PU Ida': op.puIda,
+                    'PU Volta': op.puVolta,
+                    'Taxa CDI Anual (%)': taxaCdiAnual,
+                    'Ganho (R$) Diário': ganhoDiario
+                };
+            });
+
+            if (dataToExport.length === 0) {
+                log("⚠️ Não há dados filtrados para exportar.");
+                return;
+            }
+
+            const ws = XLSX.utils.json_to_sheet(dataToExport);
+            const wb = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(wb, ws, "ControleCDI");
+            XLSX.writeFile(wb, "ControleCDI_Exportacao.xlsx");
+            log(`Exportação de ${dataToExport.length} linhas concluída.`);
+        });
+
+        document.getElementById('printBtn').addEventListener('click', () => {
+            window.print();
+        });
+        
+        /* ============================================================
+            LÓGICA DO LOGO (Local Storage)
+        ============================================================ */
+        const siteLogo = document.getElementById('siteLogo');
+        const logoFile = document.getElementById('logoFile');
+        const addLogoBtn = document.getElementById('addLogoBtn');
+        const removeLogoBtn = document.getElementById('removeLogoBtn');
+
+        function loadLogo() {
+            const savedLogo = localStorage.getItem('cdiLogo'); 
+            if (savedLogo) {
+                siteLogo.src = savedLogo;
+                siteLogo.style.display = 'block';
+            } else {
+                siteLogo.style.display = 'none';
+            }
+        }
+
+        addLogoBtn.addEventListener('click', () => {
+            if (logoFile.files.length > 0) {
+                const file = logoFile.files[0];
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    localStorage.setItem('cdiLogo', e.target.result);
+                    siteLogo.src = e.target.result;
+                    siteLogo.style.display = 'block';
+                    log("✅ Logo carregado e salvo.");
+                };
+                reader.readAsDataURL(file);
+            } else {
+                log("⚠️ Selecione um arquivo de imagem para o logo primeiro.");
+            }
+        });
+
+        removeLogoBtn.addEventListener('click', () => {
+            localStorage.removeItem('cdiLogo');
+            siteLogo.src = '';
+            siteLogo.style.display = 'none';
+            log("🗑️ Logo removido.");
         });
 
     </script>
